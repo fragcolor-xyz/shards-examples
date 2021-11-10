@@ -1,0 +1,7 @@
+.clj-kondo
+.lsp
+.vscode
+*.bin
+*.dll
+*.exe
+*.lib
