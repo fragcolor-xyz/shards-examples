@@ -1,0 +1,70 @@
+edit_uri: ''
+repo_url: https://github.com/fragcolor-xyz/chainblocks-examples/
+site_name: Chainblocks examples
+site_url:
+copyright: Copyright © 2021 Fragcolor Pte. Inc.
+docs_dir: tutorials
+extra:
+  generator: false
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/fragcolor-xyz
+      name: Fragcolor is on GitHub
+    - icon: fontawesome/brands/discord
+      link: https://discord.gg/c7mjxvYqd3
+      name: Join us on Discord
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/fragcolor
+      name: Follow us on Twitter
+    - icon: fontawesome/brands/linkedin-in
+      link: https://www.linkedin.com/company/fragcolor/
+      name: Company profile on LinkedIn
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - pymdownx.highlight
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed
+  - toc:
+      permalink: true
+plugins:
+  - search
+  - awesome-pages:
+      strict: false
+theme:
+  favicon: assets/images/favicon.svg
+  features:
+    - navigation.indexes
+    - navigation.expand
+    - navigation.instant
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - search.suggest
+    - toc.integrate
+  font:
+    code: Fira Code
+    text: Montserrat
+  language: en
+  logo: assets/images/logo.svg
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: deep purple
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: light blue
+      accent: light blue
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+use_directory_urls: true
