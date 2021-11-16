@@ -5,3 +5,7 @@
 *.dll
 *.exe
 *.lib
+*.log
+
+site/
+*.car
