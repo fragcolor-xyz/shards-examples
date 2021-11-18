@@ -5,6 +5,7 @@ Example games and tutorials using [chainblocks](https://github.com/fragcolor-xyz
 ## Tutorials
 
 * [Snake](./tutorials/snake/)
+* [3D breakout](./tutorials/3d-breakout/)
 
 *More to come. Stay tuned!*
 

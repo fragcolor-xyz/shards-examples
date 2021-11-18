@@ -1,0 +1,4 @@
+nav:
+  - index.md
+  - snake
+  - "3D breakout": 3d-breakout
