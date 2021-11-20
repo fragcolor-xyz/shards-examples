@@ -1,0 +1,168 @@
+; SPDX-License-Identifier: BSD-3-Clause
+; Copyright © 2021 Fragcolor Pte. Ltd.
+
+(def grid-cols 12)
+(def grid-rows 10)
+(def empty-grid
+  [0 0 0 0 0 0 0 0 0 0 0 0
+   0 0 0 0 0 0 0 0 0 0 0 0
+   0 0 0 0 0 0 0 0 0 0 0 0
+   0 0 0 0 0 0 0 0 0 0 0 0
+   0 0 0 0 0 0 0 0 0 0 0 0
+   0 0 0 0 0 0 0 0 0 0 0 0
+   0 0 0 0 0 0 0 0 0 0 0 0
+   0 0 0 0 0 0 0 0 0 0 0 0
+   0 0 0 0 0 0 0 0 0 0 0 0
+   0 0 0 0 0 0 0 0 0 0 0 0])
+
+(defblocks get-index []
+  (| (Take 0) >= .x)
+  (| (Take 1) >= .y)
+  .y (Math.Multiply grid-cols) (Math.Add .x))
+
+(defblocks get-free-locations [fruit snake]
+  [] >= .locations
+  (ForRange
+   :From 0 :To (- grid-cols 1) :Action
+   (-> >= .a
+       (ForRange
+        :From 0 :To (- grid-rows 1) :Action
+        (-> >= .b
+            [.a .b] (ToInt2) >= .location
+            (When (-> snake (IndexOf .location) (Is -1) (And) fruit (IsNot .location))
+                  (-> .location (Push .locations)))))))
+  .locations)
+
+(defblocks move-fruit [fruit snake]
+  (get-free-locations fruit snake) >= .free-loc
+  (Count .free-loc) >= .max
+  (RandomInt .max) >= .next-fruit-loc
+  .free-loc (Take .next-fruit-loc) (ToInt2))
+
+(defblocks move-snake [snake offset grow]
+  snake (RTake 0) (Math.Add offset) (Push snake)
+  (WhenNot (-> grow) (DropFront snake)))
+
+(defblocks populate-grid [fruit snake]
+  >= .tmp-grid
+  ; first the snake tail and body
+  snake (Take 0) (get-index) >= .tail-index
+  [.tail-index 4] (Assoc .tmp-grid)
+  snake (Slice 1 -1)
+  (ForEach
+   (-> (get-index) >= .limb-index
+       [.limb-index 3] (Assoc .tmp-grid)))  
+  ; then the fruit
+  fruit (get-index) >= .fruit-index
+  [.fruit-index 1] (Assoc .tmp-grid)
+  ; finally the snake head
+  snake (RTake 0) (get-index) >= .head-index
+  [.head-index 2] (Assoc .tmp-grid)
+  ; return the populated grid
+  .tmp-grid)
+
+(defblocks render []
+  (GUI.Table
+   :Columns grid-cols :Contents
+   (ForEach
+    (-> (| (GUI.NextColumn))
+        (| (Match
+            [0 (-> ".") ; empty
+             1 (-> "F") ; fruit
+             2 (-> "H") ; head
+             3 (-> "B") ; body
+             4 (-> "T") ; tail
+             ]false)
+           (GUI.Text))))))
+
+(defblocks menus []
+  (GUI.MenuBar
+   (-> (GUI.Menu
+        "File" :Contents
+        (-> (GUI.MenuItem "New game" :Shortcut "Space" :Action (initialize))
+            (GUI.Separator)
+            (GUI.MenuItem "Quit" :Shortcut "Alt+F4" :Action (Stop)))))))
+
+(defblocks initialize []
+  [(int2 1 2) (int2 2 2) (int2 3 2) (int2 3 3) (int2 4 3)] >= .snake
+  false >= .grow
+  (move-fruit (int2 0 0) .snake) >= .fruit
+  "right" >= .direction >= .prev-direction
+  (Time.Now) >= .last-tick
+  ; do it once to not wait the next tick
+  empty-grid (populate-grid .fruit .snake) >= .grid
+  false >= .game-over)
+
+(defloop main-chain
+  (Once (initialize))
+  ; logic
+  (WhenNot (-> .game-over)
+           ; normal game
+           (When (-> (Time.Now) (Math.Subtract .last-tick) (IsMoreEqual 0.33))
+                 (-> (Time.Now) > .last-tick
+                     ; move the snake
+                     .direction (Match ["up" (move-snake .snake (int2 0 -1) .grow)
+                                        "right" (move-snake .snake (int2 1 0) .grow)
+                                        "down" (move-snake .snake (int2 0 1) .grow)
+                                        "left" (move-snake .snake (int2 -1 0) .grow)])
+
+                     (Count .snake) (Math.Subtract 1) >= .head-idx
+                     .snake (Take .head-idx) >= .head
+                     ; snake eats its own body?
+                     (When (-> .snake (IndexOf .head) (IsNot .head-idx))
+                           (-> true > .game-over))
+                     ; snake hits a wall?
+                     (When (-> .head (Take 0) (IsLess 0) (Or) (Take 0) (IsMoreEqual grid-cols)
+                               (Or)
+                               .head (Take 1) (IsLess 0) (Or) (Take 1) (IsMoreEqual grid-rows))
+                           (-> true > .game-over))
+                     ; did the snake eat the fruit?
+                     (If (-> .head (Is .fruit))
+                         (-> true > .grow
+                             (move-fruit .fruit .snake) > .fruit)
+                         (-> false > .grow)
+                         :Passthrough true)
+
+                     (WhenNot (-> .game-over)
+                              (-> empty-grid (populate-grid .fruit .snake) > .grid
+                                  .direction > .prev-direction)))))
+  ; window
+  (GFX.MainWindow
+   :Title "Snake game" :Width 480 :Height 360
+   :Contents
+   (-> (color 80 80 80 255) (GUI.Style GuiStyle.WindowBgColor)
+       (GUI.Window
+        :Title "canvas" :Width 1.0 :Height 1.0 :Pos (int2 0 0)
+        :Flags [GuiWindowFlags.NoTitleBar GuiWindowFlags.MenuBar
+                GuiWindowFlags.NoResize GuiWindowFlags.NoMove GuiWindowFlags.NoCollapse]
+        :Contents
+        (-> (menus)
+            (color 90 165 80 255) (GUI.Style GuiStyle.ChildBgColor)
+            (GUI.ChildWindow :Height 240 :Contents (-> .grid (render)))
+            (GUI.Separator)
+            (When (-> .game-over)
+                  (-> "GAME OVER" (GUI.Text :Color (color 255 0 0 255))
+                      (Count .snake) (GUI.Text :Format "Final score: {}")))))
+
+       (Inputs.KeyDown
+        "up"
+        (When (-> .prev-direction (IsNot "down"))
+              (-> "up" > .direction)))
+       (Inputs.KeyDown
+        "right"
+        (When (-> .prev-direction (IsNot "left"))
+              (-> "right" > .direction)))
+       (Inputs.KeyDown
+        "down"
+        (When (-> .prev-direction (IsNot "up"))
+              (-> "down" > .direction)))
+       (Inputs.KeyDown
+        "left"
+        (When (-> .prev-direction (IsNot "right"))
+              (-> "left" > .direction)))
+       (Inputs.KeyDown
+        "space" (initialize)))))
+
+(defnode root)
+(schedule root main-chain)
+(run root (/ 1.0 60))

@@ -1,6 +1,10 @@
 name: Website
 
 on:
+  push:
+    branches:
+      - main
+  pull_request:
   workflow_dispatch:
 
 jobs:
@@ -38,6 +42,7 @@ jobs:
   # Publish website to IPFS
   #
   website-publish:
+    if: ${{ github.ref == 'refs/heads/main' || github.event_name != 'pull_request' }}
     needs: website-build
     runs-on: ubuntu-latest
     steps:
@@ -63,3 +68,16 @@ jobs:
                > response.json
           cat response.json
           if [ $(cat response.json | jq .ok) != "true" ]; then exit 1; fi
+      - name: Set IPFS CID
+        id: set_ipfs_cid
+        run: |
+          echo "::set-output name=ipfs_cid::$(cat response.json | jq .value.cid)"
+      - name: Sync Cloudflare
+        run: |
+          curl -X PUT "https://api.cloudflare.com/client/v4/zones/440ac84707c532c2e51fcb56dfccef22/dns_records/231647aa1443d2da251128cb5cbee38f" \
+               -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_DNS_EDIT_API }}" \
+               -H "Content-Type: application/json" \
+               -d "{ \"type\": \"TXT\", \"name\": \"_dnslink.learn.fragcolor.xyz\", \"content\": \"dnslink=/ipfs/${{ steps.set_ipfs_cid.outputs.ipfs_cid }}/site\", \"ttl\": 1 }" \
+               > response.json
+          cat response.json
+          if [ $(cat response.json | jq .success) != "true" ]; then exit 1; fi
