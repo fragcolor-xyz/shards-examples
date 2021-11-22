@@ -1,0 +1,41 @@
+; SPDX-License-Identifier: BSD-3-Clause
+; Copyright © 2021 Fragcolor Pte. Ltd.
+
+; init: load level
+; game loop: ball/wall/blocks collision*
+; win condition: all blocks destroyed
+; lose condition: all lives spent (or health < 0)
+
+(load-file "render.edn")
+
+(def identity
+  [(float4 1 0 0 0)
+   (float4 0 1 0 0)
+   (float4 0 0 1 0)
+   (float4 0 0 0 1)])
+
+(defblocks gizmos [view]
+  (Gizmo.Grid :Axis GizmoGridAxis.X)
+  (Gizmo.CubeView view))
+
+(defloop main-chain
+  ; window
+  (GFX.MainWindow
+   :Title "Breakout game" :Width 640 :Height 480 :Debug true :Fullscreen false
+   :Contents
+   (-> (Setup
+        (float3 10 0 0) >= .cam_p
+        (float3 0 0 0) >= .cam_t
+        {"Position" .cam_p
+         "Target" .cam_t} (Math.LookAt) >= .view)
+
+       .view (GFX.Camera)
+       (gizmos .view)
+       [(float2 0 1)
+        (float2 1 0)
+        (float2 1 1)]
+       (render-blocks))))
+
+(defnode root)
+(schedule root main-chain)
+(run root (/ 1.0 60))

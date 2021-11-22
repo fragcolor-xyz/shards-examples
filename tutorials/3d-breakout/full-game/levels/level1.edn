@@ -1,0 +1,18 @@
+; SPDX-License-Identifier: BSD-3-Clause
+; Copyright © 2021 Fragcolor Pte. Ltd.
+
+; function: load blocks
+; input: none
+; args: none
+; output: sequence of float2
+; ... later: block health (i.e. how many times to hit before destruction)
+; ... could be implemented as an action
+
+; function: load bonuses
+; input: none
+; args: none
+; output: table of bonuses
+;  - name or key
+;  - value: sequence
+;    - render lambda or block
+;    - action lambda or block
