@@ -36,11 +36,14 @@
 (defblocks to-3d [factor]
   (Setup
    0.0 >= .y >= .z);; note: explain in the tutorial that it is optional but good
+  (| (Take 0) (Math.Multiply (float factor)) > .y)
+  (| (Take 1) (Math.Multiply (float factor)) > .z)
+  [0 .y .z] (ToFloat3)
+  (Math.Translation))
+
+(defblocks to-3d-seq [factor]
   (Map
-   (-> (| (Take 0) (Math.Multiply (float factor)) > .y)
-       (| (Take 1) (Math.Multiply (float factor)) > .z)
-       [0 .y .z] (ToFloat3)
-       (Math.Translation))))
+   (-> (to-3d factor))))
 
 ; function: render blocks
 ; input: sequence of float2
@@ -55,10 +58,10 @@
    (FS.Read :Bytes true) >= .vs_bytes
    (str "../shaders/" shaders-folder "/fs_cubes.bin") ;; can use instancing
    (FS.Read :Bytes true) >= .fs_bytes
-   (GFX.Shader :VertexShader .vs_bytes :PixelShader .fs_bytes) >= .shader)
+   (GFX.Shader :VertexShader .vs_bytes :PixelShader .fs_bytes) >= .cube_shader)
 
-  (to-3d 5)
-  (Map (GFX.Draw :Shader .shader :Model .cube)) ;;map not needed if using instancing
+  (to-3d-seq 2)
+  (Map (GFX.Draw :Shader .cube_shader :Model .cube)) ;;map not needed if using instancing
   )
 
 ; function: render ball
@@ -66,11 +69,37 @@
 ; args: matrix?
 ; output: passthrough or none
 (defblocks render-ball []
-  nil)
+  ;; TODO! need sphere vertices and shader
+  (Setup
+   cube (GFX.Model
+         :Layout [VertexAttribute.Position VertexAttribute.Color0]
+         :CullMode CullMode.Front) >= .sphere
+   (str "../shaders/" shaders-folder "/vs_cubes.bin") ;; can use instancing
+   (FS.Read :Bytes true) >= .vs_bytes
+   (str "../shaders/" shaders-folder "/fs_cubes.bin") ;; can use instancing
+   (FS.Read :Bytes true) >= .fs_bytes
+   (GFX.Shader :VertexShader .vs_bytes :PixelShader .fs_bytes) >= .sphere_shader)
+
+  (to-3d 2)
+  (GFX.Draw :Shader .sphere_shader :Model .sphere) ;;map not needed if using instancing
+  )
 
 ; function: render pad
 ; input: float2
 ; args: matrix?
 ; output: passthrough or none
 (defblocks render-pad []
-  nil)
+  ;; TODO! need capsule vertices and shader
+  (Setup
+   cube (GFX.Model
+         :Layout [VertexAttribute.Position VertexAttribute.Color0]
+         :CullMode CullMode.Front) >= .capsule
+   (str "../shaders/" shaders-folder "/vs_cubes.bin") ;; can use instancing
+   (FS.Read :Bytes true) >= .vs_bytes
+   (str "../shaders/" shaders-folder "/fs_cubes.bin") ;; can use instancing
+   (FS.Read :Bytes true) >= .fs_bytes
+   (GFX.Shader :VertexShader .vs_bytes :PixelShader .fs_bytes) >= .capsule_shader)
+
+  (to-3d 2)
+  (GFX.Draw :Shader .capsule_shader :Model .capsule) ;;map not needed if using instancing
+  )

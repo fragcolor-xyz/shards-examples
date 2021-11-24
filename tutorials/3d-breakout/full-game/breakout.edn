@@ -34,7 +34,13 @@
        [(float2 0 1)
         (float2 1 0)
         (float2 1 1)]
-       (render-blocks))))
+       (render-blocks)
+
+       (float2 -2 0)
+       (render-ball)
+       
+       (float2 -4 0)
+       (render-pad))))
 
 (defnode root)
 (schedule root main-chain)
