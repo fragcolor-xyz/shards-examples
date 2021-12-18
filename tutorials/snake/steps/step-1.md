@@ -1,16 +1,10 @@
 # Step 1
 
-## Setting up the workspace
-
-We will be using Visual Studio code, although any text editor could work.
-
-You will also need a compiled version of chainblocks to be able to run the game. It can be [built from the sources](https://github.com/fragcolor-xyz/chainblocks/wiki/Building).
-
 ## Basic file structure
 
-In this tutorial, we will program using a EDN-like format. The syntax resembles clojure and it usually means less line of codes than traditional programming languages. Additionally, the code is more data-focused which makes it easier for beginners.
+In this tutorial we will program using a Clojure-like syntax and an EDN-like format (JSON equivalent for Clojure). The similarity of Chainblock's syntax to Clojure means more expressive code in fewer lines (as compared to traditional programming languages like Javascript or Python). Additionally, the code is more focused on data which makes it easier for beginners to grasp.
 
-A simple program for chainblocks would look like this:
+A simple program in Chainblocks would look like this:
 
 === "EDN"
 
@@ -28,7 +22,7 @@ A simple program for chainblocks would look like this:
     (run root)
     ```
 
-To run the program, execute the following command line:
+To run the program, execute the following from the command line:
 
 === "Windows"
 
@@ -50,10 +44,10 @@ To run the program, execute the following command line:
 
 ## Game loop
 
-Contrary to simple programs (e.g. command-line utility) that execute an operation and exit afterwards, a game typically runs for a longer time.
-Most game have the concept of a "game loop" (*todo: add more context here*).
+Contrary to simple programs (e.g. command-line utility) that execute an operation and exit afterwards a game typically runs for a longer time.
+Most games have the concept of a "game loop" (*todo: add more context here*).
 
-In chainblocks, a chain can be transformed into a loop simply by replacing `(defchain)` with `(defloop)`. Additionally, `(run)` takes a second argument to specify the delay between two execution of the loop. Games tend to run at 60 FPS (or 60 Hz).
+In Chainblocks a chain can be transformed into a loop by simply replacing `(defchain)` with `(defloop)`. Additionally, `(run)` takes a second argument to specify the delay between two executions of the loop. Games tend to run at 60 FPS (or 60 Hz).
 
 === "EDN"
 
