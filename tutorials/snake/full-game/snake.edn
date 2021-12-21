@@ -1,19 +1,17 @@
 ; SPDX-License-Identifier: BSD-3-Clause
 ; Copyright © 2021 Fragcolor Pte. Ltd.
 
-(def grid-cols 12)
-(def grid-rows 10)
+(def grid-cols 8)
+(def grid-rows 8)
 (def empty-grid
-  [0 0 0 0 0 0 0 0 0 0 0 0
-   0 0 0 0 0 0 0 0 0 0 0 0
-   0 0 0 0 0 0 0 0 0 0 0 0
-   0 0 0 0 0 0 0 0 0 0 0 0
-   0 0 0 0 0 0 0 0 0 0 0 0
-   0 0 0 0 0 0 0 0 0 0 0 0
-   0 0 0 0 0 0 0 0 0 0 0 0
-   0 0 0 0 0 0 0 0 0 0 0 0
-   0 0 0 0 0 0 0 0 0 0 0 0
-   0 0 0 0 0 0 0 0 0 0 0 0])
+  [0 0 0 0 0 0 0 0
+   0 0 0 0 0 0 0 0
+   0 0 0 0 0 0 0 0
+   0 0 0 0 0 0 0 0
+   0 0 0 0 0 0 0 0
+   0 0 0 0 0 0 0 0
+   0 0 0 0 0 0 0 0
+   0 0 0 0 0 0 0 0])
 
 (defblocks get-index []
   (| (Take 0) >= .x)
@@ -51,7 +49,7 @@
   snake (Slice 1 -1)
   (ForEach
    (-> (get-index) >= .limb-index
-       [.limb-index 3] (Assoc .tmp-grid)))  
+       [.limb-index 3] (Assoc .tmp-grid)))
   ; then the fruit
   fruit (get-index) >= .fruit-index
   [.fruit-index 1] (Assoc .tmp-grid)
@@ -62,18 +60,29 @@
   .tmp-grid)
 
 (defblocks render []
+  (Setup
+   (LoadImage "data/branch.png")
+   (GFX.Texture2D) >= .body-tex
+   (LoadImage "data/star.png")
+   (GFX.Texture2D) >= .head-tex
+   (LoadImage "data/empty.png")
+   (GFX.Texture2D) >= .empty-tex
+   (LoadImage "data/ball.png")
+   (GFX.Texture2D) >= .fruit-tex
+   (LoadImage "data/box.png")
+   (GFX.Texture2D) >= .tail-tex)
   (GUI.Table
    :Columns grid-cols :Contents
    (ForEach
     (-> (| (GUI.NextColumn))
         (| (Match
-            [0 (-> ".") ; empty
-             1 (-> "F") ; fruit
-             2 (-> "H") ; head
-             3 (-> "B") ; body
-             4 (-> "T") ; tail
+            [0 (-> .empty-tex) ; empty
+             1 (-> .fruit-tex) ; fruit
+             2 (-> .head-tex) ; head
+             3 (-> .body-tex) ; body
+             4 (-> .tail-tex) ; tail
              ]false)
-           (GUI.Text))))))
+           (GUI.Image :Size (float2 64.0 64.0) :TrueSize true))))))
 
 (defblocks menus []
   (GUI.MenuBar
@@ -128,17 +137,18 @@
                                   .direction > .prev-direction)))))
   ; window
   (GFX.MainWindow
-   :Title "Snake game" :Width 480 :Height 360
+   :Title "Merry Christmas!" :Width 524 :Height 600
    :Contents
    (-> (color 80 80 80 255) (GUI.Style GuiStyle.WindowBgColor)
+       (float2 0.0 0.0) (GUI.Style GuiStyle.CellPadding)
        (GUI.Window
         :Title "canvas" :Width 1.0 :Height 1.0 :Pos (int2 0 0)
-        :Flags [GuiWindowFlags.NoTitleBar GuiWindowFlags.MenuBar
+        :Flags [GuiWindowFlags.NoTitleBar
                 GuiWindowFlags.NoResize GuiWindowFlags.NoMove GuiWindowFlags.NoCollapse]
         :Contents
-        (-> (menus)
+        (-> ;;(menus)
             (color 90 165 80 255) (GUI.Style GuiStyle.ChildBgColor)
-            (GUI.ChildWindow :Height 240 :Contents (-> .grid (render)))
+            (GUI.ChildWindow :Height 520 :Contents (-> .grid (render)))
             (GUI.Separator)
             (When (-> .game-over)
                   (-> "GAME OVER" (GUI.Text :Color (color 255 0 0 255))
