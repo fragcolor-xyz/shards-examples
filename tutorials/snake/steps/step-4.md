@@ -84,7 +84,7 @@ When the snake is growing (after eating a fruit) we only add the new head but ke
 
 Now we need the snake to move at a regular interval in the direction chosen by the player.
 
-Let's first listen to the player input. We will use the keyboard's arrows keys (up, down, left, right) for this.
+Let's first listen to the player input. We will use the keyboard's arrow keys (up, down, left, right) for this.
 
 === "EDN"
 

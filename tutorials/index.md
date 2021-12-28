@@ -4,9 +4,9 @@ These tutorials will help you get familiar with Chainblocks.
 
 ## Setting up the workspace
 
-We will be using <a href="https://code.visualstudio.com/" target="_blank">Visual Studio Code</a>, although any text editor could work.
+We will be using [`Visual Studio Code`](https://code.visualstudio.com/) although any text editor could work.
 
-You will also need a compiled version of Chainblocks to run these tutorials. Chainblocks can be <a href="https://docs.fragcolor.xyz/code/02.building-chainblocks/" target="_blank">built from the sources.</a>.
+You will also need a compiled version of Chainblocks to run these tutorials. Chainblocks can be [`built from the sources`](https://docs.fragcolor.xyz/code/02.building-chainblocks/).
 
 * [Snake](./snake/index.md)
 

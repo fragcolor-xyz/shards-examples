@@ -29,7 +29,7 @@ The fruit, however, occupies a single cell - so we just need one set of coordina
     (int2 4 4) >= .fruit
     ```
 
-To simplify the layout we will render the grid using a <a href="https://docs.fragcolor.xyz/blocks/GUI/Table/" target="_blank">`GUI.Table`</a>. We just need to push each value to the next column and if there's no more space in that row a new row will be added automatically.
+To simplify the layout we will render the grid using a [`(GUI.Table)`](https://docs.fragcolor.xyz/blocks/GUI/Table/). We just need to push each value to the next column and if there's no more space in that row a new row will be added automatically.
 
 === "EDN"
 
@@ -60,7 +60,7 @@ To simplify the layout we will render the grid using a <a href="https://docs.fra
 
 ## Populating the grid
 
-Before we can draw anything we need to update the grid with the fruit and the snake. To update a sequence at a given index, we can use the <a href="https://docs.fragcolor.xyz/blocks/General/Assoc/" target="_blank">`Assoc`</a> ) block. And since the snake is saved as a sequence itself, we need to iterate through all its elements. However, the head, tail and body are represented by different values, so we will handle them separately.
+Before we can draw anything we need to update the grid with the fruit and the snake. To update a sequence at a given index, we can use the [`(Assoc)`](https://docs.fragcolor.xyz/blocks/General/Assoc/) block. And since the snake is saved as a sequence itself, we need to iterate through all its elements. However, the head, tail and body are represented by different values, so we will handle them separately.
 
 === "EDN"
 
