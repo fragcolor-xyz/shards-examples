@@ -27,6 +27,7 @@ jobs:
         run: |
           pip install mkdocs-material
           pip install mkdocs-awesome-pages-plugin
+          pip install mkdocs-macros-plugin
       - name: Build website
         run: |
           mkdocs build
@@ -52,7 +53,8 @@ jobs:
           node-version: '14'
       - name: Install ipfs-car
         run: |
-          npm install -g ipfs-car
+          npm install ipfs-car@0.6.1
+          npm install --save blockstore-core@1.0.2
       - name: Download artifact
         uses: actions/download-artifact@v2
         with:
@@ -60,7 +62,7 @@ jobs:
           path: site
       - name: Publish to NFT storage
         run: |
-          ipfs-car --pack site --output chainblocks-examples.car
+          ./node_modules/.bin/ipfs-car --pack site --output chainblocks-examples.car
           curl -X POST https://api.nft.storage/upload \
                --data-binary @chainblocks-examples.car \
                -H "Authorization: Bearer ${{ secrets.NFT_STORAGE_KEY }}" \
