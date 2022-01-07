@@ -35,6 +35,7 @@ plugins:
   - search
   - awesome-pages:
       strict: false
+  - macros
 theme:
   favicon: assets/images/favicon.svg
   features:
