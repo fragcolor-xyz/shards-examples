@@ -2,9 +2,9 @@
 
 ## Moving the fruit
 
-When the snake eats the fruit, we need a new fruit at different location that is not currently occupied by the snake.
+When the snake eats a fruit we will need another unoccupied location for the new fruit.
 
-Let's first compute the list of locations that are free.
+Let's first compute the list of locations that are unoccupied.
 
 === "EDN"
 
@@ -38,9 +38,9 @@ Let's first compute the list of locations that are free.
       .locations)
     ```
 
-The function takes the positions of the snake body (incl. head and tail) and the current fruit position. It then iterate through all possible coordinate and skip the one that are either in the snake or the current fruit. The sequence of potential locations is then returned as output of the function.
+The function takes the positions of the snake body (incl. head and tail) and the current fruit position. It then iterates through all possible coordinates skipping the ones that are either occupied by the snake or the current fruit. The sequence of potential locations is then returned as the function's output.
 
-Next, all we need is to select a random position from that sequence, which will be our next fruit position.
+Now all we need to do is select a random position from this sequence and that will be our next fruit position.
 
 === "EDN"
 
@@ -63,9 +63,9 @@ Next, all we need is to select a random position from that sequence, which will 
 
 ## Moving the snake
 
-In the snake game, the snake moves by one cell either horizontally or vertically. We could "move" every cell of its body one by one, but there is a clever trick: we can just remove the first element (tail) from the snake sequence and add one for the new head position.
+In the snake game, the snake moves by one cell either horizontally or vertically. We could "move" every cell of its body one by one, but there is a clever trick we can use: we can just remove the first element (tail) from the snake's sequence and add one for the new head position.
 
-When the snake is growing (after eating a fruit), we only add the new head and keep the tail.
+When the snake is growing (after eating a fruit) we only add the new head but keep the tail.
 
 === "EDN"
 
@@ -82,9 +82,9 @@ When the snake is growing (after eating a fruit), we only add the new head and k
       (WhenNot (-> grow) (DropFront snake)))
     ```
 
-Now we need the snake to move at a regular interval given its direction chosen by the player.
+Now we need the snake to move at a regular interval in the direction chosen by the player.
 
-Let's first listen to the player input. We will use the keyboard's directional arrows.
+Let's first listen to the player input. We will use the keyboard's arrow keys (up, down, left, right) for this.
 
 === "EDN"
 
@@ -98,7 +98,7 @@ Let's first listen to the player input. We will use the keyboard's directional a
     (Inputs.KeyDown "left" (-> "left" > .direction))
     ```
 
-We also want to prevent the player from accidentally selecting the opposite direction (e.g. going down while the snake goes up) since that would immediately end the game (the snake would eat its own body), since that would cause frustration. One way to easily do that is to compare the newly chosen direction with the previous one.
+We also want to prevent the player from accidentally selecting the opposite direction (e.g. down while the snake is going up) since that would immediately end the game (as the snake would eat its own body). One easy way to do this is to compare the newly chosen direction with the previous one.
 
 === "EDN"
 
@@ -138,11 +138,11 @@ Finally, the snake will move at a regular interval. We can do that by comparing 
                                   "left" (move-snake .snake (int2 -1 0) .grow)])))
     ```
 
-The snake will move every half a second. We could change that value to vary the difficulty of the game.
+Now the snake will move every half a second. We could change this value to vary the difficulty of the game.
 
 ## Let's try it out!
 
-Putting together all that we have seen so far, and adding a bit of initialization, that we conveniently put in its own function which lets us reinitialize the game if the player hits the space bar.
+Putting together all that we have seen so far, and adding a bit of initialization (that we conveniently put in its own function to allow us to reinitialize the game if the player hits the space bar), we have the following code.
 
 === "EDN"
 

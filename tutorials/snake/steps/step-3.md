@@ -2,7 +2,7 @@
 
 ## Drawing the grid, the fruit and the snake
 
-We will assign some values to define what each cell of our grid can represent. And for now, we will draw a single character as the visual representation.
+We will assign some values to define what each cell of our grid can represent. For now, we will draw a single character as the visual representation.
 
 | value | meaning | character |
 |:-----:|---------|:---------:|
@@ -13,7 +13,7 @@ We will assign some values to define what each cell of our grid can represent. A
 | 4     | tail    | `"S"`     |
 
 
-A snake as a head and a tail, and a body. We can represent it as a sequence of coordinates. The first element is the tail, the last one is the head, and everything in between is the body.
+A snake has a head and a tail, and a body. We can represent these entities as a sequence of coordinates. The first element is the tail, the last one is the head, and everything in between is the body.
 
 === "EDN"
 
@@ -21,7 +21,7 @@ A snake as a head and a tail, and a body. We can represent it as a sequence of c
     [(int2 1 2) (int2 2 2) (int2 3 2) (int2 3 3) (int2 4 3)] >= .snake
     ```
 
-The fruit however occupies a single cell, so we just need one coordinate.
+The fruit, however, occupies a single cell - so we just need one set of coordinates.
 
 === "EDN"
 
@@ -29,7 +29,7 @@ The fruit however occupies a single cell, so we just need one coordinate.
     (int2 4 4) >= .fruit
     ```
 
-We will render the grid using a [`(GUI.Table)`](https://docs.fragcolor.xyz/blocks/GUI/Table/) which simplifies the layout: we just need to push each value to the next column, and it will start a new row if needed.
+To simplify the layout we will render the grid using a [`(GUI.Table)`](https://docs.fragcolor.xyz/blocks/GUI/Table/). We just need to push each value to the next column and if there's no more space in that row a new row will be added automatically.
 
 === "EDN"
 
@@ -60,7 +60,7 @@ We will render the grid using a [`(GUI.Table)`](https://docs.fragcolor.xyz/block
 
 ## Populating the grid
 
-Before we can draw anything, we need to update the grid with the fruit and the snake. To update a sequence at a given index, we can use the [`(Assoc)`](https://docs.fragcolor.xyz/blocks/General/Assoc/) block. And since the snake is saved at a sequence itself, we need to iterate through all its elements. However, the head, tail and body are represented by different value, so we will handle them separately.
+Before we can draw anything we need to update the grid with the fruit and the snake. To update a sequence at a given index, we can use the [`(Assoc)`](https://docs.fragcolor.xyz/blocks/General/Assoc/) block. And since the snake is saved as a sequence itself, we need to iterate through all its elements. However, the head, tail and body are represented by different values, so we will handle them separately.
 
 === "EDN"
 

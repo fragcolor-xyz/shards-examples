@@ -1,12 +1,12 @@
 # Step 2
 
-In this tutorial, we are going to implement a simplified version of the snake game. We won't have high-end graphics but instead focus on the game logic.
+In this tutorial we are going to implement a simplified version of the snake game. We won't have high-end graphics but will instead focus on the game logic.
 
 ## Defining the play space
 
 The snake evolves inside a grid. It moves one cell at a time either horizontally or vertically. The fruit the snake has to eat to grow can appear on any unoccupied cell.
 
-Let's define that grid. There are different ways to define a grid. We could use a multi-dimensional array (or in our case a sequence of sequences). However to simplify the code, we will instead define a flat sequence.
+Let's define that grid. There are different ways to define a grid. We could use a multi-dimensional array (or in our case, a sequence of sequences). However, to simplify the code, we will instead define a flat sequence.
 
 === "EDN"
 
@@ -25,7 +25,7 @@ Let's define that grid. There are different ways to define a grid. We could use 
        0 0 0 0 0])
     ```
 
-Then to compute the index in that sequence from a 2D coordinates, we can define the following function.
+Then to compute the index in that sequence from a set of 2D coordinates, we can define the following function.
 
 === "EDN"
 
@@ -61,7 +61,7 @@ Then to compute the index in that sequence from a 2D coordinates, we can define 
           .y (Math.Multiply grid-cols) (Math.Add .x))
         ```
 
-It can be a bit confusing considering that the function doesn't have parameters. That is because there is an implicit parameter which is the input. Similarly, there is an implicit output at the end of the function.
+It can be a bit confusing considering that the function doesn't have any parameters. This is because there is an implicit parameter which is the input. Similarly, there is an implicit output at the end of the function (the equivalent of the `return` statement in other programming languages).
 
 Let's break down the last line to understand how this works.
 
@@ -73,12 +73,12 @@ Let's break down the last line to understand how this works.
 
 - Here `.y` is a context variable.
 - Its value becomes the input of the next block: `(Math.Multiply)`.
-- `(Math.Multiply)` takes that value, multiply it by `grid-cols` and returns the result as output.
-- The output becomes the input of the next block: `(Math.Add)`.
-- `(Math.Add)` takes that input and adds it the value of the context variable `.x`.
-- Then, being the last block of that function, its output becomes the output of the whole function.
+- `(Math.Multiply)` takes that value, multiplies it by `grid-cols` and returns the result as output.
+- The output becomes the input for the next block: `(Math.Add)`.
+- `(Math.Add)` takes that input and adds it to the value of the context variable `.x`.
+- Since this is the last block of the function, the output of this block becomes the output of the whole function.
 
-When we will later call the function, the same process will happen.
+Whenever this function is called, the same processing will happen.
 
 === "EDN"
 
@@ -86,11 +86,11 @@ When we will later call the function, the same process will happen.
     (int2 1 2) (get-index)
     ```
 
-This time our input is a 2D integer vector represented as a single `int2` value. Inside `(get-index)`, each component of that vector will be extracted using `(Take)` (see above code listings).
+This time our input is a 2D integer vector represented as a single `int2` value. Inside `(get-index)` each component of that vector will be extracted using `(Take)` (see above code listings).
 
 ## Creating a window
 
-We will render our game in a windowed application. Therefore we first need to define a window.
+We will render our game as a windowed application. Therefore we first need to define a window.
 
 === "EDN"
 
@@ -120,15 +120,15 @@ We will render our game in a windowed application. Therefore we first need to de
 
     ![](window.png)
 
-Since we are going to use the UI system to display our game, we need to define an area where things will be rendered. This is why we have a UI window inside our application window.
+Since we are going to use the UI system to display our game, we need to define a render area. This is why we have a UI window inside our application window.
 
-However we don't want that UI window to display a title bar and we want it to stay at position `(0 0)` i.e. anchored at the top left of our application. To that end, we set its width and height to be 100% of the available space and we use a few flags to prevent moving or resizing it.
+However we don't want that UI window to display a title bar and we want it to stay at position `(0 0)` i.e. anchored at the top left of our application. To that end, we set the width and height of the window to be 100% of the available space and we use a few flags to prevent the moving or resizing of this window.
 
-You can try to remove some of the flags or modify the other parameters and see what differences it brings.
+You can play around by removing some of the flags or modifying other parameters and see how the game behavior changes.
 
 ## Let's try it out!
 
-Let's give a try to our function. First we will change a few values in the grid to be different from `0`. And then we will try to retrieve and display those values in our brand-new window. Can you guess which values will be displayed?
+Let's give our function a try. First we will change a few values in the grid to be something other than `0`. And then we will try to retrieve and display those values in our brand-new window. Can you guess which values will be displayed?
 
 === "EDN"
 

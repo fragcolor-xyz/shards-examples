@@ -2,11 +2,11 @@
 
 ## Wall collision and game over conditions
 
-If the snake hits a wall, the game ends. Similarly if the snake tries to eat a part of its body, the game also ends.
+If the snake hits a wall, the game ends. Similarly if the snake tries to eat a part of its own body, the game still ends.
 
 Remember that we have a sequence that represents the whole snake body. The last element of that sequence is the head.
 
-To test whether the snake is going outside the bounds of the play space, we just need to compare the `x` (first coordinate) and `y` (second coordinate) of the head with the number of columns (resp. with the number of rows). We need to do that before attempting to render as it otherwise would go out of bounds and produce an error (and since we don't handle that error, crash the game). We will use a boolean value (`true` or `false`) to mark when the game is over and avoid updating the gird in such case.
+To test whether the snake is going outside the bounds of the play space, we just need to compare the `x` (first coordinate) and `y` (second coordinate) of the head with the number of columns and rows respectively. We need to do this before attempting to render as otherwise the computed render position could go out of bounds and produce an error (and since we are not yet handling this error the game would crash). We will use a boolean value (`true` or `false`) to mark when the game is over and avoid updating the grid in such a case.
 
 === "EDN"
 
@@ -21,7 +21,7 @@ To test whether the snake is going outside the bounds of the play space, we just
           (-> true > .game-over))
     ```
 
-To check whether the snake is eating is body, we use the fact that the head is the last element of the snake sequence. If we find another body cell that have the same coordinates while having a different index in the sequence, it means we have an overlap and the poor snake is in pain.
+To check whether the snake is eating its own body, we use the fact that the head is the last element of the snake sequence. If we find another body cell that has the same coordinates while having a different index in the sequence, it means that we have an overlap and the poor snake is in pain.
 
 === "EDN"
 
@@ -36,7 +36,7 @@ To check whether the snake is eating is body, we use the fact that the head is t
 
 ## A few graphical changes
 
-Now that have conditions to end the game, we can a bit more logic to display the final score which in our case will be the length of the snake.
+Now that have conditions to end the game, we can add a bit more logic to display the final score (which in our case will be the length of the snake).
 
 === "EDN"
 
@@ -58,7 +58,7 @@ Now that have conditions to end the game, we can a bit more logic to display the
                     (Count .snake) (GUI.Text :Format "Final score: {}")))))
     ```
 
-We will also change the background color of the play space. We could change the background color of the whole window, but then the area with the **GAME OVER** text  would also share that color. Instead, we will create a new area for the game itself. To do so we can use a child window.
+We will also change the background color of the game's play-space. We could change the background color of the whole window, but then the area with the **GAME OVER** text  would also share that same color. Instead, we will create a new area for the game itself. To do so we can use a child window.
 
 === "EDN"
 
@@ -70,7 +70,7 @@ We will also change the background color of the play space. We could change the 
     (GUI.ChildWindow :Height 240 :Contents (-> .grid (render)))
     ```
 
-We will also add a small menu, to cleanly restart or exit the game.
+We will also add a small menu, to enable the player to cleanly restart or exit the game.
 
 === "EDN"
 
