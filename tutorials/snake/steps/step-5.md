@@ -40,52 +40,45 @@ Now that have conditions to end the game, we can add a bit more logic to display
 
 === "EDN"
 
-    ??? info inline end
-        [`(GUI.Text)`](https://docs.fragcolor.xyz/blocks/GUI/Text/) has a few optional parameters:
-
-        - `:Format`: where `{}` is replaced by the input value.
-        - `:Color`: to use a different color.
-
-        `color` is a built-in types that represents a RGBA color, where each component is a value in the `[0, 255]` range.
-
-    ```clojure linenums="1"
+    ```{.clojure .annotate linenums="1"}
     (GUI.Window
       ; some lines omitted
       (-> .grid (render)
           (GUI.Separator)
           (When (-> .game-over)
-                (-> "GAME OVER" (GUI.Text :Color (color 255 0 0 255))
-                    (Count .snake) (GUI.Text :Format "Final score: {}")))))
+                (-> "GAME OVER" (GUI.Text :Color (color 255 0 0 255)) ;; (1)
+                    (Count .snake) (GUI.Text :Format "Final score: {}"))))) ;; (2)
     ```
+
+    1. `:Color` is an optional parameter for [`(GUI.Text)`](https://docs.fragcolor.xyz/blocks/GUI/Text/). It specifies the color of the dsiplay text using `color` (which is a built-in type that represents a RGBA color, where each component is a value in the `[0, 255]` range.)
+    2. `:Format` is an optional parameter for [`(GUI.Text)`](https://docs.fragcolor.xyz/blocks/GUI/Text/). It replaces `{}` in a given string by the input value.
 
 We will also change the background color of the game's play-space. We could change the background color of the whole window, but then the area with the **GAME OVER** text  would also share that same color. Instead, we will create a new area for the game itself. To do so we can use a child window.
 
 === "EDN"
 
-    ??? info inline end
-        [`(GUI.Style)`](https://docs.fragcolor.xyz/blocks/GUI/Style/) lets modify a UI style setting identified by the `GuiStyle` enum.
-
-    ```clojure linenums="1"
-    (color 90 165 80 255) (GUI.Style GuiStyle.ChildBgColor)
+    ```{.clojure .annotate linenums="1"}
+    (color 90 165 80 255) (GUI.Style GuiStyle.ChildBgColor) ;; (1)
     (GUI.ChildWindow :Height 240 :Contents (-> .grid (render)))
     ```
+
+    1. [`(GUI.Style)`](https://docs.fragcolor.xyz/blocks/GUI/Style/) lets you modify a UI style setting identified by the `GuiStyle` enum.
 
 We will also add a small menu, to enable the player to cleanly restart or exit the game.
 
 === "EDN"
 
-    ??? info inline end
-        [`(GUI.Menu)`](https://docs.fragcolor.xyz/blocks/GUI/Menu/) contains one or more [`(GUI.MenuItem)`](https://docs.fragcolor.xyz/blocks/GUI/MenuItem/) and is hosted in a [`(GUI.MenuBar)`](https://docs.fragcolor.xyz/blocks/GUI/MenuBar/).
-
-    ```clojure linenums="1"
+    ```{.clojure .annotate linenums="1"}
     (defblocks menus []
       (GUI.MenuBar
-       (-> (GUI.Menu
+       (-> (GUI.Menu ;; (1)
             "File" :Contents
             (-> (GUI.MenuItem "New game" :Shortcut "Space" :Action (initialize))
                 (GUI.Separator)
                 (GUI.MenuItem "Quit" :Shortcut "Alt+F4" :Action (Stop)))))))
     ```
+
+    1. [`(GUI.Menu)`](https://docs.fragcolor.xyz/blocks/GUI/Menu/) contains one or more [`(GUI.MenuItem)`](https://docs.fragcolor.xyz/blocks/GUI/MenuItem/) and is hosted in a [`(GUI.MenuBar)`](https://docs.fragcolor.xyz/blocks/GUI/MenuBar/).
 
 To display the menu we need to add the `GuiWindowFlags.MenuBar` to the sequence of flags given to the window.
 
