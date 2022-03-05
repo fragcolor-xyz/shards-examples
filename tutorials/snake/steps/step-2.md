@@ -10,47 +10,38 @@ Let's define that grid. There are different ways to define a grid. We could use 
 
 === "EDN"
 
-    ??? info inline end
-        The [`def`](https://docs.fragcolor.xyz/functions/macros/#def) keyword associates a value with a name.
-
-        `[]` is the syntax to define a sequence of values.
-
-    ```clojure linenums="1"
-    (def grid-cols 5)
+    ```{.clojure .annotate linenums="1"}
+    (def grid-cols 5) ;; (1)
     (def grid-rows 4)
     (def empty-grid
       [0 0 0 0 0
        0 0 0 0 0
        0 0 0 0 0
-       0 0 0 0 0])
+       0 0 0 0 0]) ;; (2)
     ```
+
+    1. The [`def`](https://docs.fragcolor.xyz/functions/macros/#def) keyword associates a value with a name.
+    2. `[]` is the syntax to define a sequence of values.
 
 Then to compute the index in that sequence from a set of 2D coordinates, we can define the following function.
 
 === "EDN"
 
-    ??? info inline end
-        The [`defn`](https://docs.fragcolor.xyz/functions/macros/#defn) keyword associates a function with a name. Note the `[]` after the `get-index` name. This indicates that this function has 0 parameters. We will see later functions which do have parameters.
-
-        `(->)` is a block container that will executes its inner block(s) in order.
-
-        `(|)` is an alias for [`(Sub)`](https://docs.fragcolor.xyz/blocks/General/Sub/). It allows to reuse the same input in the next block.
-
-        [`(Take)`](https://docs.fragcolor.xyz/blocks/General/Take/) returns the value from a sequence at a given index (starting at `0`).
-
-        `>=` saves the output of a block into a context variable.
-
-        [`(Math.Multiply)`](https://docs.fragcolor.xyz/blocks/Math/Multiply/) multiplies its input with a given value and outputs the result.
-
-        [`(Math.Add)`](https://docs.fragcolor.xyz/blocks/Math/Add/) adds a value to its input and outputs the result.
-
-    ```clojure linenums="1"
-    (defn get-index []
-      (-> (| (Take 0) >= .x)
-          (| (Take 1) >= .y)
-          .y (Math.Multiply grid-cols) (Math.Add .x)))
+    ```{.clojure .annotate linenums="1"}
+    (defn get-index [] ;; (1)
+      (-> (| (Take 0) >= .x) ;; (2) (3)
+          (| (Take 1) >= .y) ;; (4) (5)
+          .y (Math.Multiply grid-cols) (Math.Add .x))) ;; (6) (7)
     ```
 
+    1. The [`defn`](https://docs.fragcolor.xyz/functions/macros/#defn) keyword associates a function with a name. Note the `[]` after the `get-index` name. This indicates that this function has 0 parameters. We will see later functions which do have parameters.
+    2. `(->)` is a block container that will executes its inner block(s) in order.
+    3. `(|)` is an alias for [`(Sub)`](https://docs.fragcolor.xyz/blocks/General/Sub/). It allows to reuse the same input in the next block.
+    4. [`(Take)`](https://docs.fragcolor.xyz/blocks/General/Take/) returns the value from a sequence at a given index (starting at `0`).
+    5. `>=` saves the output of a block into a context variable.
+    6. [`(Math.Multiply)`](https://docs.fragcolor.xyz/blocks/Math/Multiply/) multiplies its input with a given value and outputs the result.
+    7. [`(Math.Add)`](https://docs.fragcolor.xyz/blocks/Math/Add/) adds a value to its input and outputs the result.
+        
     ??? note
         Because `defn` expects a single "value" after the name and the list of parameters, a `(->)` block is required to group several blocks together. As it is a common occurrence, a shortcut is also provided: `defblocks`.
 
@@ -94,19 +85,12 @@ We will render our game as a windowed application. Therefore we first need to de
 
 === "EDN"
 
-    ??? info inline end
-        We have already seen `defloop`, `defnode`, `schedule` and `run` in [step 1](./step-1.md).
-
-        `(GFX.Window)` creates the application window.
-
-        `(GUI.Window)` creates a UI window inside our application.
-
-    ```clojure linenums="1"
-    (defloop main-chain
-      (GFX.MainWindow
+    ```{.clojure .annotate linenums="1"}
+    (defloop main-chain ;; (1)
+      (GFX.MainWindow  ;; (2)
        :Title "Snake game" :Width 480 :Height 360
        :Contents
-       (-> (GUI.Window
+       (-> (GUI.Window ;; (3)
             :Title "canvas" :Width 1.0 :Height 1.0 :Pos (int2 0 0)
             :Flags [GuiWindowFlags.NoTitleBar GuiWindowFlags.MenuBar
                     GuiWindowFlags.NoResize GuiWindowFlags.NoMove GuiWindowFlags.NoCollapse]))))
@@ -115,6 +99,10 @@ We will render our game as a windowed application. Therefore we first need to de
     (schedule root main-chain)
     (run root (/ 1.0 60))
     ```
+
+    1. We have already seen `defloop`, `defnode`, `schedule` and `run` in [step 1](./step-1.md).
+    2. `(GFX.Window)` creates the application window.
+    3. `(GUI.Window)` creates a UI window inside our application.
 
 === "Result"
 
