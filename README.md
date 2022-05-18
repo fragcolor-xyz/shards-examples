@@ -22,7 +22,7 @@ It's also recommended to go through the [Chainblocks architecture](https://docs.
 
 ### Tutorials
 
-* [Snake](./tutorials/snake/)
+* [Snake](https://learn.fragcolor.xyz/snake/)
 
 *More to come. Stay tuned!*
 
