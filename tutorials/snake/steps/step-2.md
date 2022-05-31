@@ -1,12 +1,12 @@
 # Step 2
 
-In this tutorial we will implement a simplified version of the snake game. For now, we won't have high-end graphics but we'll instead focus on the game logic.
+In this tutorial, we will implement a simplified version of the snake game. For now, we won't have high-end graphics but we'll instead focus on the game logic.
 
 ## Defining the play space
 
 The snake evolves inside a grid. It moves one cell at a time either horizontally or vertically. The fruit that the snake must eat to grow can appear on any unoccupied cell.
 
-Such a grid may be defined in many ways. We could use a 2D array (or in our case, a sequence of sequences since our grid exists in two dimensional space). However, to keep our code simple, we will instead use a flat sequence to hold the states of all our grid elements.
+Such a grid may be defined in many ways. We could use a 2D array (or in our case, a sequence of sequences since our grid exists in two-dimensional space). However, to keep our code simple, we will instead use a flat sequence to hold the states of all our grid elements.
 
 The trick is to visualize the 1D sequence as a 2D matrix with defined grid row and grid column values (see code below).
 
@@ -25,7 +25,7 @@ The trick is to visualize the 1D sequence as a 2D matrix with defined grid row a
     1. The [`def`](https://docs.fragcolor.xyz/functions/macros/#def) keyword associates a value with a name.
     2. `[]` is the syntax to define a sequence of values.
 
-Now, to compute the index of a grid element in that sequence from it's 2D coordinates, we can define the following function.
+Now, to compute the index of a grid element in that sequence from its 2D coordinates, we can define the following function.
 
 === "EDN"
 
@@ -36,11 +36,11 @@ Now, to compute the index of a grid element in that sequence from it's 2D coordi
           .y (Math.Multiply grid-cols) (Math.Add .x))) ;; (6) (7)
     ```
 
-    1. The [`defn`](https://docs.fragcolor.xyz/functions/macros/#defn) keyword associates a function with a name. Note the `[]` after the `get-index` name. This indicates that this function has 0 parameters. We will later see functions which do have parameters.
+    1. The [`defn`](https://docs.fragcolor.xyz/functions/macros/#defn) keyword associates a function with a name. Note the `[]` after the `get-index` name. This indicates that this function has 0 parameters. We will later see functions that do have parameters.
     2. [`(->)`](https://docs.fragcolor.xyz/functions/misc/#shard-container) is a shard container that will group and execute its inner shard(s) in order.
-    3. `(|)` is an alias for [`(Sub)`](https://docs.fragcolor.xyz/shards/General/Sub/). It allows to reuse the same input across a sequence of shards.
+    3. `(|)` is an alias for [`(Sub)`](https://docs.fragcolor.xyz/shards/General/Sub/). It allows reusing the same input across a sequence of shards.
     4. [`(Take)`](https://docs.fragcolor.xyz/shards/General/Take/) returns the value from a sequence at a given index (starting at `0`).
-    5. `>=` is an alias for theshard [`(Set)`](https://docs.fragcolor.xyz/shards/General/Set/) which saves the output of ashard into a context variable.
+    5. `>=` is an alias for the shard [`(Set)`](https://docs.fragcolor.xyz/shards/General/Set/) which saves the output of ashard into a context variable.
     6. [`(Math.Multiply)`](https://docs.fragcolor.xyz/shards/Math/Multiply/) multiplies its input (written to the left of theshard) with a given value (written to the right of theshard and enclosed within it’s brackets) and outputs the result.
     7. [`(Math.Add)`](https://docs.fragcolor.xyz/shards/Math/Add/) adds a value to its input and outputs the result.
         

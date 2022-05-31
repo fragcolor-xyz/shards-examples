@@ -1,6 +1,6 @@
 # Snake game tutorial
 
-Welcome! In this tutorial we will create a simple snake-like game using [Shards](https://github.com/fragcolor-xyz/shards).
+Welcome! In this tutorial, we will create a simple snake-like game using [Shards](https://github.com/fragcolor-xyz/shards).
 
 You can either follow the step by step tutorial or use the full-game version directly.
 
