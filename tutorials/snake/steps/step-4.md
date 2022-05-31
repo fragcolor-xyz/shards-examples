@@ -9,7 +9,7 @@ Let's first compute the list of locations that are unoccupied.
 === "EDN"
 
     ```{.clojure .annotate linenums="1"}
-    (defblocks get-free-locations [snake fruit]
+    (defshards get-free-locations [snake fruit]
       [] >= .locations ;; (1)
       (ForRange ;; (2)
        :From 0 :To (- grid-cols 1) :Action ;; (3)
@@ -38,7 +38,7 @@ Now all we need to do is select a random position from this sequence and that wi
 === "EDN"
 
     ```{.clojure .annotate linenums="1"}
-    (defblocks move-fruit [fruit snake]
+    (defshards move-fruit [fruit snake]
       (get-free-locations fruit snake) >= .free-loc
       (Count .free-loc) >= .max ;; (1)
       (RandomInt .max) >= .next-fruit-loc ;; (2)
@@ -59,7 +59,7 @@ When the snake is growing (after eating a fruit) we only add the new head (in pl
 === "EDN"
 
     ```{.clojure .annotate linenums="1"}
-    (defblocks move-snake [snake offset grow]
+    (defshards move-snake [snake offset grow]
       snake (RTake 0) (Math.Add offset) (Push snake) ;; (1)
       (WhenNot (-> grow) (DropFront snake))) ;; (2) (3)
     ```

@@ -45,10 +45,10 @@ Now, to compute the index of a grid element in that sequence from its 2D coordin
     7. [`(Math.Add)`](https://docs.fragcolor.xyz/shards/Math/Add/) adds a value to its input and outputs the result.
         
     ??? note
-        Because defn expects a single "value" (called function return value) after the function name and the list of parameters, and our function’s logic (function body) contains multipleshards, a (->)shard is required  used required  to group these severalshards together in a single (return)shard . Since this is a common situation with `(defn)` functionshards, a convenient alternative is to use  [`(defblocks)`](https://docs.fragcolor.xyz/functions/macros/#defblocks) instead. A `(defblock)` behaves exactly like a function (including the ability to accept input parameters) but can contain multipleshards in it’s body. These multipleshards are executed in the order that they appear and `(defblocks)` return value is the output of the lastshard in its body. .
+        Because defn expects a single "value" (called function return value) after the function name and the list of parameters, and our function’s logic (function body) contains multiple shards, a (->) shard is required  used required  to group these several shards together in a single (return) shard . Since this is a common situation with `(defn)` function shards, a convenient alternative is to use  [`(defshards)`](https://docs.fragcolor.xyz/functions/macros/#defshards) instead. A `(defshards)` behaves exactly like a function (including the ability to accept input parameters) but can contain multiple shards in its body. These multiple shards are executed in the order that they appear and `(defshards)` return value is the output of the last shard in its body. .
 
         ```clojure linenums="1"
-        (defblocks get-index []
+        (defshards get-index []
           (| (Take 0) >= .x)
           (| (Take 1) >= .y)
           .y (Math.Multiply grid-cols) (Math.Add .x))
@@ -101,12 +101,12 @@ We will render our game as a windowed application. Therefore we first need to de
             :Flags [GuiWindowFlags.NoTitleBar GuiWindowFlags.MenuBar
                     GuiWindowFlags.NoResize GuiWindowFlags.NoMove GuiWindowFlags.NoCollapse]))))
 
-    (defnode root)
+    (defmesh root)
     (schedule root main-wire)
     (run root (/ 1.0 60))
     ```
 
-    1. We have already seen `defloop`, `defnode`, `schedule` and `run` in [step 1](./step-1.md).
+    1. We have already seen `defloop`, `defmesh`, `schedule` and `run` in [step 1](./step-1.md).
     2. [`(GFX.MainWindow)`](https://docs.fragcolor.xyz/shards/GFX/MainWindow/) creates the application window.
     3. [`(GUI.Window)`](https://docs.fragcolor.xyz/shards/GUI/Window/) creates a UI window inside our application.
 
@@ -155,7 +155,7 @@ Let's give our function a try. First we will change a few values in the grid to 
                 grid (Take .a) (GUI.Text)
                 grid (Take .b) (GUI.Text))))))
 
-    (defnode root)
+    (defmesh root)
     (schedule root main-wire)
     (run root (/ 1.0 60))
     ```

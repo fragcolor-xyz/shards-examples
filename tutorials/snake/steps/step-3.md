@@ -36,7 +36,7 @@ To simplify the layout we will render the grid using a [`(GUI.Table)`](https://d
 === "EDN"
 
     ```{.clojure .annotate linenums="1"}
-    (defblocks render [] ;; (1)
+    (defshards render [] ;; (1)
       (GUI.Table
        :Columns grid-cols :Contents
        (ForEach ;; (2)
@@ -63,7 +63,7 @@ Before we can draw anything we need to update the grid with the fruit and the sn
 === "EDN"
 
     ```{.clojure .annotate linenums="1"}
-    (defblocks populate-grid [fruit snake]
+    (defshards populate-grid [fruit snake]
       ; saves the input into a variable
       >= .tmp-grid
 
@@ -118,12 +118,12 @@ Let's put into practice all that we have seen so far.
        0 0 0 0 0 0 0 0 0 0 0 0
        0 0 0 0 0 0 0 0 0 0 0 0])
 
-    (defblocks get-index []
+    (defshards get-index []
       (| (Take 0) >= .x)
       (| (Take 1) >= .y)
       .y (Math.Multiply grid-cols) (Math.Add .x))
 
-    (defblocks populate-grid [fruit snake]
+    (defshards populate-grid [fruit snake]
       ; saves the input into a variable
       >= .tmp-grid
 
@@ -146,7 +146,7 @@ Let's put into practice all that we have seen so far.
       ; return the populated grid
       .tmp-grid)
 
-    (defblocks render []
+    (defshards render []
       (GUI.Table
        :Columns grid-cols :Contents
        (ForEach
@@ -176,7 +176,7 @@ Let's put into practice all that we have seen so far.
             :Contents
             (-> .grid (render))))))
 
-    (defnode root)
+    (defmesh root)
     (schedule root main-wire)
     (run root (/ 1.0 60))
     ```

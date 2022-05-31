@@ -71,7 +71,7 @@ We will also add a small menu, to enable the player to cleanly restart or exit t
 === "EDN"
 
     ```{.clojure .annotate linenums="1"}
-    (defblocks menus []
+    (defshards menus []
       (GUI.MenuBar
        (-> (GUI.Menu ;; (1)
             "File" :Contents

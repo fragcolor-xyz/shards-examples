@@ -10,12 +10,12 @@ A simple program in Shards would look like this:
 
     ```clojure linenums="1"
     ; define a wire named 'main-wire'
-    (defchain main-wire
+    (defwire main-wire
       ; print a message on the standard output
       (Msg "Hello World!"))
 
     ; define the root mesh
-    (defnode root)
+    (defmesh root)
     ; schedule the wire on that mesh
     (schedule root main-wire)
     ; run
@@ -49,7 +49,7 @@ Most games have the concept of a "game loop".
 
 A game loop is the overall flow control of the program that runs continuously during gameplay. In each turn of the loop (known as a frame), the program processes the user's input, updates the game state, and renders the game.
 
-In Shards, a wire (self-contained piece of code made that can be suspended/resumed and is made up of shards and functions) can be transformed into a loop by simply replacing `(defchain)` with `(defloop)`. Additionally, `(run)` takes a second argument to specify the delay between two consecutive executions of the loop, specifying the frame rate (FPS). Games tend to run at 60 FPS (or 60 Hz).
+In Shards, a wire (self-contained piece of code made that can be suspended/resumed and is made up of shards and functions) can be transformed into a loop by simply replacing `(defwire)` with `(defloop)`. Additionally, `(run)` takes a second argument to specify the delay between two consecutive executions of the loop, specifying the frame rate (FPS). Games tend to run at 60 FPS (or 60 Hz).
 
 === "EDN"
 
@@ -57,7 +57,7 @@ In Shards, a wire (self-contained piece of code made that can be suspended/resum
     (defloop main-wire
       (Msg "Hello World!"))
 
-    (defnode root)
+    (defmesh root)
     (schedule root main-wire)
     (run root (/ 1.0 60))
     ```

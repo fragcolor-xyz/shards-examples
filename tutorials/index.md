@@ -14,5 +14,5 @@ You will also need a compiled version of Shards to run these tutorials. Shards c
 
 --8<-- "includes/license.md"
 
-Built on {{ (git.date or now()).strftime("%b %d, %Y at %H:%M:%S") }}{% if git.status %} from commit [{{ git.short_commit }}](https://github.com/fragcolor-xyz/chainblocks-examples/commit/{{ git.commit }}){% endif %}.
+Built on {{ (git.date or now()).strftime("%b %d, %Y at %H:%M:%S") }}{% if git.status %} from commit [{{ git.short_commit }}](https://github.com/fragcolor-xyz/shards-examples/commit/{{ git.commit }}){% endif %}.
 
