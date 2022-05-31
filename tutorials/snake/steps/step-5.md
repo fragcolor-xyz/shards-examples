@@ -52,8 +52,8 @@ Now that have conditions to end the game, we can add a bit more logic to display
                     (Count .snake) (GUI.Text :Format "Final score: {}"))))) ;; (2)
     ```
 
-    1. `:Color` is an optional parameter for [`(GUI.Text)`](https://docs.fragcolor.xyz/blocks/GUI/Text/). It specifies the color of the dsiplay text using `color` (which is a built-in type that represents a RGBA color, where each component is a value in the `[0, 255]` range.)
-    2. `:Format` is an optional parameter for [`(GUI.Text)`](https://docs.fragcolor.xyz/blocks/GUI/Text/). It replaces `{}` in a given string by the input value.
+    1. `:Color` is an optional parameter for [`(GUI.Text)`](https://docs.fragcolor.xyz/shards/GUI/Text/). It specifies the color of the dsiplay text using `color` (which is a built-in type that represents a RGBA color, where each component is a value in the `[0, 255]` range.)
+    2. `:Format` is an optional parameter for [`(GUI.Text)`](https://docs.fragcolor.xyz/shards/GUI/Text/). It replaces `{}` in a given string by the input value.
 
 We will also change the background color of the game's play-space. We could change the background color of the whole window, but then the area with the **GAME OVER** text  would also share that same color. Instead, we will create a new area for the game itself. To do so we can use a child window.
 
@@ -64,7 +64,7 @@ We will also change the background color of the game's play-space. We could chan
     (GUI.ChildWindow :Height 240 :Contents (-> .grid (render)))
     ```
 
-    1. [`(GUI.Style)`](https://docs.fragcolor.xyz/blocks/GUI/Style/) lets you modify a UI style setting identified by the `GuiStyle` enum.
+    1. [`(GUI.Style)`](https://docs.fragcolor.xyz/shards/GUI/Style/) lets you modify a UI style setting identified by the `GuiStyle` enum.
 
 We will also add a small menu, to enable the player to cleanly restart or exit the game.
 
@@ -80,7 +80,7 @@ We will also add a small menu, to enable the player to cleanly restart or exit t
                 (GUI.MenuItem "Quit" :Shortcut "Alt+F4" :Action (Stop)))))))
     ```
 
-    1. [`(GUI.Menu)`](https://docs.fragcolor.xyz/blocks/GUI/Menu/) contains one or more [`(GUI.MenuItem)`](https://docs.fragcolor.xyz/blocks/GUI/MenuItem/) and is hosted in a [`(GUI.MenuBar)`](https://docs.fragcolor.xyz/blocks/GUI/MenuBar/).
+    1. [`(GUI.Menu)`](https://docs.fragcolor.xyz/shards/GUI/Menu/) contains one or more [`(GUI.MenuItem)`](https://docs.fragcolor.xyz/shards/GUI/MenuItem/) and is hosted in a [`(GUI.MenuBar)`](https://docs.fragcolor.xyz/shards/GUI/MenuBar/).
 
 To display the menu we need to add the `GuiWindowFlags.MenuBar` to the sequence of flags given to the window.
 

@@ -31,7 +31,7 @@ Every other cell is empty (or unoccupied) and is represented with a ‘.’.
     (int2 4 4) >= .fruit
     ```
 
-To simplify the layout we will render the grid using a [`(GUI.Table)`](https://docs.fragcolor.xyz/blocks/GUI/Table/). We just need to push each value to the next column in a given row and if there's no more space in that row a new row will be added automatically.
+To simplify the layout we will render the grid using a [`(GUI.Table)`](https://docs.fragcolor.xyz/shards/GUI/Table/). We just need to push each value to the next column in a given row and if there's no more space in that row a new row will be added automatically.
 
 === "EDN"
 
@@ -52,13 +52,13 @@ To simplify the layout we will render the grid using a [`(GUI.Table)`](https://d
     ```
     
     1. The input of this function will be our grid.
-    2. The [`(ForEach)`](https://docs.fragcolor.xyz/blocks/General/ForEach/) block iterates through all elements in our grid and executes an action on each one of them.
-    3. In that action, we [`(Match)`](https://docs.fragcolor.xyz/blocks/General/Match/) the value to the corresponding character we have chosen.
-    4. Then the matched character is displayed in place of that grid element using [`(GUI.Text)`](https://docs.fragcolor.xyz/blocks/GUI/Text/).
+    2. The [`(ForEach)`](https://docs.fragcolor.xyz/shards/General/ForEach/) shard iterates through all elements in our grid and executes an action on each one of them.
+    3. In that action, we [`(Match)`](https://docs.fragcolor.xyz/shards/General/Match/) the value to the corresponding character we have chosen.
+    4. Then the matched character is displayed in place of that grid element using [`(GUI.Text)`](https://docs.fragcolor.xyz/shards/GUI/Text/).
 
 ## Populating the grid
 
-Before we can draw anything we need to update the grid with the fruit and the snake. To update a sequence at a given index, we can use the [`(Assoc)`](https://docs.fragcolor.xyz/blocks/General/Assoc/) block. And since the snake is saved as a sequence itself, we need to iterate through all its elements. However, the head, tail and body are represented by different values, so we will handle them separately.
+Before we can draw anything we need to update the grid with the fruit and the snake. To update a sequence at a given index, we can use the [`(Assoc)`](https://docs.fragcolor.xyz/shards/General/Assoc/) shard. And since the snake is saved as a sequence itself, we need to iterate through all its elements. However, the head, tail and body are represented by different values, so we will handle them separately.
 
 === "EDN"
 
@@ -89,8 +89,8 @@ Before we can draw anything we need to update the grid with the fruit and the sn
     
     1. We have already seen `(Take)` and `get-index` in [step 2](./step-2.md).
     2. Assoc lets us update the sequence.
-    3. [`(Slice)`](https://docs.fragcolor.xyz/blocks/General/Slice/) gives a part of a sequence in a range. `1` means we start at the second element of the sequence (in other words, we skip `1` element), and `-1` means we stop at one element before the last (in other words, we skip `1` element from the end).
-    4. [`(RTake)`](https://docs.fragcolor.xyz/blocks/General/RTake/)  is similar to [`(Take)`](https://docs.fragcolor.xyz/blocks/General/Take/) , except it starts from the end of the sequence instead of the beginning (i.e. "reverse take").
+    3. [`(Slice)`](https://docs.fragcolor.xyz/shards/General/Slice/) gives a part of a sequence in a range. `1` means we start at the second element of the sequence (in other words, we skip `1` element), and `-1` means we stop at one element before the last (in other words, we skip `1` element from the end).
+    4. [`(RTake)`](https://docs.fragcolor.xyz/shards/General/RTake/)  is similar to [`(Take)`](https://docs.fragcolor.xyz/shards/General/Take/) , except it starts from the end of the sequence instead of the beginning (i.e. "reverse take").
 
 This new function `populate-grid` will take our empty-grid as input and return a populated grid. That is why we need a temporary variable inside the function (`.tmp-grid`).
 
@@ -160,7 +160,7 @@ Let's put into practice all that we have seen so far.
                  ]false)
                (GUI.Text))))))
 
-    (defloop main-chain
+    (defloop main-wire
       ; logic
       [(int2 1 2) (int2 2 2) (int2 3 2) (int2 3 3) (int2 4 3)] >= .snake
       (int2 6 7) >= .fruit
@@ -177,7 +177,7 @@ Let's put into practice all that we have seen so far.
             (-> .grid (render))))))
 
     (defnode root)
-    (schedule root main-chain)
+    (schedule root main-wire)
     (run root (/ 1.0 60))
     ```
 

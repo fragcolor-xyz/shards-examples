@@ -1,12 +1,12 @@
 # Tutorials
 
-These tutorials will help you get familiar with Chainblocks.
+These tutorials will help you get familiar with Shards.
 
 ## Setting up the workspace
 
 We will be using [Visual Studio Code](https://code.visualstudio.com/) although any text editor could work.
 
-You will also need a compiled version of Chainblocks to run these tutorials. Chainblocks can be [built from the sources](https://docs.fragcolor.xyz/contribute/code/building-chainblocks/).
+You will also need a compiled version of Shards to run these tutorials. Shards can be [built from the sources](https://docs.fragcolor.xyz/contribute/code/building-shards/).
 
 * [Snake](./snake/index.md)
 

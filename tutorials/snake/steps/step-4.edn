@@ -85,7 +85,7 @@
   ; do it once to not wait the next tick
   empty-grid (populate-grid .fruit .snake) >= .grid)
 
-(defloop main-chain
+(defloop main-wire
   (Once (initialize))
   ; logic
   (When (-> (Time.Now) (Math.Subtract .last-tick) (IsMoreEqual 0.5))
@@ -136,5 +136,5 @@
         "space" (initialize)))))
 
 (defnode root)
-(schedule root main-chain)
+(schedule root main-wire)
 (run root (/ 1.0 60))
