@@ -1,10 +1,10 @@
 # Step 3
 
-## Drawing the grid, the fruit and the snake
+## Drawing the grid, the fruit, and the snake
 
-We will assign some values to define what each cell of our grid can represent. For now, we will draw a single character as the visual representation.
+We will assign some values to define what entity each cell of our grid can represent. For now, we will map these numeric values to draw a uniquesingle character each foras the visual representation.
 
-| value | meaning | character |
+| value | entity | character |
 |:-----:|---------|:---------:|
 | 0     | empty   | `"."`     |
 | 1     | fruit   | `"F"`     |
@@ -23,13 +23,15 @@ A snake has a head and a tail, and a body. We can represent these entities as a 
 
 The fruit, however, occupies a single cell - so we just need one set of coordinates.
 
+Every other cell is empty (or unoccupied) and is represented with a ‘.’.
+
 === "EDN"
 
     ```clojure linenums="1"
     (int2 4 4) >= .fruit
     ```
 
-To simplify the layout we will render the grid using a [`(GUI.Table)`](https://docs.fragcolor.xyz/blocks/GUI/Table/). We just need to push each value to the next column and if there's no more space in that row a new row will be added automatically.
+To simplify the layout we will render the grid using a [`(GUI.Table)`](https://docs.fragcolor.xyz/blocks/GUI/Table/). We just need to push each value to the next column in a given row and if there's no more space in that row a new row will be added automatically.
 
 === "EDN"
 
@@ -52,7 +54,7 @@ To simplify the layout we will render the grid using a [`(GUI.Table)`](https://d
     1. The input of this function will be our grid.
     2. The [`(ForEach)`](https://docs.fragcolor.xyz/blocks/General/ForEach/) block iterates through all elements in our grid and executes an action on each one of them.
     3. In that action, we [`(Match)`](https://docs.fragcolor.xyz/blocks/General/Match/) the value to the corresponding character we have chosen.
-    4. Then that character is displayed using [`(GUI.Text)`](https://docs.fragcolor.xyz/blocks/GUI/Text/).
+    4. Then the matched character is displayed in place of that grid element using [`(GUI.Text)`](https://docs.fragcolor.xyz/blocks/GUI/Text/).
 
 ## Populating the grid
 

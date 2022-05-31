@@ -27,7 +27,7 @@ To run the program, execute the following from the command line:
 === "Windows"
 
     ```powershell
-    .\cbl.exe path\to\program.edn
+    .\cbl.exe <path\to\program.edn>
     ```
 
 === "Unix"
@@ -44,10 +44,12 @@ To run the program, execute the following from the command line:
 
 ## Game loop
 
-Contrary to simple programs (e.g. command-line utility) that execute an operation and exit afterwards a game typically runs for a longer time.
-Most games have the concept of a "game loop" (*todo: add more context here*).
+Contrary to simple programs (e.g. a command-line utility) that execute an operation and exit afterwards, a game typically runs for a longer time.
+Most games have the concept of a "game loop".
 
-In Chainblocks a chain can be transformed into a loop by simply replacing `(defchain)` with `(defloop)`. Additionally, `(run)` takes a second argument to specify the delay between two executions of the loop. Games tend to run at 60 FPS (or 60 Hz).
+A game loop is the overall flow control of the program that runs continuously during gameplay. In each turn of the loop (known as a frame), the program processes the user's input, updates the game state, and renders the game.
+
+In Chainblocks a chain (self-contained piece of code made that can be suspended/resumed and is made up of blocks and functions) can be transformed into a loop by simply replacing `(defchain)` with `(defloop)`. Additionally, `(run)` takes a second argument to specify the delay between two consecutive executions of the loop, specifying the frame rate (FPS). Games tend to run at 60 FPS (or 60 Hz).
 
 === "EDN"
 

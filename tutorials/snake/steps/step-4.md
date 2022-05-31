@@ -54,7 +54,7 @@ Now all we need to do is select a random position from this sequence and that wi
 
 In the snake game, the snake moves by one cell either horizontally or vertically. We could "move" every cell of its body one by one, but there is a clever trick we can use: we can just remove the first element (tail) from the snake's sequence and add one for the new head position.
 
-When the snake is growing (after eating a fruit) we only add the new head but keep the tail.
+When the snake is growing (after eating a fruit) we only add the new head (in place of the fruit element) but keep the tail such that snake seems to grow in the direction of the fruit it just ate.
 
 === "EDN"
 
@@ -82,9 +82,9 @@ Let's first listen to the player input. We will use the keyboard's arrow keys (u
     (Inputs.KeyDown "left" (-> "left" > .direction))
     ```
 
-    1. [`(Inputs.KeyDown)`](https://docs.fragcolor.xyz/blocks/Inputs/KeyDown/) executes an action when a key is down. It has a sibling event: [`(Inputs.KeyUp)`](https://docs.fragcolor.xyz/blocks/Inputs/KeyUp/).
+    1. [`(Inputs.KeyDown)`](https://docs.fragcolor.xyz/blocks/Inputs/KeyDown/) executes an action when a key is down. It has a sibling event: [`(Inputs.KeyUp)`](https://docs.fragcolor.xyz/blocks/Inputs/KeyUp/). `(>)` is an alias for [`Push`](https://docs.fragcolor.xyz/blocks/General/Push/).
 
-We also want to prevent the player from accidentally selecting the opposite direction (e.g. down while the snake is going up) since that would immediately end the game (as the snake would eat its own body). One easy way to do this is to compare the newly chosen direction with the previous one.
+We also want to prevent the player from accidentally selecting the opposite direction (e.g. down while the snake is going up) since that would immediately end the game (as the snake would immediately turn backwards eat its own body, i.e. the neck). One easy way to do this is to compare the newly chosen direction with the previous one.
 
 === "EDN"
 

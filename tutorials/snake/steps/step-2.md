@@ -1,12 +1,14 @@
 # Step 2
 
-In this tutorial we are going to implement a simplified version of the snake game. We won't have high-end graphics but will instead focus on the game logic.
+In this tutorial we will implement a simplified version of the snake game. For now, we won't have high-end graphics but we'll instead focus on the game logic.
 
 ## Defining the play space
 
-The snake evolves inside a grid. It moves one cell at a time either horizontally or vertically. The fruit the snake has to eat to grow can appear on any unoccupied cell.
+The snake evolves inside a grid. It moves one cell at a time either horizontally or vertically. The fruit that the snake must eat to grow can appear on any unoccupied cell.
 
-Let's define that grid. There are different ways to define a grid. We could use a multi-dimensional array (or in our case, a sequence of sequences). However, to simplify the code, we will instead define a flat sequence.
+Such a grid may be defined in many ways. We could use a 2D array (or in our case, a sequence of sequences since our grid exists in two dimensional space). However, to keep our code simple, we will instead use a flat sequence to hold the states of all our grid elements.
+
+The trick is to visualize the 1D sequence as a 2D matrix with defined grid row and grid column values (see code below).
 
 === "EDN"
 
@@ -23,7 +25,7 @@ Let's define that grid. There are different ways to define a grid. We could use 
     1. The [`def`](https://docs.fragcolor.xyz/functions/macros/#def) keyword associates a value with a name.
     2. `[]` is the syntax to define a sequence of values.
 
-Then to compute the index in that sequence from a set of 2D coordinates, we can define the following function.
+Now, to compute the index of a grid element in that sequence from it's 2D coordinates, we can define the following function.
 
 === "EDN"
 
@@ -34,16 +36,16 @@ Then to compute the index in that sequence from a set of 2D coordinates, we can 
           .y (Math.Multiply grid-cols) (Math.Add .x))) ;; (6) (7)
     ```
 
-    1. The [`defn`](https://docs.fragcolor.xyz/functions/macros/#defn) keyword associates a function with a name. Note the `[]` after the `get-index` name. This indicates that this function has 0 parameters. We will see later functions which do have parameters.
-    2. `(->)` is a block container that will executes its inner block(s) in order.
-    3. `(|)` is an alias for [`(Sub)`](https://docs.fragcolor.xyz/blocks/General/Sub/). It allows to reuse the same input in the next block.
+    1. The [`defn`](https://docs.fragcolor.xyz/functions/macros/#defn) keyword associates a function with a name. Note the `[]` after the `get-index` name. This indicates that this function has 0 parameters. We will later see functions which do have parameters.
+    2. [`(->)`](https://docs.fragcolor.xyz/functions/misc/#block-container) is a block container that will group and execute its inner block(s) in order.
+    3. `(|)` is an alias for [`(Sub)`](https://docs.fragcolor.xyz/blocks/General/Sub/). It allows to reuse the same input across a sequence of blocks.
     4. [`(Take)`](https://docs.fragcolor.xyz/blocks/General/Take/) returns the value from a sequence at a given index (starting at `0`).
-    5. `>=` saves the output of a block into a context variable.
-    6. [`(Math.Multiply)`](https://docs.fragcolor.xyz/blocks/Math/Multiply/) multiplies its input with a given value and outputs the result.
+    5. `>=` is an alias for the block [`(Set)`](https://docs.fragcolor.xyz/blocks/General/Set/) which saves the output of a block into a context variable.
+    6. [`(Math.Multiply)`](https://docs.fragcolor.xyz/blocks/Math/Multiply/) multiplies its input (written to the left of the block) with a given value (written to the right of the block and enclosed within it’s brackets) and outputs the result.
     7. [`(Math.Add)`](https://docs.fragcolor.xyz/blocks/Math/Add/) adds a value to its input and outputs the result.
         
     ??? note
-        Because `defn` expects a single "value" after the name and the list of parameters, a `(->)` block is required to group several blocks together. As it is a common occurrence, a shortcut is also provided: `defblocks`.
+        Because defn expects a single "value" (called function return value) after the function name and the list of parameters, and our function’s logic (function body) contains multiple blocks, a (->) block is required  used required  to group these several blocks together in a single (return) block . Since this is a common situation with `(defn)` function blocks, a convenient alternative is to use  [`(defblocks)`](https://docs.fragcolor.xyz/functions/macros/#defblocks) instead. A `(defblock)` behaves exactly like a function (including the ability to accept input parameters) but can contain multiple blocks in it’s body. These multiple blocks are executed in the order that they appear and `(defblocks)` return value is the output of the last block in its body. .
 
         ```clojure linenums="1"
         (defblocks get-index []
@@ -52,9 +54,13 @@ Then to compute the index in that sequence from a set of 2D coordinates, we can 
           .y (Math.Multiply grid-cols) (Math.Add .x))
         ```
 
-It can be a bit confusing considering that the function doesn't have any parameters. This is because there is an implicit parameter which is the input. Similarly, there is an implicit output at the end of the function (the equivalent of the `return` statement in other programming languages).
+It can be a bit confusing considering that the function doesn't have any parameters. This is because there is an implicit parameter which is the input. 
 
-Let's break down the last line to understand how this works.
+Since the `(Take)` block statements start with a `(|)`, they both process the same input (i.e. the implicit input parameter)  passed to the`get-index` function. The first statement stores the 0th element of the input (sequence) into a context variable `.x`, while the second statement stores the 1st element of the input into a context variable `.y`.
+
+Similarly, there is an implicit output at the end of the function (the equivalent of the `return` statement in other programming languages) which is also the function's return value.
+
+Let's break down the last line to understand what's happening here.
 
 === "EDN"
 
@@ -101,8 +107,8 @@ We will render our game as a windowed application. Therefore we first need to de
     ```
 
     1. We have already seen `defloop`, `defnode`, `schedule` and `run` in [step 1](./step-1.md).
-    2. `(GFX.Window)` creates the application window.
-    3. `(GUI.Window)` creates a UI window inside our application.
+    2. [`(GFX.MainWindow)`](https://docs.fragcolor.xyz/blocks/GFX/MainWindow/) creates the application window.
+    3. [`(GUI.Window)`](https://docs.fragcolor.xyz/blocks/GUI/Window/) creates a UI window inside our application.
 
 === "Result"
 
@@ -110,7 +116,7 @@ We will render our game as a windowed application. Therefore we first need to de
 
 Since we are going to use the UI system to display our game, we need to define a render area. This is why we have a UI window inside our application window.
 
-However we don't want that UI window to display a title bar and we want it to stay at position `(0 0)` i.e. anchored at the top left of our application. To that end, we set the width and height of the window to be 100% of the available space and we use a few flags to prevent the moving or resizing of this window.
+However, we don't want that UI window to display a title bar and we want it to stay at position `(0 0)` i.e. anchored at the top left of our application. To that end, we set the width and height of the window to be 100% of the available space and we use a few flags to prevent the moving or resizing of this window.
 
 You can play around by removing some of the flags or modifying other parameters and see how the game behavior changes.
 
