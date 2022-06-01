@@ -1,12 +1,14 @@
 # Step 2
 
-In this tutorial we are going to implement a simplified version of the snake game. We won't have high-end graphics but will instead focus on the game logic.
+In this tutorial, we will implement a simplified version of the snake game. For now, we won't have high-end graphics but we'll instead focus on the game logic.
 
 ## Defining the play space
 
-The snake evolves inside a grid. It moves one cell at a time either horizontally or vertically. The fruit the snake has to eat to grow can appear on any unoccupied cell.
+The snake evolves inside a grid. It moves one cell at a time either horizontally or vertically. The fruit that the snake must eat to grow can appear on any unoccupied cell.
 
-Let's define that grid. There are different ways to define a grid. We could use a multi-dimensional array (or in our case, a sequence of sequences). However, to simplify the code, we will instead define a flat sequence.
+Such a grid may be defined in many ways. We could use a 2D array (or in our case, a sequence of sequences since our grid exists in two-dimensional space). However, to keep our code simple, we will instead use a flat sequence to hold the states of all our grid elements.
+
+The trick is to visualize the 1D sequence as a 2D matrix with defined grid row and grid column values (see code below).
 
 === "EDN"
 
@@ -23,7 +25,7 @@ Let's define that grid. There are different ways to define a grid. We could use 
     1. The [`def`](https://docs.fragcolor.xyz/functions/macros/#def) keyword associates a value with a name.
     2. `[]` is the syntax to define a sequence of values.
 
-Then to compute the index in that sequence from a set of 2D coordinates, we can define the following function.
+Now, to compute the index of a grid element in that sequence from its 2D coordinates, we can define the following function.
 
 === "EDN"
 
@@ -34,27 +36,31 @@ Then to compute the index in that sequence from a set of 2D coordinates, we can 
           .y (Math.Multiply grid-cols) (Math.Add .x))) ;; (6) (7)
     ```
 
-    1. The [`defn`](https://docs.fragcolor.xyz/functions/macros/#defn) keyword associates a function with a name. Note the `[]` after the `get-index` name. This indicates that this function has 0 parameters. We will see later functions which do have parameters.
-    2. `(->)` is a block container that will executes its inner block(s) in order.
-    3. `(|)` is an alias for [`(Sub)`](https://docs.fragcolor.xyz/blocks/General/Sub/). It allows to reuse the same input in the next block.
-    4. [`(Take)`](https://docs.fragcolor.xyz/blocks/General/Take/) returns the value from a sequence at a given index (starting at `0`).
-    5. `>=` saves the output of a block into a context variable.
-    6. [`(Math.Multiply)`](https://docs.fragcolor.xyz/blocks/Math/Multiply/) multiplies its input with a given value and outputs the result.
-    7. [`(Math.Add)`](https://docs.fragcolor.xyz/blocks/Math/Add/) adds a value to its input and outputs the result.
+    1. The [`defn`](https://docs.fragcolor.xyz/functions/macros/#defn) keyword associates a function with a name. Note the `[]` after the `get-index` name. This indicates that this function has 0 parameters. We will later see functions that do have parameters.
+    2. [`(->)`](https://docs.fragcolor.xyz/functions/misc/#shard-container) is a shard container that will group and execute its inner shard(s) in order.
+    3. `(|)` is an alias for [`(Sub)`](https://docs.fragcolor.xyz/shards/General/Sub/). It allows reusing the same input across a sequence of shards.
+    4. [`(Take)`](https://docs.fragcolor.xyz/shards/General/Take/) returns the value from a sequence at a given index (starting at `0`).
+    5. `>=` is an alias for the shard [`(Set)`](https://docs.fragcolor.xyz/shards/General/Set/) which saves the output of a shard into a context variable.
+    6. [`(Math.Multiply)`](https://docs.fragcolor.xyz/shards/Math/Multiply/) multiplies its input (written to the left of the shard) with a given value (written to the right of the shard and enclosed within its brackets) and outputs the result.
+    7. [`(Math.Add)`](https://docs.fragcolor.xyz/shards/Math/Add/) adds a value to its input and outputs the result.
         
     ??? note
-        Because `defn` expects a single "value" after the name and the list of parameters, a `(->)` block is required to group several blocks together. As it is a common occurrence, a shortcut is also provided: `defblocks`.
+        Because defn expects a single "value" (called function return value) after the function name and the list of parameters, and our function’s logic (function body) contains multiple shards, a `(->)` shard is required to group these shards in a single (return) shard. Since this is a common situation with `(defn)` function, a convenient alternative is to use [`(defshards)`](https://docs.fragcolor.xyz/functions/macros/#defshards) instead. A `(defshards)` behaves exactly like a function (including the ability to accept input parameters) but can contain multiple shards in its body. These multiple shards are executed in the order that they appear and the `(defshards)` return value is the output of the last shard in its body.
 
         ```clojure linenums="1"
-        (defblocks get-index []
+        (defshards get-index []
           (| (Take 0) >= .x)
           (| (Take 1) >= .y)
           .y (Math.Multiply grid-cols) (Math.Add .x))
         ```
 
-It can be a bit confusing considering that the function doesn't have any parameters. This is because there is an implicit parameter which is the input. Similarly, there is an implicit output at the end of the function (the equivalent of the `return` statement in other programming languages).
+It can be a bit confusing considering that the function doesn't have any parameters. This is because there is an implicit parameter which is the input. 
 
-Let's break down the last line to understand how this works.
+Since the `(Take)`shard statements start with a `(|)`, they both process the same input (i.e. the implicit input parameter) passed to the`get-index` function. The first statement stores the 0th element of the input (sequence) into a context variable `.x`, while the second statement stores the 1st element of the input into a context variable `.y`.
+
+Similarly, there is an implicit output at the end of the function (the equivalent of the `return` statement in other programming languages) which is also the function's return value.
+
+Let's break down the last line to understand what's happening here.
 
 === "EDN"
 
@@ -63,11 +69,11 @@ Let's break down the last line to understand how this works.
     ```
 
 - Here `.y` is a context variable.
-- Its value becomes the input of the next block: `(Math.Multiply)`.
+- Its value becomes the input of the next shard: `(Math.Multiply)`.
 - `(Math.Multiply)` takes that value, multiplies it by `grid-cols` and returns the result as output.
-- The output becomes the input for the next block: `(Math.Add)`.
+- The output becomes the input for the next shard: `(Math.Add)`.
 - `(Math.Add)` takes that input and adds it to the value of the context variable `.x`.
-- Since this is the last block of the function, the output of this block becomes the output of the whole function.
+- Since this is the last shard of the function, the output of this shard becomes the output of the whole function.
 
 Whenever this function is called, the same processing will happen.
 
@@ -86,7 +92,7 @@ We will render our game as a windowed application. Therefore we first need to de
 === "EDN"
 
     ```{.clojure .annotate linenums="1"}
-    (defloop main-chain ;; (1)
+    (defloop main-wire ;; (1)
       (GFX.MainWindow  ;; (2)
        :Title "Snake game" :Width 480 :Height 360
        :Contents
@@ -95,14 +101,14 @@ We will render our game as a windowed application. Therefore we first need to de
             :Flags [GuiWindowFlags.NoTitleBar GuiWindowFlags.MenuBar
                     GuiWindowFlags.NoResize GuiWindowFlags.NoMove GuiWindowFlags.NoCollapse]))))
 
-    (defnode root)
-    (schedule root main-chain)
+    (defmesh root)
+    (schedule root main-wire)
     (run root (/ 1.0 60))
     ```
 
-    1. We have already seen `defloop`, `defnode`, `schedule` and `run` in [step 1](./step-1.md).
-    2. `(GFX.Window)` creates the application window.
-    3. `(GUI.Window)` creates a UI window inside our application.
+    1. We have already seen `defloop`, `defmesh`, `schedule` and `run` in [step 1](./step-1.md).
+    2. [`(GFX.MainWindow)`](https://docs.fragcolor.xyz/shards/GFX/MainWindow/) creates the application window.
+    3. [`(GUI.Window)`](https://docs.fragcolor.xyz/shards/GUI/Window/) creates a UI window inside our application.
 
 === "Result"
 
@@ -110,7 +116,7 @@ We will render our game as a windowed application. Therefore we first need to de
 
 Since we are going to use the UI system to display our game, we need to define a render area. This is why we have a UI window inside our application window.
 
-However we don't want that UI window to display a title bar and we want it to stay at position `(0 0)` i.e. anchored at the top left of our application. To that end, we set the width and height of the window to be 100% of the available space and we use a few flags to prevent the moving or resizing of this window.
+However, we don't want that UI window to display a title bar and we want it to stay at position `(0 0)` i.e. anchored at the top left of our application. To that end, we set the width and height of the window to be 100% of the available space and we use a few flags to prevent the moving or resizing of this window.
 
 You can play around by removing some of the flags or modifying other parameters and see how the game behavior changes.
 
@@ -134,7 +140,7 @@ Let's give our function a try. First we will change a few values in the grid to 
           (| (Take 1) >= .y)
           .y (Math.Multiply grid-cols) (Math.Add .x)))
 
-    (defloop main-chain
+    (defloop main-wire
       (GFX.MainWindow
        :Title "Snake game" :Width 480 :Height 360
        :Contents
@@ -149,8 +155,8 @@ Let's give our function a try. First we will change a few values in the grid to 
                 grid (Take .a) (GUI.Text)
                 grid (Take .b) (GUI.Text))))))
 
-    (defnode root)
-    (schedule root main-chain)
+    (defmesh root)
+    (schedule root main-wire)
     (run root (/ 1.0 60))
     ```
 

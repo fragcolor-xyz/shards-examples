@@ -12,12 +12,12 @@
    0 0 0 0 0 0 0 0 0 0 0 0
    0 0 0 0 0 0 0 0 0 0 0 0])
 
-(defblocks get-index []
+(defshards get-index []
   (| (Take 0) >= .x)
   (| (Take 1) >= .y)
   .y (Math.Multiply grid-cols) (Math.Add .x))
 
-(defblocks get-free-locations [fruit snake]
+(defshards get-free-locations [fruit snake]
   [] >= .locations
   (ForRange
    :From 0 :To (- grid-cols 1) :Action
@@ -30,17 +30,17 @@
                   (-> .location (Push .locations)))))))
   .locations)
 
-(defblocks move-fruit [fruit snake]
+(defshards move-fruit [fruit snake]
   (get-free-locations fruit snake) >= .free-loc
   (Count .free-loc) >= .max
   (RandomInt .max) >= .next-fruit-loc
   .free-loc (Take .next-fruit-loc) (ToInt2))
 
-(defblocks move-snake [snake offset grow]
+(defshards move-snake [snake offset grow]
   snake (RTake 0) (Math.Add offset) (Push snake)
   (WhenNot (-> grow) (DropFront snake)))
 
-(defblocks populate-grid [fruit snake]
+(defshards populate-grid [fruit snake]
   >= .tmp-grid
 
   ; first the snake tail and body
@@ -62,7 +62,7 @@
   ; return the populated grid
   .tmp-grid)
 
-(defblocks render []
+(defshards render []
   (GUI.Table
    :Columns grid-cols :Contents
    (ForEach
@@ -76,7 +76,7 @@
              ]false)
            (GUI.Text))))))
 
-(defblocks initialize []
+(defshards initialize []
   [(int2 1 2) (int2 2 2) (int2 3 2) (int2 3 3) (int2 4 3)] >= .snake
   false >= .grow
   (move-fruit (int2 0 0) .snake) >= .fruit
@@ -85,7 +85,7 @@
   ; do it once to not wait the next tick
   empty-grid (populate-grid .fruit .snake) >= .grid)
 
-(defloop main-chain
+(defloop main-wire
   (Once (initialize))
   ; logic
   (When (-> (Time.Now) (Math.Subtract .last-tick) (IsMoreEqual 0.5))
@@ -135,6 +135,6 @@
        (Inputs.KeyDown
         "space" (initialize)))))
 
-(defnode root)
-(schedule root main-chain)
+(defmesh root)
+(schedule root main-wire)
 (run root (/ 1.0 60))

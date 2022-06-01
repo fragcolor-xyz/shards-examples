@@ -62,9 +62,9 @@ jobs:
           path: site
       - name: Publish to NFT storage
         run: |
-          ./node_modules/.bin/ipfs-car --pack site --output chainblocks-examples.car
+          ./node_modules/.bin/ipfs-car --pack site --output shards-examples.car
           curl -X POST https://api.nft.storage/upload \
-               --data-binary @chainblocks-examples.car \
+               --data-binary @shards-examples.car \
                -H "Authorization: Bearer ${{ secrets.NFT_STORAGE_KEY }}" \
                -H "Content-Type: application/car" \
                > response.json
