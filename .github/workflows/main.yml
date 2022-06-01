@@ -1,0 +1,18 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  #
+  # Build the website
+  #
+  website:
+    uses: ./.github/workflows/website.yml
+    secrets: inherit
+    with:
+      publish: ${{ github.ref == 'refs/heads/main' || github.event_name != 'pull_request' }}

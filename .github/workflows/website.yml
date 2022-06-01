@@ -1,11 +1,19 @@
 name: Website
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
   workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the website?
+        required: true
+        default: false
+        type: boolean
+  workflow_call:
+    inputs:
+      publish:
+        required: false
+        default: false
+        type: boolean
 
 jobs:
 
@@ -13,8 +21,15 @@ jobs:
   # Build website
   #
   website-build:
+    name: Build
     runs-on: ubuntu-latest
+    outputs:
+      publish: ${{ steps.setup.outputs.publish }}
     steps:
+      - name: Setup
+        id: setup
+        run: |
+          echo "::set-output name=publish::${{ github.event.inputs.publish || inputs.publish }}"
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -43,8 +58,9 @@ jobs:
   # Publish website to IPFS
   #
   website-publish:
-    if: ${{ github.ref == 'refs/heads/main' || github.event_name != 'pull_request' }}
+    if: ${{ needs.website-build.outputs.publish == 'true' }}
     needs: website-build
+    name: Publish
     runs-on: ubuntu-latest
     steps:
       - name: Set up node
