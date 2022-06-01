@@ -2,7 +2,7 @@
 
 ## Drawing the grid, the fruit, and the snake
 
-We will assign some values to define what entity each cell of our grid can represent. For now, we will map these numeric values to draw a uniquesingle character each foras the visual representation.
+We will assign some values to define what entity each cell of our grid can represent. For now, we will map these numeric values to draw a unique single character each for as the visual representation.
 
 | value | entity | character |
 |:-----:|---------|:---------:|
@@ -90,7 +90,7 @@ Before we can draw anything we need to update the grid with the fruit and the sn
     1. We have already seen `(Take)` and `get-index` in [step 2](./step-2.md).
     2. Assoc lets us update the sequence.
     3. [`(Slice)`](https://docs.fragcolor.xyz/shards/General/Slice/) gives a part of a sequence in a range. `1` means we start at the second element of the sequence (in other words, we skip `1` element), and `-1` means we stop at one element before the last (in other words, we skip `1` element from the end).
-    4. [`(RTake)`](https://docs.fragcolor.xyz/shards/General/RTake/)  is similar to [`(Take)`](https://docs.fragcolor.xyz/shards/General/Take/) , except it starts from the end of the sequence instead of the beginning (i.e. "reverse take").
+    4. [`(RTake)`](https://docs.fragcolor.xyz/shards/General/RTake/) is similar to [`(Take)`](https://docs.fragcolor.xyz/shards/General/Take/), except it starts from the end of the sequence instead of the beginning (i.e. "reverse take").
 
 This new function `populate-grid` will take our empty-grid as input and return a populated grid. That is why we need a temporary variable inside the function (`.tmp-grid`).
 

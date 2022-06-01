@@ -84,7 +84,7 @@ Let's first listen to the player input. We will use the keyboard's arrow keys (u
 
     1. [`(Inputs.KeyDown)`](https://docs.fragcolor.xyz/shards/Inputs/KeyDown/) executes an action when a key is down. It has a sibling event: [`(Inputs.KeyUp)`](https://docs.fragcolor.xyz/shards/Inputs/KeyUp/). `(>)` is an alias for [`Push`](https://docs.fragcolor.xyz/shards/General/Push/).
 
-We also want to prevent the player from accidentally selecting the opposite direction (e.g. down while the snake is going up) since that would immediately end the game (as the snake would immediately turn backwards eat its own body, i.e. the neck). One easy way to do this is to compare the newly chosen direction with the previous one.
+We also want to prevent the player from accidentally selecting the opposite direction (e.g. down while the snake is going up) since that would immediately end the game (as the snake would immediately turn backwards to eat its own body starting with its neck). One easy way to do this is to compare the newly chosen direction with the previous one.
 
 === "EDN"
 
