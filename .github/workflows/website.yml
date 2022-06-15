@@ -23,8 +23,6 @@ jobs:
   website-build:
     name: Build
     runs-on: ubuntu-latest
-    outputs:
-      publish: ${{ steps.setup.outputs.publish }}
     steps:
       - name: Setup
         id: setup
@@ -44,8 +42,17 @@ jobs:
           pip install mkdocs-awesome-pages-plugin
           pip install mkdocs-macros-plugin
       - name: Build website
+        if: ${{ steps.setup.outputs.publish != 'true' }}
         run: |
           mkdocs build
+      - name: Build & publish website
+        if: ${{ steps.setup.outputs.publish == 'true' }}
+        run: |
+          git config --global user.name "Fragcolor bot"
+          git config --global user.email "bot@fragcolor.xyz"
+          mkdocs gh-deploy --force --message "Publish documentation from {sha}
+          
+          Using MkDocs {version}."
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
@@ -53,49 +60,3 @@ jobs:
           path: |
             site/
           if-no-files-found: error
-
-  #
-  # Publish website to IPFS
-  #
-  website-publish:
-    if: ${{ needs.website-build.outputs.publish == 'true' }}
-    needs: website-build
-    name: Publish
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set up node
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-      - name: Install ipfs-car
-        run: |
-          npm install ipfs-car@0.6.1
-          npm install --save blockstore-core@1.0.2
-      - name: Download artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: website
-          path: site
-      - name: Publish to NFT storage
-        run: |
-          ./node_modules/.bin/ipfs-car --pack site --output shards-examples.car
-          curl -X POST https://api.nft.storage/upload \
-               --data-binary @shards-examples.car \
-               -H "Authorization: Bearer ${{ secrets.NFT_STORAGE_KEY }}" \
-               -H "Content-Type: application/car" \
-               > response.json
-          cat response.json
-          if [ $(cat response.json | jq .ok) != "true" ]; then exit 1; fi
-      - name: Set IPFS CID
-        id: set_ipfs_cid
-        run: |
-          echo "::set-output name=ipfs_cid::$(cat response.json | jq .value.cid)"
-      - name: Sync Cloudflare
-        run: |
-          curl -X PUT "https://api.cloudflare.com/client/v4/zones/440ac84707c532c2e51fcb56dfccef22/dns_records/231647aa1443d2da251128cb5cbee38f" \
-               -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_DNS_EDIT_API }}" \
-               -H "Content-Type: application/json" \
-               -d "{ \"type\": \"TXT\", \"name\": \"_dnslink.learn.fragcolor.xyz\", \"content\": \"dnslink=/ipfs/${{ steps.set_ipfs_cid.outputs.ipfs_cid }}/site\", \"ttl\": 1 }" \
-               > response.json
-          cat response.json
-          if [ $(cat response.json | jq .success) != "true" ]; then exit 1; fi
