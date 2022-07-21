@@ -8,6 +8,7 @@ We will be using [Visual Studio Code](https://code.visualstudio.com/) although a
 
 You will also need a compiled version of Shards to run these tutorials. Shards can be [built from the sources](https://docs.fragcolor.xyz/contribute/code/building-shards/).
 
+* [Primer](./primer/main.md)
 * [Snake](./snake/index.md)
 
 *More to come. Stay tuned!*
