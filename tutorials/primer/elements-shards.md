@@ -9,7 +9,7 @@ In Shards, the chunks of transformation logic (that the computer needs to transf
 * [functions](https://docs.fragcolor.xyz/functions/)
 * [shards](https://docs.fragcolor.xyz/shards/) (written with a lowercase 's')
 
-Functions are units that are native to the mal language implementation (i.e., the core language on which Shards is based), while shards are a feature of Shards language, designed from the ground up to allow you to compose your logic more intuitively and flexibly. 
+Both these entities can perform data transformation and are used to write Shards code. But while functions are basic utilities native to the language, a shard is designed to allow you to compose your logic more intuitively and flexibly.
 
 !!! note
     1. Shards includes over 500 shards and around 100 functions allowing you to manipulate data and compose logic the way that you want.

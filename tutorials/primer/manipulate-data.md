@@ -113,21 +113,21 @@ Let's see some real code examples of all that we have discussed in this section.
 
     ```{.clojure .annotate linenums="1"}
     ;; define, update, and log mutable variables outside a wire/shard
-    (def malvar1 9)                     ;; define a variable and assign it a numeric value
-    (prn malvar1)                       ;; print malvar1 value => 9
+    (def extvar1 9)                     ;; define a variable and assign it a numeric value
+    (prn extvar1)                       ;; print extvar1 value => 9
 
-    (def malvar2 "Toy")                 ;; define another variable and assign it a string value
-    (prn malvar2)                       ;; print malvar2 value => "Toy"
+    (def extvar2 "Toy")                 ;; define another variable and assign it a string value
+    (prn extvar2)                       ;; print extvar2 value => "Toy"
 
-    (def malvar2 "Story")               ;; update existing variable with another string value
-    (prn malvar2)                       ;; print updated malvar2 value => "Story"
+    (def extvar2 "Story")               ;; update existing variable with another string value
+    (prn extvar2)                       ;; print updated extvar2 value => "Story"
 
     (defmesh root)
 
     (defwire mywire
     ;; access variables from outside the wire/shard
-    malvar1 (Log)                       ;; print value of malvar1 => 9
-    malvar2 (Log)                       ;; print updated value of malvar2 => "Story"
+    extvar1 (Log)                       ;; print value of extvar1 => 9
+    extvar2 (Log)                       ;; print updated value of extvar2 => "Story"
 
     ;; define, update, and log mutable variables within a wire/shard    
         "Shards" >= .stringvar          ;; create a variable with a string value
@@ -239,13 +239,13 @@ Variables that are accessible only within the wire they were created are called 
 === "EDN"
 
     ```{.clojure .annotate linenums="1"}
-    (def malvar 9)                                  ;; variable declared oustide wires/shards (external to wires)
+    (def extvar 9)                                  ;; variable declared oustide wires/shards (external to wires)
 
     (defmesh root)
     (defwire varwire
 
     ;; access variables from outside the wires/shards
-        malvar (Log)                                ;; variables external to wires can be accessed by all wires => 9
+        extvar (Log)                                ;; variables external to wires can be accessed by all wires => 9
 
     ;; define locally scoped or local variables (i.e., Global is false by default)    
         "Shards" (Set .var-local)                   ;; .var-local is accessible only within this wire
@@ -260,7 +260,7 @@ Variables that are accessible only within the wire they were created are called 
     (defwire mywire
     (Once (Dispatch varwire))                       ;; run 'mywire1' once to create wire variables
     ;; access variables from outside wires/shards
-        malvar (Log)                                ;; variables external to wires can be accessed by all wires => 9
+        extvar (Log)                                ;; variables external to wires can be accessed by all wires => 9
 
     ;; access global variables declared in the other wire
         (Get .var-global :Global true) (Log)        ;; can read global var => Claymore
@@ -414,9 +414,7 @@ A few examples:
 
 **Maths shards**
 
-The basic mathematical and comparison operators described above are built in as part of the mal language (core language on which Shards is based).
-
-However, Shards also provides a more extensive library of mathematical functions and comparison operators in form of various shards.
+If you need to go beyond basic mathematical computation and comparison you can use the extensive library of math and comparison shards included with the language.
 
 For example, [`(Math.Add)`](https://docs.fragcolor.xyz/shards/Math/Add/) will add two numbers, [`(Math.Subtract)`](https://docs.fragcolor.xyz/shards/Math/Subtract/) will subtract one number from the other, and so on for [`(Math.Multiply)`](https://docs.fragcolor.xyz/shards/Math/Multiply/) and [`(Math.Divide)`](https://docs.fragcolor.xyz/shards/Math/Divide/), and others.
 

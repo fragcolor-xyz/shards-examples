@@ -32,7 +32,4 @@ Shards is a programming language with a highly visual syntax, linear data transf
 
 Development in Shards feels very similar to [Visual programming](https://en.wikipedia.org/wiki/Visual_programming_language), but without giving up the power and expressiveness of textual syntax.
 
-??? note "Tech Tip"
-    Shards is based on Joel Martin's C implementation of the [mal language](https://github.com/kanaka/mal#c) (which in turn is inspired by [Clojure](https://clojure.org/), a lisp). However, the scripting language is just a description of the computational graph (i.e., your code's logic). The runtime itself is completely detached and highly optimized for performance making Shards code execution fast. In fact, many Fragcolor projects like [Claymore](https://github.com/fragcolor-xyz/claymore), [Clamor](https://github.com/fragcolor-xyz/clamor), etc. use Shards extensively as a scripting language.
-
 --8<-- "includes/license.md"
