@@ -52,7 +52,9 @@ Imagine we need to program a bot to welcome people to our Shards Bootcamp. The f
 
 This is quite verbose.
 
-So, let's take the common logic (all the `(Msg)` statements except for the first one, in both wires) and group it together using `(defshards)` (that's what `defshards` stands for - define a group of shards, give it a name, invoke it from anywhere).
+### Reducing verbosity
+
+So, let's take the common shards (all the `(Msg)` statements except for the first one, in both wires) and group them together, declaring them only *once*, using `(defshards)` (that's what `defshards` stands for - define a group of shards, give it a name, invoke it from anywhere).
 
 *Code example 20*
 
@@ -98,10 +100,18 @@ So, let's take the common logic (all the `(Msg)` statements except for the first
     [info] [2022-07-28 23:12:59.830] [T-8028] [logging.cpp::98] [hyde] Which module would you like to practice today?
     ```
 
+The output remains the same but the code looks more compact!
 
-The output remains the same but the code looks more compact! The common logic is in a group of shards (or `defshards`) called 'welcome' and you can invoke a `defshards` by calling its name in parentheses i.e., `(welcome)`.
+The common shards are now declared just once (with `defshards`) and given a name, 'welcome'. Now wherever you need this group of shards, you simply need to invoke their name in parentheses i.e., `(welcome)`, and Shards will copy and place this group of shards at the point of the invocation (this happens during the compose phase of Shards).
 
-There is still room for improvement, though. See the `[]` next to the `(defshards)` name? That's like an input value for the `defshards` construct. Anything passed into it is available for the `defshards` shards to use. The idea is to move the remaining `(Msg)` shard too to 'welcome', but along with that pass the name as input to the `defshards`.
+!!! note
+    Ensure that you invoke the group of shards *after* you have defined them (in your wire/shard flow). If try invoking them before your declare `defshards`, Shards will not be able to locate the group and will throw an error (during the compose phase).
+
+### Passing parameters
+
+There is still room for improvement, though.
+
+See the `[]` next to the `(defshards)` name? That's like an input value for the `defshards` construct. Anything passed into it is available for the `defshards` shards to use. The idea is to move the remaining `(Msg)` shard too to 'welcome', but along with that pass the name as input to the `defshards`.
 
 For this two things need to be done - add a variable to hold the input that will come to 'welcome' - `(defshards welcome [name]...)`. And, pass the appropriate name when invoking 'welcome' from the wires - `(welcome "Mr. Jekyll")`, and `(welcome "Mr. Hyde")`.
 
@@ -198,16 +208,16 @@ So we make a provision for accepting two parameters in 'welcome'(`defshards welc
     [info] [2022-07-29 11:22:57.599] [T-19808] [logging.cpp::98] [hyde] Which module would you like to practice today? 
     ```
 
-As you can see, `defshards` is a powerful way to group reusable logic in one place and invoke it wherever needed.
+As you can see, `defshards` is a powerful way to declare a group of shards once but use it multiple times.
 
 !!! note
     In software engineering, this principle is called "Don't repeat yourself" or DRY.
 
 ## KISS and `(Sub)` 
 
-`(Sub)` is a very useful shard. It does many things that make life easy for a Shards programmer. Let's look at each of these in detail.
+`(Sub)` is another useful shard that makes life easy for a Shards programmer. Let's take a look at what it can do.
 
-**Parallel shards**
+### Parallel shards
 
 `(Sub)` groups together multiple shards and can pass the same input to all of them. This simulates a form of parallel processing where each shard executes independently and their outputs are not consumed at all.
 
@@ -249,7 +259,7 @@ Let's see an example of `(Sub)` in action.
     [info] [2022-08-02 21:14:43.082] [T-24444] [logging.cpp::55] [mywire] 5
     ```
 
-**Keeping it simple**
+### Keeping it simple
 
 As you might notice, the combination of `(Sub)` and `->` tends to get verbose. Fortunately, we have an alternative in the form of `|`. This keyword symbol can replace both `(Sub)` and `->` leading to more succinct and easy-to-read code.
 
@@ -285,7 +295,7 @@ Let's rewrite *Code example 23* using `|` instead (note that `|` replaces the co
     [info] [2022-08-02 21:14:43.082] [T-24444] [logging.cpp::55] [mywire] 5
     ```
 
-**Simulating passthrough**
+### Simulating passthrough
 
 In section [Null input and passthrough](../anatomy-shard/#null-input-and-passthrough) we talked about passthrough and touched upon the fact that `(Sub)` can simulate passthrough for those shards which do not have this parameter natively.
 
@@ -306,7 +316,7 @@ In programming language terminology, these are called control statements. Shards
 
 Let's take a look at the most commonly used ones.
 
-**`(If)`**
+### `(If)`-`(Then)`-`(Else)`
 
 ```{.clojure .annotate linenums="1"}
 (If
@@ -359,7 +369,7 @@ This shard is useful when you have at least two logic paths and depending on the
     [info] [2022-08-03 00:07:46.153] [T-18520] [logging.cpp::98] [mywire] Bye
     ```
 
-**`(When)` and `(WhenNot)`**
+### `(When)` and `(WhenNot)`
 
 ```{.clojure .annotate linenums="1"}
 (When
@@ -422,7 +432,7 @@ These shards are useful when you have only one logic path and you need to figure
     [info] [2022-08-03 00:16:11.860] [T-24532] [logging.cpp::98] [mywire] Hi
     ```
 
-**`(Match)`**
+### `(Match)`
 
 ```{.clojure .annotate linenums="1"}
 (Match
@@ -431,7 +441,9 @@ These shards are useful when you have only one logic path and you need to figure
 )
 ```
 
-The [`(Match)`](https://docs.fragcolor.xyz/shards/General/Match/) shard matches the incoming input against the evaluation of its `:Cases` shards. Every case contains a value (or an expression that evaluates to a value) and a sequence of shards. If the input matches a case's value, the shards for that case are activated. Once a match is found, the rest of the cases are ignored and the control moves on to the next shard. If no match is found, the shard processing ends with it matching with a mandatorily declared `nil` case.
+The [`(Match)`](https://docs.fragcolor.xyz/shards/General/Match/) shard matches the incoming input against the evaluation of its `:Cases` shards. Every case contains a value (or an expression that evaluates to a value) and a sequence of shards.
+
+If the input matches a case's value, the shards for that case are activated. Once a match is found, the rest of the cases are ignored and the control moves on to the next shard. If no match is found, the shard processing ends with it matching with a mandatorily declared `nil` case.
 
 The `(Match)` shard is your best bet when you have multiple logic paths to consider but no complicated conditions to evaluate as`(Match)` can only check for *equality* between the input and the case values.
 
@@ -474,7 +486,7 @@ The `(Match)` shard is your best bet when you have multiple logic paths to consi
     [info] [2022-08-03 00:33:05.072] [T-2652] [logging.cpp::98] [mywire] Hello
     ```
 
-**`(Cond)`**
+### `(Cond)`
 
 ```{.clojure .annotate linenums="1"}
 (Cond
@@ -484,9 +496,11 @@ The `(Match)` shard is your best bet when you have multiple logic paths to consi
 )
 ```
 
-The [`(Cond)`](https://docs.fragcolor.xyz/shards/General/Cond/) contains multiple cases (`:Wires`), each with a condition to evaluate and a sequence of shards to execute. This shard takes the input and evaluates the condition of each case till it reaches a condition that evaluates to true (with the shard's input). Once a case's condition has been evaluated to be true its shards are triggered for execution and further cases are not considered. If even the last case's condition does not evaluate to `true` the control is passed on to the next shard. 
+The [`(Cond)`](https://docs.fragcolor.xyz/shards/General/Cond/) contains multiple cases (`:Wires`), each with a condition to evaluate and a sequence of shards to execute. This shard takes the input and evaluates the condition of each case till it reaches a condition that evaluates to true (with the shard's input).
 
-The `(Cond)` shard is like a combination of `(If)` and `(Match)`. It has the custom logic to flexibly check conditions like `(If)` and a straightforward multi-path switch like `(Match)`. Whether you have a single logic path to consider or multiple logic paths, this shard is a \ fit for most scenarios. 
+Once a case's condition has been evaluated to be true its shards are triggered for execution and further cases are not considered. If even the last case's condition does not evaluate to `true` the control is passed on to the next shard. 
+
+The `(Cond)` shard is like a combination of `(If)` and `(Match)`. It has the custom logic to flexibly check conditions like `(If)` and a straightforward multi-path switch like `(Match)`. Whether you have a single logic path to consider or multiple logic paths, this shard is a fit for most scenarios. 
 
 *Code example 28*
 
@@ -559,7 +573,7 @@ However, sometimes this is not enough and you need to control your loop based on
 
 For this, Shards has a couple of iterator or loop constructs.
 
-**`(Repeat)`**
+### `(Repeat)`
 
 ```{.clojure .annotate linenums="1"}
 (Repeat
@@ -572,7 +586,9 @@ For this, Shards has a couple of iterator or loop constructs.
 
 [`(Repeat)`](https://docs.fragcolor.xyz/shards/General/Repeat/) runs the shards passed in its `:Action` parameter `:Times` no. of times, or forever if `:Forever` set to true, or till the `:Until` condition is met.
 
-The presence of 3 control parameters (no. of times, forever, condition) makes this a very flexible iterator/loop shard. Since `:Until` is an optional parameter, either `:Times` or `:Forever` needs to be used alongside `:Until`. This is because `:Times` or `:Forever` are needed to provide the upper limit of iteratins within which the condition in `:Until` would be checked (in a loop).
+The presence of 3 control parameters (no. of times, forever, condition) makes this a very flexible iterator/loop shard. Since `:Until` is an optional parameter, either `:Times` or `:Forever` needs to be used alongside `:Until`.
+
+This is because `:Times` or `:Forever` are needed to provide the upper limit of iteratins within which the condition in `:Until` would be checked (in a loop).
 
 *Code example 30*
 
@@ -626,7 +642,7 @@ The presence of 3 control parameters (no. of times, forever, condition) makes th
     ```
 
 
-**`(ForRange)`**
+### `(ForRange)`
 
 ```{.clojure .annotate linenums="1"}
 (ForRange
@@ -662,7 +678,7 @@ The presence of 3 control parameters (no. of times, forever, condition) makes th
     [info] [2022-08-03 03:47:07.629] [T-8900] [logging.cpp::55] [mywire] 2
     ```
 
-**`(ForEach)` and `(Map)`**
+### `(ForEach)` and `(Map)`
 
 ```{.clojure .annotate linenums="1"}
 (ForEach
@@ -740,7 +756,7 @@ The presence of 3 control parameters (no. of times, forever, condition) makes th
     ```
 
 
-**`(Once)` and `(Setup)`**
+### `(Once)` and `(Setup)`
 
 ```{.clojure .annotate linenums="1"}
 (Once

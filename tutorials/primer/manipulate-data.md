@@ -4,9 +4,16 @@ Data manipulation is the sole reason for a computer program to exist. In this se
 
 ## Data types and values
 
-Data comes in many forms. These are called *data types*. For example - *4* is a number and *"Hello there"* is a block of text, etc.
+Data comes in many forms and we call these forms *data types*. For example - *4* is a number and *"Hello there"* is a block of text, etc.
 
 While a data type is a description of the kind of data under consideration, a *value* is an actual data value. These are also called *literals*. So, *4* is a literal and its data type is numeric.
+
+Literals that are used frequently have their own names - like `nil`, `true`, `false`, etc. These are called named literals.
+
+Both data type names and literal names are reserved keywords - i.e., they're used by the programming language and programmer is not allowed to use these for naming new stuff in their code.
+
+!!! note
+    While declaring these named literals, you may choose to drop the `Const` keyword (implicit declaration) or use it (explicit declaration). Both methods are equivalent but explicit declaration is recommended. We'll dig more into these literals and how to use them in later sections.
 
 Types are important because they tell a shard or function what kind of data to expect/process. So if a shard receives a wrong data type it can immediately discard it and raise an error to the user to pass the correct data type. This helps in reducing runtime errors caused due to a shard or function trying to transform an incorrect data type.
 
@@ -15,7 +22,7 @@ For example, imagine passing text to a shard that sums up numbers: it will not k
 Let's look at some of these data types and literals.
 
 !!! note
-    In this section, we discuss only the common data types in Shards. For more see the complete list of supported data types for [shards](https://docs.fragcolor.xyz/shards/#valid-data-types-for-shards) and [functions](https://docs.fragcolor.xyz/functions/values/), including a few more called [collections](https://docs.fragcolor.xyz/functions/collections/). Some of the shard types are available only for internal use by shards (i.e., a programmer may not define and use them explicitly in their code).
+    In this section, we discuss only the common data types in Shards. For more see the complete list of supported data types for [shards](https://docs.fragcolor.xyz/shards/types/) and [functions](https://docs.fragcolor.xyz/functions/values/), including a few more called [collections](https://docs.fragcolor.xyz/functions/collections/). Some of the shard types are available only for internal use by shards (i.e., a programmer may not define and use them explicitly in their code).
 
 
 ```{.clojure .annotate linenums="1"}
@@ -59,23 +66,34 @@ false                       ;; denotes 'falsehood', evaluates to 0 in boolean lo
 (Color 100 120 255 0)
 ```
 
-There are a few values (literals) that are used so frequently (by both the programmer as well as the computer) that they have their own names - like `nil`, `true`, `false`, etc. These are called named literals and their names cannot be used to identify any other value.
+### Named literals
 
-`nil` represents null/nothing/none in Shards. That means you can use this keyword to indicate a null input or a null result etc. Similarly, the boolean literals - `true`, `false` - represent the truth (`true`) or falsehood (`false`) of an assertion or a conditional check, or an expression evaluation. Since these literals are named as well as fixed in value - they are internally handled as constants (i.e., using the `Const` keyword). While declaring these named literals, you may choose to drop the `Const` keyword (implicit declaration) or use it (explicit declaration). Both methods are equivalent but explicit declaration is recommended. We'll dig more into these literals and how to use them in later sections.
+`nil` represents null/nothing/none in Shards and is an example of a named literal. That means you can use this keyword to indicate a null input or a null result etc. Similarly, the boolean literals - `true`, `false` - represent the truth (`true`) or falsehood (`false`) of an assertion or a conditional check, or an expression evaluation. Since these literals are named as well as fixed in value - they are internally handled as constants (i.e., using the `Const` keyword).
 
-Just like the literal names, data type names are (like `String`/`string`) reserved too. They cannot be used to identify anything other than the type of data. 
+### String type
 
-A [`string`] (https://docs.fragcolor.xyz/shards/#string) (or its pascal case alias `String`) data type is essentially anything wrapped in double quotes. This is useful for storing blocks of descriptive text or messages.
+A [`string`](https://docs.fragcolor.xyz/shards/types/#string) data type is essentially anything wrapped in double quotes. This is useful for storing blocks of descriptive text or messages.
 
-Numbers come in two types - integers and floating-point numbers. Use integers when you do not want decimals and floats when higher precision is required. [`int`](https://docs.fragcolor.xyz/shards/#int) and [`float`](https://docs.fragcolor.xyz/shards/#float) are single numbers, while `int2`/`int3`/`int4` and `float2`/`float3`/`float4` are groups of numbers that are processed together (also called vectors). For example, in a pole-vaulting competition, a competitor's medal tally could be expressed as an `int`, their weight as a `float`, and the highest point they jumped to as a 3-vector `float3` (in `(xyz)` coordinates). All numeric data types have pascal case aliases. So `Int`/`Int2`,`Int3`/`Int4` and `Float`/`Float2`/`Float3`/`Float4` are valid type names too. 
+### Number types
 
-A [`Sequence`](https://docs.fragcolor.xyz/shards/#seq) is an ordered list of items that can be accessed by their position or index within the structure (very similar to data type 'array' in other programming languages). The values are enclosed in parentheses and are *not* separated by commas. The items inside a sequence may be of different/nested types. For example, `[[3 4] 24 "down" (Float2 4.0 5.0)]` is a valid sequence.
+Numbers come in two types - integers and floating-point numbers. Use integers when you do not want decimals and floats when higher precision is required. [`int`](https://docs.fragcolor.xyz/shards/types/#int) and [`float`](https://docs.fragcolor.xyz/shards/types/#float) are single numbers, while `int2`/`int3`/`int4` and `float2`/`float3`/`float4` are groups of numbers that are processed together (also called vectors).
+
+For example, in a pole-vaulting competition, a competitor's medal tally could be expressed as an `int`, their weight as a `float`, and the highest point they jumped to as a 3-vector `float3` (in `(xyz)` coordinates). All numeric data types have pascal case aliases. So `Int`/`Int2`,`Int3`/`Int4` and `Float`/`Float2`/`Float3`/`Float4` are valid type names too. 
+
+### Seq type
+
+A [`seq`](https://docs.fragcolor.xyz/shards/#seq) is an ordered list of items that can be accessed by their position or index within the structure (very similar to data type 'array' in other programming languages). The values are enclosed in parentheses and are *not* separated by commas. The items inside a sequence may be of different/nested types. For example, `[[3 4] 24 "down" (Float2 4.0 5.0)]` is a valid sequence.
+
+### Table type
 
 A [`Table`](https://docs.fragcolor.xyz/shards/#table) is an unordered collection of values that can be accessed by specific keys which are also part of the table (very similar to the data type 'object' in other programming languages). The values in the table can be of different/nested types but the keys must be either prefixed with a `:` (a valid key: `:key2`) enclosed in double quotes (another valid key: `"abc"`). Also, tables must always have key/value pairs. There cannot be just a key or just a value. So, `{key24 "val24"}` is an invalid table (because the key is not named properly) and so is this `{:k1 "abc" :k2 :k3 "def"}` (because here the key `:k2` has no corresponding value).
 
+### Color type
+
 A [`color`](https://docs.fragcolor.xyz/shards/#color) is a vector of 4 integers representing the RGBA values (in sequence) for that color. Each value can range from 0 to 255 (any value above 255 is subtracted from 256 to bring it back into 0 - 255 range, as many times as needed). The R, G, and B values represent the amount of red, green, and blue color components and the A represents the *alpha* channel or how opaque the color shade is (0 is fully transparent, 255 is fully opaque). `color` has a pascal case alias `Color`.
 
-Similar to named literal declarations, you may choose to use declare certain data types - like `String`, `Int`, and `Float` - with the type keyword (explicit declaration) or without the type keyword (implicit declaration). Both methods are equivalent but explicit declaration is recommended.
+!!! note
+    Similar to named literal declarations, you may choose to use declare certain data types - like `String`, `Int`, and `Float` - with the type keyword (explicit declaration) or without the type keyword (implicit declaration). Both methods are equivalent but explicit declaration is recommended.
 
 ## Variables and constants
 
@@ -96,7 +114,9 @@ Just like you can swap out items from a box; you can change the data inside a me
 
 If you put a restriction on the box that prevents you from changing the item inside it (like say locking the box), then such a memory location is called a *constant* or an *immutable variable*. Once set (i.e., during initial declaration) you cannot change the value of a constant.
 
-In Shards, we can create mutable variables outside a wire/shard by using via `(def)`, and within a wire/shard by using [`(Set)`](https://docs.fragcolor.xyz/shards/General/Set/) (alias `>=`). Constants can be created within a wire/shard with a [`(Ref)`]() (alias `=`). Mutable variables can be updated with a different value by using `def`, or [`(Update)`](https://docs.fragcolor.xyz/shards/General/Update/) (alias `>`) again on them. To print the value of a variable you may explicitly log it by its name (using `prn` or `Log`) or use [`(Get)`](https://docs.fragcolor.xyz/shards/General/Get/) to read it from the variable.
+In Shards, we can create mutable variables outside a wire/shard by using via `(def)`, and within a wire/shard by using [`(Set)`](https://docs.fragcolor.xyz/shards/General/Set/) (alias `>=`). Constants can be created within a wire/shard with a [`(Ref)`]() (alias `=`). Mutable variables can be updated with a different value by using `def`, or [`(Update)`](https://docs.fragcolor.xyz/shards/General/Update/) (alias `>`) again on them.
+
+To print the value of a variable you may explicitly log it by its name (using `prn` or `Log`) or use [`(Get)`](https://docs.fragcolor.xyz/shards/General/Get/) to read it from the variable.
 
 !!! note
     1. By convention use `kebab-case` for naming variables, constants, user-defined shards, etc.
@@ -310,12 +330,16 @@ We have seen how to create and modify certain variables. But this is just the ti
 
 In this section, we will summarize the most important ones. 
     
-**Read**
+### Read
+
+To read means to access the value stored in the variable.
 
 - To read immutable or mutable variable values, including a specific key/value pair from a table: use `Get` (especially if accessing global variables across wires)
 - To read specific index element from a sequence or a key/value pair from a table: use [`(Take)`](https://docs.fragcolor.xyz/shards/General/Take/) (for both sequences and tables), [`(RTake)`](https://docs.fragcolor.xyz/shards/General/RTake/) (only for sequences)
 
-**Create**
+### Create
+
+To create is to allocate a new memory location, assign it a name, and store some data in it.
 
 - To declare un-named constants: use `(Const)`
 - To declare named immutable-variables or constants: use `(Ref)`
@@ -325,7 +349,9 @@ In this section, we will summarize the most important ones.
 - To create a sequence with a starting value (including empty []): use `(Push)`
 - To create a table with a starting key/value pair (including empty {}): use `(Push)`
 
-**Update**
+### Update
+
+To update is to modify the already stored data in a variable.
 
 - To add a new key/value pair to an existing table: use `(Set)`(will generate warnings, but is the cleanest way possible)
 - To add a new key/value pair with value as sequence to an existing table: use `(Set)` (avoid `(Push)`)
@@ -335,7 +361,12 @@ In this section, we will summarize the most important ones.
 - To update the value of existing string/numeric variables: use `(Update)`
 - To add new elements to an existing sequence: use [`(AppendTo)`](https://docs.fragcolor.xyz/shards/General/AppendTo/)/[`(PrependTo)`](https://docs.fragcolor.xyz/shards/General/AppendTo/) if the sequence was created with `(Set)`, use `(Push)` if the sequence was created with `(Push)`
 
-**Delete**
+### Delete
+
+To delete is to remove data from the memory location (represented by the variable). 
+
+!!! note
+    This only works for data types like sequences (remove some elements from a seqeunce) or table (remove some key/value pairs from a table). You can't really 'empty out' string or number variables. You can overwrite the value in them with an empty-string ('') or a zero (0), but these are also valid values. These variables have not been 'destroyed`. You can still access them by their name. 
 
 - To remove the leading or trailing element from a sequence: use [`(DropFront)`](https://docs.fragcolor.xyz/shards/General/DropFront/) and [`(Drop)`](https://docs.fragcolor.xyz/shards/General/Drop/) respectively
 - To remove (and use) the leading or trailing element from a sequence: use [`(PopFront)`](https://docs.fragcolor.xyz/shards/General/PopFront/) and [`(Pop)`](https://docs.fragcolor.xyz/shards/General/Pop/) respectively
@@ -343,7 +374,9 @@ In this section, we will summarize the most important ones.
 - To remove sequence elements (based on indices) or table key/value pairs (based on keys): use [`(Erase)`](https://docs.fragcolor.xyz/shards/General/Erase/)
 - To remove sequence elements that satisfy a certain condition: use [`(Remove)`](https://docs.fragcolor.xyz/shards/General/Remove/)
 
-**Manipulate**
+### Manipulate
+
+Manipulation here refers to some typical operations that change the data value of a variable. 
 
 - To swap two variables values (across datatypes): use [`(Swap)`](https://docs.fragcolor.xyz/shards/General/Swap/)
 - To join two strings: use [`(String.Join)`](https://docs.fragcolor.xyz/shards/String/Join/)
@@ -353,16 +386,18 @@ In this section, we will summarize the most important ones.
 - To copy out characters (or elements) from a string (or a sequence) by specifying start/end and step values: use [`(Slice)`](https://docs.fragcolor.xyz/shards/General/Slice/)
 - To sort elements of a sequence in ascending or descending order: use [`(Sort)`](https://docs.fragcolor.xyz/shards/General/Sort/)
 
-**Typecast**
+### Typecast
 
-Convert one data type to another
+To Typecast is to convert one data type to another (this operation is valid only for certan data type pairs).
 
 - To convert between equal-element integers and floats vectors use: the appropriate `(To*)` shard (for example, to `(Int4)` => `(Float4)`, use `(ToFloat4)`](https://docs.fragcolor.xyz/shards/General/ToFloat2/))
 - To convert an integer/float vector (like `Int2`, `Int3`, ..., `Float3`, `Float4`, etc.) into a sequence: use [`(Flatten)`](https://docs.fragcolor.xyz/shards/General/Flatten/)
 - To convert between two unequal integer/float vectors: first `(Flatten)` one of them, then add/remove the required integer and floating-point numbers to match source and destination vector size, then use the appropriate `(To*)` shard (for example, to `(Int2 2 3)` => `(Float3 2.0 3.0 4.0)`, flatten the `(Int2)`, append `(Float 4.0)` to flattened sequence, convert the 3-element sequence to `(Float3)` by using `(ToFloat3)`).
 - To convert the string representation of an integer/float to the actual number data: use [`(ParseInt)`](https://docs.fragcolor.xyz/shards/General/ParseInt/) or [`(ParseFloat)`](https://docs.fragcolor.xyz/shards/General/ParseFloat/).
 
-**Miscellaneous**
+### Miscellaneous
+
+Operations that do not fall in any of the above categories are listed here.
 
 - To count characters in a string, elements in a sequence, or key/value pairs in a table: use [`(Count)`](https://docs.fragcolor.xyz/shards/General/Count/)
 - To print a string to the standard output (from within a wire/shard): use [`(Msg)`](https://docs.fragcolor.xyz/shards/General/Msg/)
