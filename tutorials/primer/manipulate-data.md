@@ -2,9 +2,12 @@
 
 Data manipulation is the sole reason for a computer program to exist. In this section, we take a look at how Shards code understands and manipulates data.
 
+!!! note
+    This section talks specifically about manipulating data *within* a wire or a shard. For other use cases refer to [macros](#macros) and the [appendix D - Mal/EDN](#appendix-d-maledn).
+
 ## Data types and values
 
-Data comes in many forms and we call these forms *data types*. For example - *4* is a number and *"Hello there"* is a block of text, etc.
+Data comes in many forms and we call these forms *data types*. For example, *4* is a number type while *"Hello there"* is a string type (block of text).
 
 While a data type is a description of the kind of data under consideration, a *value* is an actual data value. These are also called *literals*. So, *4* is a literal and its data type is numeric.
 
@@ -15,14 +18,14 @@ Both data type names and literal names are reserved keywords - i.e., they're use
 !!! note
     While declaring these named literals, you may choose to drop the `Const` keyword (implicit declaration) or use it (explicit declaration). Both methods are equivalent but explicit declaration is recommended. We'll dig more into these literals and how to use them in later sections.
 
-Types are important because they tell a shard or function what kind of data to expect/process. So if a shard receives a wrong data type it can immediately discard it and raise an error to the user to pass the correct data type. This helps in reducing runtime errors caused due to a shard or function trying to transform an incorrect data type.
+Types are important because they tell a shard what kind of data to expect/process. So if a shard receives a wrong data type it can immediately discard it and raise an error to the user to pass the correct data type. This helps in reducing runtime errors caused due to a shard trying to transform an incorrect data type.
 
 For example, imagine passing text to a shard that sums up numbers: it will not know what to do because mathematical summation does not work on text characters.
 
 Let's look at some of these data types and literals.
 
 !!! note
-    In this section, we discuss only the common data types in Shards. For more see the complete list of supported data types for [shards](https://docs.fragcolor.xyz/shards/types/) and [functions](https://docs.fragcolor.xyz/functions/values/), including a few more called [collections](https://docs.fragcolor.xyz/functions/collections/). Some of the shard types are available only for internal use by shards (i.e., a programmer may not define and use them explicitly in their code).
+    In this section, we discuss only the common data types in Shards. For the complete list of supported data types see [types](https://docs.fragcolor.xyz/shards/types/). Also, some of these types are available only for internal use by shards (i.e., a programmer may not define and use them explicitly in their code).
 
 
 ```{.clojure .annotate linenums="1"}
@@ -82,15 +85,15 @@ For example, in a pole-vaulting competition, a competitor's medal tally could be
 
 ### Seq type
 
-A [`seq`](https://docs.fragcolor.xyz/shards/#seq) is an ordered list of items that can be accessed by their position or index within the structure (very similar to data type 'array' in other programming languages). The values are enclosed in parentheses and are *not* separated by commas. The items inside a sequence may be of different/nested types. For example, `[[3 4] 24 "down" (Float2 4.0 5.0)]` is a valid sequence.
+A [`seq`](https://docs.fragcolor.xyz/shards/types/#seq) is an ordered list of items that can be accessed by their position or index within the structure (very similar to data type 'array' in other programming languages). The values are enclosed in parentheses and are *not* separated by commas. The items inside a sequence may be of different/nested types. For example, `[[3 4] 24 "down" (Float2 4.0 5.0)]` is a valid sequence.
 
 ### Table type
 
-A [`Table`](https://docs.fragcolor.xyz/shards/#table) is an unordered collection of values that can be accessed by specific keys which are also part of the table (very similar to the data type 'object' in other programming languages). The values in the table can be of different/nested types but the keys must be either prefixed with a `:` (a valid key: `:key2`) enclosed in double quotes (another valid key: `"abc"`). Also, tables must always have key/value pairs. There cannot be just a key or just a value. So, `{key24 "val24"}` is an invalid table (because the key is not named properly) and so is this `{:k1 "abc" :k2 :k3 "def"}` (because here the key `:k2` has no corresponding value).
+A [`Table`](https://docs.fragcolor.xyz/shards/types/#table) is an unordered collection of values that can be accessed by specific keys which are also part of the table (very similar to the data type 'object' in other programming languages). The values in the table can be of different/nested types but the keys must be either prefixed with a `:` (a valid key: `:key2`) enclosed in double quotes (another valid key: `"abc"`). Also, tables must always have key/value pairs. There cannot be just a key or just a value. So, `{key24 "val24"}` is an invalid table (because the key is not named properly) and so is this `{:k1 "abc" :k2 :k3 "def"}` (because here the key `:k2` has no corresponding value).
 
 ### Color type
 
-A [`color`](https://docs.fragcolor.xyz/shards/#color) is a vector of 4 integers representing the RGBA values (in sequence) for that color. Each value can range from 0 to 255 (any value above 255 is subtracted from 256 to bring it back into 0 - 255 range, as many times as needed). The R, G, and B values represent the amount of red, green, and blue color components and the A represents the *alpha* channel or how opaque the color shade is (0 is fully transparent, 255 is fully opaque). `color` has a pascal case alias `Color`.
+A [`color`](https://docs.fragcolor.xyz/shards/types/#color) is a vector of 4 integers representing the RGBA values (in sequence) for that color. Each value can range from 0 to 255 (any value above 255 is subtracted from 256 to bring it back into 0 - 255 range, as many times as needed). The R, G, and B values represent the amount of red, green, and blue color components and the A represents the *alpha* channel or how opaque the color shade is (0 is fully transparent, 255 is fully opaque). `color` has a pascal case alias `Color`.
 
 !!! note
     Similar to named literal declarations, you may choose to use declare certain data types - like `String`, `Int`, and `Float` - with the type keyword (explicit declaration) or without the type keyword (implicit declaration). Both methods are equivalent but explicit declaration is recommended.
@@ -114,14 +117,19 @@ Just like you can swap out items from a box; you can change the data inside a me
 
 If you put a restriction on the box that prevents you from changing the item inside it (like say locking the box), then such a memory location is called a *constant* or an *immutable variable*. Once set (i.e., during initial declaration) you cannot change the value of a constant.
 
-In Shards, we can create mutable variables outside a wire/shard by using via `(def)`, and within a wire/shard by using [`(Set)`](https://docs.fragcolor.xyz/shards/General/Set/) (alias `>=`). Constants can be created within a wire/shard with a [`(Ref)`]() (alias `=`). Mutable variables can be updated with a different value by using `def`, or [`(Update)`](https://docs.fragcolor.xyz/shards/General/Update/) (alias `>`) again on them.
+In Shards, mutable variables can be created by using [`(Set)`](https://docs.fragcolor.xyz/shards/General/Set/) (alias `>=`) and can be updated by using [`(Update)`](https://docs.fragcolor.xyz/shards/General/Update/) (alias `>`). 
 
-To print the value of a variable you may explicitly log it by its name (using `prn` or `Log`) or use [`(Get)`](https://docs.fragcolor.xyz/shards/General/Get/) to read it from the variable.
+!!! note
+    A variable may also be updated by applying `(Set)` again on it (with the new value), but it will generate warnings.
+
+Constants can be declared by using [`(Ref)`](https://docs.fragcolor.xyz/shards/General/Ref/) (alias `=`).
+
+To print the value of a variable you may explicitly log it via the variable name (using `(Log)`) or use [`(Get)`](https://docs.fragcolor.xyz/shards/General/Get/) to first read the value from the variable.
 
 !!! note
     1. By convention use `kebab-case` for naming variables, constants, user-defined shards, etc.
     2. All variables and constants names (declared with a wire/shard) should start with a period `.`.
-    3. Reserved keywords (words that are already taken up by the programming language) cannot be used to name variables, constants, user-defined shards (using `defshards`, `defwires`, `defloop`, `defmesh`), and user-defined functions (using `defn`). All data type names, named literals, built-in shards names, and built-in function names are reserved keywords in Shards.
+    3. All data-type names, named literals, built-in shards names are reserved keywords in Shards and these many not be used to name variables, constants, wires, meshes, or any other user defined constructs (usually created using [macros](https://docs.fragcolor.xyz/functions/macros/)). 
 
 ## Creating and updating variables
 
@@ -132,24 +140,11 @@ Let's see some real code examples of all that we have discussed in this section.
 === "EDN"
 
     ```{.clojure .annotate linenums="1"}
-    ;; define, update, and log mutable variables outside a wire/shard
-    (def extvar1 9)                     ;; define a variable and assign it a numeric value
-    (prn extvar1)                       ;; print extvar1 value => 9
-
-    (def extvar2 "Toy")                 ;; define another variable and assign it a string value
-    (prn extvar2)                       ;; print extvar2 value => "Toy"
-
-    (def extvar2 "Story")               ;; update existing variable with another string value
-    (prn extvar2)                       ;; print updated extvar2 value => "Story"
-
     (defmesh root)
 
     (defwire mywire
-    ;; access variables from outside the wire/shard
-    extvar1 (Log)                       ;; print value of extvar1 => 9
-    extvar2 (Log)                       ;; print updated value of extvar2 => "Story"
 
-    ;; define, update, and log mutable variables within a wire/shard    
+    ;; define, update, and log mutable variables    
         "Shards" >= .stringvar          ;; create a variable with a string value
         .stringvar (Log)                ;; print initial value of .stringvar => Shards
         "Claymore" > .stringvar         ;; update .stringvar with another string value
@@ -183,7 +178,7 @@ Let's see some real code examples of all that we have discussed in this section.
         ;;uncomment the following code to see error when trying to update a boolean type variable with a nil type value
         ;; (Const "abc") > .nilconst    ;; attempt to update nil type const with string type data throws error
 
-    ;; define, attempt to update, and log constants within a wire/shard
+    ;; define, attempt to update, and log constants
         100 = .intconst                 ;; create a numeric constant with an integer value
         .intconst (Log)                 ;; print the value of .intconst => 100
         ;; uncomment the following code and run it see "attempted to update constant" error
@@ -200,12 +195,6 @@ Let's see some real code examples of all that we have discussed in this section.
 
     ```
     ...
-    9
-    "Toy"
-    "Story"
-    ...
-    [info] [2022-08-02 14:54:03.201] [T-20448] [logging.cpp::55] [mywire] 9
-    [info] [2022-08-02 14:54:03.203] [T-20448] [logging.cpp::55] [mywire] Story
     [info] [2022-08-02 14:54:03.204] [T-20448] [logging.cpp::55] [mywire] Shards
     [info] [2022-08-02 14:54:03.206] [T-20448] [logging.cpp::55] [mywire] Claymore
     [info] [2022-08-02 14:54:03.207] [T-20448] [logging.cpp::55] [mywire] 123
@@ -237,35 +226,25 @@ Let's see some real code examples of all that we have discussed in this section.
 
 Variables exist within 'scopes'. A scope can be thought of as a field of view within which a variable exists, can be seen by other program elements, and can interact with them.
 
-For example, variables created with `(def)` outside the wires are available to all wires/shards.
-
-But variables created inside a wire (called *Context variables* or 'ContextVariable') are by default, accessible only to the wire they've been created in.
+For example, variables created inside a wire (called *Context variables* or 'ContextVariable') are by default, accessible only to the wire they've been created in.
 
 They can be made accessible to other wires by setting a parameter called `:Global` to `true` in `Set` (this parameter is `false` by default). 
 
-However, irrespective of `:Global`, variables created within wires are not accessible outside the wires (i.e. `(prn)` cannot read context variables).
-
-The variables that are accessible across wires or outside wires are called *global variables* and can be said to have a *global scope*. 
-
-Variables that are accessible only within the wire they were created are called *local variables* and are said to have *local scope*.
+The variables that are accessible across wires or outside wires are called *global variables* and can be said to have a *global scope* whereas variables that are accessible only within the wire they were created in are called *local variables* and are said to have *local scope*.
 
 !!! note "The `:Global` parameter"
     1. `:Global` is available as a parameter across many shards that create, manipulate, or read variables. Its default value is always `false`.
-    2. When its used with shards that create variables (like `(Set)` or [`(Push)`](https://docs.fragcolor.xyz/shards/General/Push/)) it defines the scope of the newly created variable.
-    3. When its used with shards that read, update or modify an existing variable (`(Get)`, `(Update)`, etc.) its value is used in conjunction with the variable's name to identify the right variable (since you can have two variables with the same name but different scope). 
+    2. When `:Global` is used with shards that create variables (like `(Set)` or [`(Push)`](https://docs.fragcolor.xyz/shards/General/Push/)) it defines the scope of the newly created variable.
+    3. When `:Global` is used with shards that read, update or modify an existing variable (`(Get)`, `(Update)`, etc.) its value is used in conjunction with the variable's name to identify the right variable (since you can have two variables with the same name but different scope). 
+    4. Irrespective of the value of `:Global`, variables created within wires *are not accessible outside the wires* (i.e. a Mal/EDN function like `(prn)` cannot read context variables), though the reverse is true (value aliases declared outside wires using `(def)` are accessible by all the wires in that Shards program).
 
 *Code example 17*
 
 === "EDN"
 
     ```{.clojure .annotate linenums="1"}
-    (def extvar 9)                                  ;; variable declared oustide wires/shards (external to wires)
-
     (defmesh root)
     (defwire varwire
-
-    ;; access variables from outside the wires/shards
-        extvar (Log)                                ;; variables external to wires can be accessed by all wires => 9
 
     ;; define locally scoped or local variables (i.e., Global is false by default)    
         "Shards" (Set .var-local)                   ;; .var-local is accessible only within this wire
@@ -279,15 +258,13 @@ Variables that are accessible only within the wire they were created are called 
 
     (defwire mywire
     (Once (Dispatch varwire))                       ;; run 'mywire1' once to create wire variables
-    ;; access variables from outside wires/shards
-        extvar (Log)                                ;; variables external to wires can be accessed by all wires => 9
 
     ;; access global variables declared in the other wire
         (Get .var-global :Global true) (Log)        ;; can read global var => Claymore
         (Get .justvar :Global true) (Log)           ;; can read global version of .justvar => Global var
 
     ;; attempt to access local variables declared in the other wire
-        ;; uncomment the line below to see error on trying to access local variable of anotheir wire
+        ;; uncomment the line below to see error on trying to access local variable of another wire
         ;; (Get .var-local) (Log)                   ;; will give an error
 
     ;; despite setting :Global flag false, this wire cannot access the local var, falls back to reading global version 
@@ -296,31 +273,20 @@ Variables that are accessible only within the wire they were created are called 
 
     (schedule root mywire)
     (run root 1 1)
-
-    ;; `prn` can't read context variables
-    (prn .var-local)                                ;; prints var name => ContextVariable: var-local
-    (prn .var-global)                               ;; prints var name => ContextVariable: var-global
-    (prn .justvar)                                  ;; prints var name => ContextVariable: justvar
     ```
     
 === "Result"
 
     ```
     ...
-    [info] [2022-08-02 13:18:33.396] [T-22892] [logging.cpp::55] [varwire] 9      
-    [info] [2022-08-02 13:18:33.398] [T-22892] [logging.cpp::55] [mywire] 9       
-    [info] [2022-08-02 13:18:33.399] [T-22892] [logging.cpp::55] [mywire] Claymore
-    [info] [2022-08-02 13:18:33.400] [T-22892] [logging.cpp::55] [mywire] Global Var
-    [info] [2022-08-02 13:18:33.402] [T-22892] [logging.cpp::55] [mywire] Global Var
-    ...
-    [trace] [2022-08-02 13:18:33.416] [T-22892] [runtime.hpp::294] stopping wire: mywire
-    ContextVariable: var-local
-    ContextVariable: var-global
-    ContextVariable: justvar
+    [trace] [2022-08-15 20:35:02.550] [T-1908] [runtime.cpp::2010] wire mywire starting
+    [info] [2022-08-15 20:35:02.551] [T-1908] [logging.cpp::55] [mywire] Claymore
+    [info] [2022-08-15 20:35:02.553] [T-1908] [logging.cpp::55] [mywire] Global Var
+    [info] [2022-08-15 20:35:02.554] [T-1908] [logging.cpp::55] [mywire] Global Var
     ...
     ;; error on attempting to read a local variable of another wire
-    [error] [2022-08-02 13:20:30.112] [T-30168] [runtime.cpp::1090] Error composing shard: Get (var-local): Could not infer an output type and no Default value provided., wire: mywire
-    Error: Get (var-local): Could not infer an output type and no Default value provided.   
+    [error] [2022-08-15 20:36:22.417] [T-3684] [runtime.cpp::1081] Error composing shard: Get (var-local): Could not infer an output type and no Default value provided., wire: mywire
+    Error: Get (var-local): Could not infer an output type and no Default value provided.
     ...
     ```
 
@@ -402,54 +368,10 @@ Operations that do not fall in any of the above categories are listed here.
 - To count characters in a string, elements in a sequence, or key/value pairs in a table: use [`(Count)`](https://docs.fragcolor.xyz/shards/General/Count/)
 - To print a string to the standard output (from within a wire/shard): use [`(Msg)`](https://docs.fragcolor.xyz/shards/General/Msg/)
 - To print an input string to the standard output along with an optional prefix string (from within a wire/shard): use [`(Log)`](https://docs.fragcolor.xyz/shards/General/Log/)
-- To print multiple strings **without** their double quotes to the standard output (from outside wires/shards): use [`(println)`](https://docs.fragcolor.xyz/functions/standard-output/#println)
-- To print multiple strings **including** their double quotes to the standard output (from outside wires/shards): use [`(prn)`](https://docs.fragcolor.xyz/functions/standard-output/#prn)
 
 ## Do your sums
 
-Before we end this section let's look at how Shards does maths and what mathematical transformations are available for us to use within Shards.
-
-**Mathematical expressions**
-Shards uses the [prefix notation](https://en.wikipedia.org/wiki/Polish_notation) (`(+ 3 4)`) for mathematical expressions, rather than more widely used infix notation (`(3 + 4)`).
-
-In the prefix notation, the operators precede the operands while in the infix notation they are placed in between the operands. Here's a mathematical expression in both notations:
-```{.clojure .annotate linenums="1"}
-;; expression in prefix notation
-(/ (- (* (+ 3 2) 4) 6) 2)               ;; evaluates to => 7
-
-;; same expression in infix notation
-((((3 + 2) * 4) - 6) / 2)               ;; evaluates to => 7
-```
-
-As you can see, in each bracketed expression that is evaluated, the prefix notation puts the operator first, followed by the two operands.
-```{.clojure .annotate linenums="1"}
-;; step-by-step evaluation in prefix notation
-(/ (- (* (+ 3 2) 4) 6) 2)               ;; (+ 3 2) => like (3 + 2) => 5
-(/ (- (* 5 4) 6) 2)                     ;; (* 5 4) => like (5 * 4) => 20
-(/ (- 20 6) 2)                          ;; (- 20 6) => like (20 - 6) => 14
-(/ 14 2)                                ;; (/ 14 2) => like (14 / 2) => 7
-7
-```
-
-**Comparison operators**
-
-Shards implements common mathematical [comparison operators](https://docs.fragcolor.xyz/functions/operators/) using the same prefix notation.
-
-A few examples:
-```{.clojure .annotate linenums="1"}
-(> 4 2) (Log)                 ;; => true
-(< 4 2) (Log)                 ;; => false
-(= 5 (+ 3 2)) (Log)           ;; => true
-(>= 9 (+ (- 10 2) 4)) (Log)   ;; => false
-(<= (* 2 4) (/ 25 5)) (Log)   ;; => false
-```
-
-!!! note
-    Some of these comparison operators look exactly like alias symbols for certain shards (`>=`, `>`, `=`), but should not be confused with them. Whether `>` denotes a *greater than* comparison or an update to a variable (alias symbol for `(Update)`) depends on the context of the usage and the rest of the code. The wrong context will throw an error. 
-
-**Maths shards**
-
-If you need to go beyond basic mathematical computation and comparison you can use the extensive library of math and comparison shards included with the language.
+Shards comes with an extensive library maths and comparison shards.
 
 For example, [`(Math.Add)`](https://docs.fragcolor.xyz/shards/Math/Add/) will add two numbers, [`(Math.Subtract)`](https://docs.fragcolor.xyz/shards/Math/Subtract/) will subtract one number from the other, and so on for [`(Math.Multiply)`](https://docs.fragcolor.xyz/shards/Math/Multiply/) and [`(Math.Divide)`](https://docs.fragcolor.xyz/shards/Math/Divide/), and others.
 
@@ -458,13 +380,13 @@ It doesn't stop at basic mathematical operations - there are shards that support
 !!! note
     You can check out all the `(Math.*)` shards by typing 'Math.' in the search box on the [Fragcolor Shards documentation page](https://docs.fragcolor.xyz/).
 
-As for comparison, the following shards can compare numeric quantities too:
+Additionally, the following general comparison shards can compare numeric quantities too:
 
-- equality (`=`) with [`(Is)`](https://docs.fragcolor.xyz/shards/General/Is/)
-- inequality (`<`, `>`) with [`(IsLess)`](https://docs.fragcolor.xyz/shards/General/IsLess/) and  [`(IsMore)`](https://docs.fragcolor.xyz/shards/General/IsMore/)
-- mixed equality/inequality (`=<`, `>=`) with [`(IsLessEqual)`](https://docs.fragcolor.xyz/shards/General/IsLessEqual/) and  [`(IsMoreEqual)`](https://docs.fragcolor.xyz/shards/General/IsMoreEqual/)
+- evaluate equality (`=`) with [`(Is)`](https://docs.fragcolor.xyz/shards/General/Is/)
+- evaluate inequality (`<`, `>`) with [`(IsLess)`](https://docs.fragcolor.xyz/shards/General/IsLess/) and  [`(IsMore)`](https://docs.fragcolor.xyz/shards/General/IsMore/)
+- evaluate mixed equality/inequality (`=<`, `>=`) with [`(IsLessEqual)`](https://docs.fragcolor.xyz/shards/General/IsLessEqual/) and  [`(IsMoreEqual)`](https://docs.fragcolor.xyz/shards/General/IsMoreEqual/)
 
-Now, let's redo our earlier examples with shards instead:
+Here's some code demonstrating usage of these shards:
 
 *Code example 18*
 
@@ -474,20 +396,15 @@ Now, let's redo our earlier examples with shards instead:
     (defmesh root)
 
     (defwire mywire
-        ;; (> 4 2)                  
         4 (IsMore 2) (Log)                      ;; => true
 
-        ;; (< 4 2)                  
         4 (IsLess 2) (Log)                      ;; => false
 
-        ;; (= 5 (+ 3 2))
         3 (Math.Add 2) (Is 5) (Log)             ;; => true
 
-        ;; (>= 9 (+ (- 10 2) 4))            
         10 (Math.Subtract 2) (Math.Add 4) >= .rhsvar1
         9 (IsMoreEqual .rhsvar1) (Log)          ;; => false       
 
-        ;; (<= (* 2 4) (/ 25 5))             
         25 (Math.Divide 5) >= .rhsvar2
         4 (Math.Multiply 2) >= .lhsvar2
         .lhsvar2 (IsLessEqual .rhsvar2) (Log)   ;; => false
@@ -506,5 +423,6 @@ Now, let's redo our earlier examples with shards instead:
     [info] [2022-08-02 20:24:41.393] [T-30948] [logging.cpp::55] [mywire] false
     [info] [2022-08-02 20:24:41.394] [T-30948] [logging.cpp::55] [mywire] false
     ```
+
 
 --8<-- "includes/license.md"

@@ -2,6 +2,9 @@
 
 Now that we have an understanding of the building blocks of a Shards program, let's see how we can manipulate its control flow.
 
+!!! note
+    This section talks specifically about manipulating data *within* a wire or a shard. For other use cases refer to [macros](#macros) and the [appendix D - Mal/EDN](#appendix-d-maledn).
+
 ## Stay DRY with `(defshards)`
 
 We've already seen [macros](https://docs.fragcolor.xyz/functions/macros/) like `(defmesh)`, `(defwire)`, `(defloop)`, `(schedule)`, and `(run)` in action - now, let's look at [`(defshards)`](https://docs.fragcolor.xyz/functions/macros/#defshards).
@@ -864,6 +867,7 @@ So now we can just use `(Setup)` whenever we want some code to run only for the 
     [info] [2022-08-03 02:40:05.661] [T-1832] [logging.cpp::98] [mywire] No second chances!
 
     ```
+
 
 --8<-- "includes/license.md"
 

@@ -1,31 +1,41 @@
 # Anatomy of a shard
 
-Shards are also built-in chunks of data transformation logic. However, unlike functions, shards are composed by default and this gives the Shards language syntax its highly visual nature.
+Shards are the Shards language's built-in chunks of data transformation logic. It's these that give Shards its highly visual nature.
 
 ## Input and output
 
-A shard processes its input and produces an output.
-
-However, unlike functions, shards process their input from outside of their parentheses (from the left side or from above ) and also place the generated output outside of the parentheses (to the right side or to below).
+A shard is always written as enclosed within a set of curved brackets (parentheses).
 
 For example, the shard [`(Math.Sqrt)`](https://docs.fragcolor.xyz/shards/Math/Sqrt/) computes the square root of a number.
-
-So the following code fragments are equally valid (with the output being shown as comments since we will need another shard to capture and print the output):
+:
 ```{.clojure .annotate linenums="1"}
-;; input coming in from left, output going out from the right
-9.0 (Math.Sqrt)     ;; output => 3.0
-
-;; input coming in from top, output being placed below
-9.0             ;; input
-(Math.Sqrt)     ;; shard
-;; output => 3.0
-
-;; mixed syntax
-9.0 (Math.Sqrt) ;; input and shard
-;; output => 3.0
+(Math.Sqrt)
 ```
 
-Since the output of a shard is available to its right (or below it), and a shard processes input from its left (or from above it) - if we were to place one shard after the other, the 2nd shard would process the output created by the first shard (more on this [later](#data-flow)).
+Shards expect their input to come from outside of their parentheses. Either from the left side:
+```{.clojure .annotate linenums="1"}
+9 (Math.Sqrt)
+```
+
+Or from the line above:
+```{.clojure .annotate linenums="1"}
+9
+(Math.Sqrt)
+```
+
+Similarly, a shard can be visualised as placing its computed output either to it's right (outside its parentheses):
+```{.clojure .annotate linenums="1"}
+9 (Math.Sqrt)   ;; output => 3 ;;
+```
+
+Or in the line below it:
+```{.clojure .annotate linenums="1"}
+9
+(Math.Sqrt)
+;; output => 3 ;;
+```
+
+Since the output of a shard is available to its right (or below it), and a shard processes input from its left (or from above it) - if we were to place a shard after (or below) the first shard, the 2nd shard would process the output created by the first shard (more on this [later](#data-flow)).
 
 Let's use this fact to run some actual code (*Code example 11* below) and print the output of the `(Math.Sqrt)` shard to the standard output (i.e., the terminal screen). We'll use the shard `(Log)` for this, as this shard takes its input and prints it to the terminal screen.
 
@@ -61,7 +71,7 @@ Besides the main input coming in from the left side, a shard may also take addit
 
 Parameters may be mandatory or optional. Mandatory parameters are needed for the shard to work and hence a value has to be passed to them. Optional parameters do not necessarily need a value and empty optional parameters are ignored by the shard.
 
-Unlike input and output, a shard's parameters need to be defined/placed inside the shard's parentheses (just like input to a function). For example, `(Log)` has an optional parameter (that's why `(Log)` worked without any parameter value in the last code example) - `:Prefix`: prefixes `(Log)`'s output.
+Unlike input and output, a shard's parameters need to be defined/placed inside the shard's parentheses. For example, `(Log)` has an optional parameter (that's why `(Log)` worked without any parameter value in the last code example) - `:Prefix`: prefixes `(Log)`'s output.
 
 The following code example illustrates this.
 
@@ -193,11 +203,11 @@ Here's an example snippet from our [Snake tutorial](https://learn.fragcolor.xyz/
                            (-> true > .game-over))
 ```
 
-As you can see, this syntax maps very nicely to the linear left-to-right data flow that we discussed in the [What is code?](../introduction/#what-is-code) section (Figure 2). 
+As you can see, this syntax maps very nicely to the linear left-to-right data flow that we discussed in the [What is code?](../introduction/#what-is-code) section (Figure 3). 
 
 To see this similarity better, let's convert the code above into a flow diagram.
 
-Figure 3
+Figure 4
 
 ![Data flow in Shards](assets/data-flow-in-shards.png)
 
@@ -208,7 +218,7 @@ To explore this concept further, let's consider an example using two transformat
 
 Laying out these transformations from left to right, we get a sense of how the data flows along the transformation blocks.
 
-Figure 4
+Figure 5
 
 ![Data flow in Shards: horizontal flow](assets/data-flow-in-shards-horizontal.png)
 
@@ -224,7 +234,7 @@ would produce the output:
 
 Now, if you stack the shards vertically instead of laying them down horizontally, the code would still work.
 
-Figure 5
+Figure 6
 
 ![Data flow in Shards: vertical flow](assets/data-flow-in-shards-vertical.png)
 
@@ -344,5 +354,6 @@ In the code example below, passthrough has been turned on for `(Match)` and is a
 !!! note
     1. The shard [`(Sub)`](https://docs.fragcolor.xyz/shards/General/Sub/) can simulate passthrough for other shards. See the section [KISS and `(Sub)`](../control-flow/#kiss-and-sub) for more.
     2. The mathematics expression shown in this example, `(+ 0 1)`, uses the prefix notation (AKA [Polish notation](https://en.wikipedia.org/wiki/Polish_notation)). More on this in the section [Do your sums](../manipulate-data/#do-your-sums).
+
 
 --8<-- "includes/license.md"

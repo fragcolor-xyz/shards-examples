@@ -1,30 +1,134 @@
 # Elements of Shards
 
-In this section, we look at the basic building blocks of the Shards programming language.
+In this section we look at how a Shards program is parsed and discuss the basic building blocks of the language.
+
+## Shards core
+
+The core shards language is a collection of all the existing [shards](https://docs.fragcolor.xyz/shards/), and a interconnected sequence of these shards gives us a valid Shards script (or source program).
+
+### The shards
+
+Assume we want to write a Shards script to compute the square root of the square root of a number and print the result to the terminal screen. 
+
+Since we already have real shards that can do these, let's use them for illustration ([`(Math.Sqrt)`](https://docs.fragcolor.xyz/shards/Math/Sqrt/) can compute square root, [`(Log)`](https://docs.fragcolor.xyz/shards/General/Log/) can print to the terminal).
+
+Figure 4
+
+![Core of Shards 1](assets/shards-core-1.png)
+
+
+If place the 
+
+
+## Mal/EDN layer
+[appendix D - Mal/EDN](#appendix-d-maledn)
+
+### Compose with `(Schedule)`
+
+### Execute with `(Run)`
 
 ## Functions and shards
 
+### Macros
+
+`(def)`
+`(defshard)`
+`(defwire)`
+`(defloop)`
+`(defmesh)`
+
+### Shards
+
+### Wires
+
+### Meshes
+
 In Shards, the chunks of transformation logic (that the computer needs to transform data) come in two flavors:
 
-* [functions](https://docs.fragcolor.xyz/functions/)
-* [shards](https://docs.fragcolor.xyz/shards/) (written with a lowercase 's')
-
-Both these entities can perform data transformation and are used to write Shards code. But while functions are basic utilities native to the language, a shard is designed to allow you to compose your logic more intuitively and flexibly.
+* [function](https://docs.fragcolor.xyz/functions/)
+* [shard](https://docs.fragcolor.xyz/shards/)
 
 !!! note
-    1. Shards includes over 500 shards and around 100 functions allowing you to manipulate data and compose logic the way that you want.
-    2. In the majority of the cases function names start with lower case letters and shard names start with upper case letters.
-    3. You can also write your own shards using macros like [`(defshards)`](https://docs.fragcolor.xyz/functions/macros/#defshards) (see the [Stay DRY with `(defshards)`](../control-flow/#stay-dry-with-defshards) section).
+    1. Shards is the programming language that we are discussing here whereas a *shard* is (written with a lower-case *'s'*) is an inbuilt utility that allows you to transform data.
+    2. Shards includes over 500 shards and around 100 functions allowing you to manipulate data and compose logic the way that you want.
+    3. With a few exceptions, all shard names use [Pascal case](https://en.wiktionary.org/wiki/Pascal_case) (like `(ChaChaPoly)`).
 
-Now let's run some Shards code!
+To get an idea of what functions and shards look like let's look at a function and a shard that do the same thing - i.e., print some data to the terminal screen.
 
-??? note "Executing Shards code"
+??? note "How to run Shards sample code from this primer"
     1. If you're new to programming you should [install VS Code and set it up](#-code-editor). 
     2. The Shards [web sandbox](https://learn.fragcolor.xyz/sandbox) is coming soon but for now please [build Shards](https://docs.fragcolor.xyz/contribute/code/building-shards/) on your machine to work through the examples in this guide.
     3. Once the `shards.exe` is built, copy paste the code sample you want to run from this guide into a new file with an extension `edn` (that's the Shards script file extension for now). This is your Shards script file. 
     4. Place your Shards script (say`abc.edn`) into the`/build` folder and from there run the script `./shards <abc.edn>` to execute your Shards script.
     5. You just need to build the `shards.exe` once. After that you can change the code in your Shards script (or create a new Shards script) and run that script with the `./shards...` command
     6. If you're using [VS Code](https://code.visualstudio.com/) as your editor you can install the [code-runner plugin](https://marketplace.visualstudio.com/items?itemName=formulahendry.code-runner) and set up your VS Code to execute your Shards script on the click of the `Run` button (see [this](https://docs.fragcolor.xyz/contribute/code/building-shards/#verify-build-and-run) for details).
+
+
+`(println)` is a function that prints the data (that you passed to it in double quotes) to the terminal screen (you can copy and run *Code example 1* as explained in the note above):
+
+*Code example 1*
+
+=== "EDN"
+
+    ```{.clojure .annotate linenums="1"}
+    (println "I'm a function!")
+    ```
+    
+=== "Result"
+
+    ```
+    I'm a function!
+    ```
+
+While `(Msg)` is a shard that does the exact same thing (we haven't yet introduced wires and meshes so *Code example 2* won't run standalone; to run the full code sample see the note after the code fragment):
+
+*Code example 2*
+
+=== "EDN"
+
+    ```{.clojure .annotate linenums="1"}
+    (Msg "I'm a shard!")
+    ```
+    
+=== "Result"
+
+    ```
+    I'm a shard!
+    ```
+
+
+??? Full `(Msg)` code sample
+    === "EDN"
+
+        ```{.clojure .annotate linenums="1"}
+        (defmesh mesh)
+        (defwire wire
+            (Msg "I'm a shard!")
+            )
+        (schedule mesh wire)
+        (run mesh)
+        ```
+        
+    === "Result"
+
+        ```
+        [info] [2022-08-15 13:49:15.552] [T-11856] [logging.cpp::98] [wire] I'm a shard!
+        ```
+
+
+As you can see:
+
+- The function name is in kebab case
+- The shard name is in Pascal case
+- Both the function and shard take an input (the data passed to them in double quotes) and transform it (i.e., print it to the terminal screen)
+
+### The duality
+
+The function `(prn)` and the shard `(Msg)` seem to be doing 
+
+Now let's run some Shards code!
+
+
 
 Since functions are native entities, they can be run as they are.
 
@@ -308,5 +412,6 @@ One last example, before we move on to the next section, to show how we can use 
     [info] [2022-07-21 22:43:39.904] [T-1512] [logging.cpp::55] [mywire] Hello World
     End script execution
     ```
+
 
 --8<-- "includes/license.md"
