@@ -1,33 +1,126 @@
-# Elements of Shards
+# What is Shards?
 
-In this section we look at how a Shards program is parsed and discuss the basic building blocks of the language.
+Shards is a highly flexible and powerful scripting language designed from the ground-up for developing games and for exploring creative ideas.
 
-## Shards core
+It's Lisp-inspired syntax is easy to read and reason in, and makes programming in Shards feel like working with a [visual programming language](https://en.wikipedia.org/wiki/Visual_programming_language).
 
-The core shards language is a collection of all the existing [shards](https://docs.fragcolor.xyz/shards/), and a interconnected sequence of these shards gives us a valid Shards script (or source program).
+## Shard
 
-### The shards
+In Shards, the data transformation logic blocks are called [shards](https://docs.fragcolor.xyz/shards/) (with a lowercase *'s'*).
 
-Assume we want to write a Shards script to compute the square root of the square root of a number and print the result to the terminal screen. 
-
-Since we already have real shards that can do these, let's use them for illustration ([`(Math.Sqrt)`](https://docs.fragcolor.xyz/shards/Math/Sqrt/) can compute square root, [`(Log)`](https://docs.fragcolor.xyz/shards/General/Log/) can print to the terminal).
+For example, the shard [`(Math.Sqrt)`](https://docs.fragcolor.xyz/shards/Math/Sqrt/) can compute the square root of a number.
 
 Figure 4
 
-![Core of Shards 1](assets/shards-core-1.png)
+![Shard computes square root](assets/a-shard-1.png)
+
+And the shard [`(Log)`](https://docs.fragcolor.xyz/shards/General/Log/) can print given data to the terminal screen.
+
+Figure 5
+
+![Shard prints data to terminal display](assets/a-shard-2.png)
+
+Multiple shards maybe combined together to achieve a particular objective.
+
+For example, suppose we want to print the square root of the square root of a given number to the terminal screen.
+
+We could do this with a combination of `(Math.Sqrt)` and `(Log)` shards like this:
+
+Figure 6
+
+![Shard prints data to terminal display](assets/a-shard-3.png)
+
+## Wire
+
+A sequence of shards that work together (like in Figure 6 above), along with its related data (input, intermediate results, output, etc.) is called a *wire* in Shards.
+
+These wire constructs need to be identified by a unique name as you may have more than one wire in a Shards script.
+
+The figure below depicts a wire made up of the shard sequence from Figure 6 and is called *"mywire"*.
+
+Figure 7
+
+![Shard sequence with related data is a wire](assets/a-wire-1.png)
+
+### Non-looped wire
+
+A wire that's supposed to execute only once is called a non-looped wire and is created by using the macro `(defwire)`.
+
+Such a wire is useful for writing out logic that you want to execute only once everytime you run the Shards script.
+
+??? note
+    A macro is a part of the Shards composer language Mal/EDN, as explained in [macros](#macros) below.
+
+You can visualize a non-looped wire as a broken necklace (but with its beads in place), laid out end to end. The beads here represent shards and the thread itself represents the wire (i.e., the flow of the data through the shards).
+
+The execution starts at first shard and continues till the last shard is executed. The output of the wire maybe stored and/or transferred to other constructs in your Shards script.
+
+In the figure below we visualize the wire *"mywire"* as a non-looped wire.
+
+Figure 8
+
+![Shard sequence with related data is a wire](assets/a-wire-2.png)
+
+### Looped wire
+
+A wire that executes continuously in a loop is called a looped wire and is created by using the macro `(defloop)`.
+
+Such a wire may execute a finite or infinite number of loops depending on its parameters (like maximum loop iterations, time interval between two consecutive loop iterations, etc.).
+
+Such a wire is useful when you want to execute some logic continously once you trigger your Shards script. This is a frequent use-case in game development.
+
+You can visualize a looped wire as a necklace with beads. The beads here represent shards and the thread itself represents the wire (i.e., the flow of the data through the shards).
+
+Once the last shard in the sequence is executed the control transfers again to the first shard in the sequence (hence the looped execution). The output of one iteration may be consumed again by the wire itself in the next iteration or transferred to other constructs in your Shards script.
+
+In the figure below we visualize the wire *"mywire"* as a looped wire.
+
+Figure 8
+
+![Shard sequence with related data is a wire](assets/a-wire-3.png)
+
+## Mesh
+...explain mesh; equate to a lego board
+
+??? note "Tech tip"
+    - Shards are logic blocks that compose the wire
+    - A wire is a coroutine or a stateful smart function that is made up of a sequence of shards and can persist its memory across wire execution/iterations
+    - A mesh is a thread scheduler that schedules and executes the wire coroutines
+
+## Language layers
+
+The Shards language is made up of two layers:
+
+- Inner layer - the core language
+- Outer layer - the composer language
+
+### The core language
+
+The inner (core) layer is the actual Shards language.
+
+It's the collection of all the existing , and the related keywords/syntax that allows you to invoke,combine, and manipulate these shards.
+
+These logic blocks can be further combined to form logic sequences (wires) which are then scheduled and run in a software context (mesh).
+
+A Shards script (or source program) should contain at least one shard, a wire, and a mesh.
+
+### The composer language
 
 
 If place the 
 
-
-## Mal/EDN layer
+### The Mal/EDN layer
 [appendix D - Mal/EDN](#appendix-d-maledn)
 
-### Compose with `(Schedule)`
+## Parsing and execution
 
-### Execute with `(Run)`
 
-## Functions and shards
+
+### Compose phase
+using `(schedule)`
+
+### Execution phase
+using `(run)`
 
 ### Macros
 
@@ -37,16 +130,10 @@ If place the
 `(defloop)`
 `(defmesh)`
 
-### Shards
 
-### Wires
+## Some code examples
 
-### Meshes
-
-In Shards, the chunks of transformation logic (that the computer needs to transform data) come in two flavors:
-
-* [function](https://docs.fragcolor.xyz/functions/)
-* [shard](https://docs.fragcolor.xyz/shards/)
+Let's take all the concepts covered in this section till now and illustrate them via some real Shards code. 
 
 !!! note
     1. Shards is the programming language that we are discussing here whereas a *shard* is (written with a lower-case *'s'*) is an inbuilt utility that allows you to transform data.
@@ -200,26 +287,8 @@ To understand why the last code example worked, let's see what's needed to execu
 
 Of course, in the above example, we have just one shard and one wire - but each wire can have multiple shards (sequence of shards that execute in order), and each mesh may have multiple wires scheduled on it for execution.
 
-From a programming perspective: 
 
-* Shards are logic blocks that compose the wire
-* A wire is a coroutine or a stateful smart function that is made up of a sequence of shards and can persist its memory across wire execution/iterations
-* A mesh is a thread scheduler that schedules and executes the wire coroutines
 
-From a layman's perspective, this process of writing and executing shards via the wire/mesh context is similar to you stringing a necklace and then counting its beads (like how prayer beads on a rosary are counted).
-
-Let's break down this analogy into steps:
-
-* **Step 1**. Collect a few beads - Write out a sequence of shards
-* **Step 2**. Find a thread and string the beads onto it - Define a wire and put the shards into it
-* **Step 3**. Hold the necklace in your hand - Define a mesh and schedule the wire on it
-* **Step 4**. Start counting the beads one by one (the necklace moving between your fingers with every count) - Run the mesh. This will start executing the shards in the scheduled wire one by one (as per the sequence of the shards in the wire)
-
-The analogy doesn't end here!
-
-What we just described was a looped wire (whole necklace). Such a wire will be executed continuously in a loop by its mesh (just like you can keep counting the beads on a necklace over and over) till its control parameters tell it to stop. Looped wires are defined by function `(defloop)`
-
-Break this necklace (but don't spill the beads!) and lay it down end-to-end and you have a non-looped wire. Such a wire will be executed only once by its mesh (irrespective of the mesh's control parameters). Non-looped wires are defined by function `(defwire)`.
 
 !!! note
     Pick up two necklaces in one hand and start counting the beads on both - and you have the case of a single mesh running multiple wires! Such wires can be independently executed and/or paused and can even share state (memory variables).

@@ -1,6 +1,7 @@
 nav:
   - ...
-  - elements-shards.md
+  - whats-code.md
+  - whats-shards.md
   - anatomy-shard.md
   - manipulate-data.md
   - control-flow.md
