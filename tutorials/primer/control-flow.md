@@ -2,16 +2,13 @@
 
 Now that we have an understanding of the building blocks of a Shards program, let's see how we can manipulate its control flow.
 
-!!! note
-    This section talks specifically about manipulating data *within* a wire or a shard. For other use cases refer to [macros](#macros) and the [appendix D - Mal/EDN](#appendix-d-maledn).
-
 ## Stay DRY with `(defshards)`
 
 We've already seen [macros](https://docs.fragcolor.xyz/functions/macros/) like `(defmesh)`, `(defwire)`, `(defloop)`, `(schedule)`, and `(run)` in action - now, let's look at [`(defshards)`](https://docs.fragcolor.xyz/functions/macros/#defshards).
 
 Imagine we need to program a bot to welcome people to our Shards Bootcamp. The following code is one way to do it.
 
-*Code example 19*
+*Code example 15*
 
 === "EDN"
 
@@ -59,7 +56,7 @@ This is quite verbose.
 
 So, let's take the common shards (all the `(Msg)` statements except for the first one, in both wires) and group them together, declaring them only *once*, using `(defshards)` (that's what `defshards` stands for - define a group of shards, give it a name, invoke it from anywhere).
 
-*Code example 20*
+*Code example 16*
 
 === "EDN"
 
@@ -105,7 +102,7 @@ So, let's take the common shards (all the `(Msg)` statements except for the firs
 
 The output remains the same but the code looks more compact!
 
-The common shards are now declared just once (with `defshards`) and given a name, 'welcome'. Now wherever you need this group of shards, you simply need to invoke their name in parentheses i.e., `(welcome)`, and Shards will copy and place this group of shards at the point of the invocation (this happens during the compose phase of Shards).
+The common shards are now declared just once (with `defshards`) and given a name, 'welcome'. Now wherever you need this group of shards, you simply need to invoke their name in parentheses i.e., `(welcome)`, and Shards will copy and place this group of shards at the point of the invocation (this happens during the [compose phase](../whats-shards/#composition-phase) of Shards).
 
 !!! note
     Ensure that you invoke the group of shards *after* you have defined them (in your wire/shard flow). If try invoking them before your declare `defshards`, Shards will not be able to locate the group and will throw an error (during the compose phase).
@@ -118,9 +115,9 @@ See the `[]` next to the `(defshards)` name? That's like an input value for the 
 
 For this two things need to be done - add a variable to hold the input that will come to 'welcome' - `(defshards welcome [name]...)`. And, pass the appropriate name when invoking 'welcome' from the wires - `(welcome "Mr. Jekyll")`, and `(welcome "Mr. Hyde")`.
 
-Let's see how this pans out in our *Code example 21*.
+Let's see how this pans out in our *Code example 17*.
 
-*Code example 21*
+*Code example 17*
 
 === "EDN"
 
@@ -165,7 +162,7 @@ Let's see how this pans out in our *Code example 21*.
 What if you wanted to include a greeting too? Well, pass two parameters to `defshard` 'welcome!
 So we make a provision for accepting two parameters in 'welcome'(`defshards welcome [greeting, name]`) and invoke 'welcome' with two values (`(welcome "Good morning!" "Mr. Jekyll")`).
 
-*Code example 22*
+*Code example 18*
 
 === "EDN"
 
@@ -232,7 +229,7 @@ Syntactically, `(Sub)` also requires the use of the symbol `->`.
 
 Let's see an example of `(Sub)` in action.
 
-*Code example 23*
+*Code example 19*
 
 === "EDN"
 
@@ -266,9 +263,9 @@ Let's see an example of `(Sub)` in action.
 
 As you might notice, the combination of `(Sub)` and `->` tends to get verbose. Fortunately, we have an alternative in the form of `|`. This keyword symbol can replace both `(Sub)` and `->` leading to more succinct and easy-to-read code.
 
-Let's rewrite *Code example 23* using `|` instead (note that `|` replaces the construct `Sub (->`).
+Let's rewrite *Code example 19* using `|` instead (note that `|` replaces the construct `Sub (->`).
 
-*Code example 24*
+*Code example 20*
 
 === "EDN"
 
@@ -302,7 +299,7 @@ Let's rewrite *Code example 23* using `|` instead (note that `|` replaces the co
 
 In section [Null input and passthrough](../anatomy-shard/#null-input-and-passthrough) we talked about passthrough and touched upon the fact that `(Sub)` can simulate passthrough for those shards which do not have this parameter natively.
 
-If you look at *Code example 23* or *Code example 24*, you'll notice how `(Sub)` (and hence by extension, `|`) is able to achieve this feat. For each shard that is wrapped in a `(Sub)` or `(|)`, the input is automatically passing through because the wrapper `(Sub)` or `(|)` has passthrough enabled for itself.
+If you look at *Code example 19* or *Code example 20*, you'll notice how `(Sub)` (and hence by extension, `|`) is able to achieve this feat. For each shard that is wrapped in a `(Sub)` or `(|)`, the input is automatically passing through because the wrapper `(Sub)` or `(|)` has passthrough enabled for itself.
 
 Hence, if you want to simulate passthrough for any shard that doesn't have this parameter natively, simply wrap it in a `(Sub)` + `(->)` shard, or in a `(|)` shard.
 
@@ -336,7 +333,7 @@ This control construct is knows as if-then-else statement in other programming l
 
 This shard is useful when you have at least two logic paths and depending on the condition you're checking you need to mandatorily execute *one* of those paths.
 
-*Code example 25*
+*Code example 21*
 
 === "EDN"
 
@@ -396,7 +393,7 @@ The [`(When)`](https://docs.fragcolor.xyz/shards/General/When/) and [`(WhenNot)`
 
 These shards are useful when you have only one logic path and you need to figure out whether or not to execute it.
 
-*Code example 26*
+*Code example 22*
 
 === "EDN"
 
@@ -450,7 +447,7 @@ If the input matches a case's value, the shards for that case are activated. Onc
 
 The `(Match)` shard is your best bet when you have multiple logic paths to consider but no complicated conditions to evaluate as`(Match)` can only check for *equality* between the input and the case values.
 
-*Code example 27*
+*Code example 23*
 
 === "EDN"
 
@@ -505,7 +502,7 @@ Once a case's condition has been evaluated to be true its shards are triggered f
 
 The `(Cond)` shard is like a combination of `(If)` and `(Match)`. It has the custom logic to flexibly check conditions like `(If)` and a straightforward multi-path switch like `(Match)`. Whether you have a single logic path to consider or multiple logic paths, this shard is a fit for most scenarios. 
 
-*Code example 28*
+*Code example 24*
 
 === "EDN"
 
@@ -550,7 +547,7 @@ At times you will want to run some logic in a loop until a condition becomes tru
 
 Shards already gives you the ability to run a `(defloop)` wire (and its logic) in a loop with `(run)` control parameters (time interval between two iterations, maximum number of iterations)
 
-*Code example 29*
+*Code example 25*
 
 === "EDN"
 
@@ -593,7 +590,7 @@ The presence of 3 control parameters (no. of times, forever, condition) makes th
 
 This is because `:Times` or `:Forever` are needed to provide the upper limit of iteratins within which the condition in `:Until` would be checked (in a loop).
 
-*Code example 30*
+*Code example 26*
 
 === "EDN"
 
@@ -657,7 +654,7 @@ This is because `:Times` or `:Forever` are needed to provide the upper limit of 
 
 [`(ForRange)`](https://docs.fragcolor.xyz/shards/General/ForRange/) executes the sequence of shards in `:Action` parameter while an iteration value is between `:From` and `:To` (both inclusive).
 
-*Code example 31*
+*Code example 27*
 
 === "EDN"
 
@@ -699,7 +696,7 @@ This is because `:Times` or `:Forever` are needed to provide the upper limit of 
 
 [`(Map)`](https://docs.fragcolor.xyz/shards/General/Map/) does the same but it only works on sequences. 
 
-*Code example 32*
+*Code example 28*
 
 === "EDN"
 
@@ -772,7 +769,7 @@ This is because `:Times` or `:Forever` are needed to provide the upper limit of 
 
 Or in other words, `(Once)` executes the shards in `:Action` as many times as it can within the allotted wire flow execution time (wire execution frequency * no. of max wire iterations), while maintaining its `:Every` frequency.
 
-*Code example 33*
+*Code example 29*
 
 === "EDN"
 
@@ -806,7 +803,7 @@ When `:Every` is set to 0, `(Once)` runs its `:Action` shards only once per wire
 
 So dropping the `:Every` parameter (i.e., effectively setting it to 0) and using a combination of `(Sub)` and `->` to run multiple shards in `:Action` parameter, we get the following code:
 
- *Code example 34*
+ *Code example 30*
 
 === "EDN"
 
@@ -842,7 +839,7 @@ Hence, this configuration of `(Once)` is first tuned to replace `Sub` + `->` wit
 
 So now we can just use `(Setup)` whenever we want some code to run only for the first time (or once) in wire flow execution.
 
- *Code example 35*
+ *Code example 31*
 
 === "EDN"
 

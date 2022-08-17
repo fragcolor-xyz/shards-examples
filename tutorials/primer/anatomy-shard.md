@@ -7,29 +7,29 @@ Shards are the Shards language's built-in chunks of data transformation logic. I
 A shard is always written as enclosed within a set of curved brackets (parentheses).
 
 For example, the shard [`(Math.Sqrt)`](https://docs.fragcolor.xyz/shards/Math/Sqrt/) computes the square root of a number.
-:
-```{.clojure .annotate linenums="1"}
+
+```clj
 (Math.Sqrt)
 ```
 
 Shards expect their input to come from outside of their parentheses. Either from the left side:
-```{.clojure .annotate linenums="1"}
+```clj
 9 (Math.Sqrt)
 ```
 
 Or from the line above:
-```{.clojure .annotate linenums="1"}
+```clj
 9
 (Math.Sqrt)
 ```
 
 Similarly, a shard can be visualised as placing its computed output either to it's right (outside its parentheses):
-```{.clojure .annotate linenums="1"}
+```clj
 9 (Math.Sqrt)   ;; output => 3 ;;
 ```
 
 Or in the line below it:
-```{.clojure .annotate linenums="1"}
+```clj
 9
 (Math.Sqrt)
 ;; output => 3 ;;
@@ -37,9 +37,9 @@ Or in the line below it:
 
 Since the output of a shard is available to its right (or below it), and a shard processes input from its left (or from above it) - if we were to place a shard after (or below) the first shard, the 2nd shard would process the output created by the first shard (more on this [later](#data-flow)).
 
-Let's use this fact to run some actual code (*Code example 11* below) and print the output of the `(Math.Sqrt)` shard to the standard output (i.e., the terminal screen). We'll use the shard `(Log)` for this, as this shard takes its input and prints it to the terminal screen.
+Let's use this fact to run some actual code (*Code example 7* below) and print the output of the `(Math.Sqrt)` shard to the standard output (i.e., the terminal screen). We'll use the shard `(Log)` for this, as this shard takes its input and prints it to the terminal screen.
 
-*Code example 11*
+*Code example 7*
 
 === "EDN"
 
@@ -75,7 +75,7 @@ Unlike input and output, a shard's parameters need to be defined/placed inside t
 
 The following code example illustrates this.
 
-*Code example 12*
+*Code example 8*
 
 === "EDN"
 
@@ -207,7 +207,7 @@ As you can see, this syntax maps very nicely to the linear left-to-right data fl
 
 To see this similarity better, let's convert the code above into a flow diagram.
 
-Figure 4
+Figure 11
 
 ![Data flow in Shards](assets/data-flow-in-shards.png)
 
@@ -218,7 +218,7 @@ To explore this concept further, let's consider an example using two transformat
 
 Laying out these transformations from left to right, we get a sense of how the data flows along the transformation blocks.
 
-Figure 5
+Figure 12
 
 ![Data flow in Shards: horizontal flow](assets/data-flow-in-shards-horizontal.png)
 
@@ -234,7 +234,7 @@ would produce the output:
 
 Now, if you stack the shards vertically instead of laying them down horizontally, the code would still work.
 
-Figure 6
+Figure 13
 
 ![Data flow in Shards: vertical flow](assets/data-flow-in-shards-vertical.png)
 
@@ -271,7 +271,7 @@ Sometimes you may want a shard to *not* process the input coming to it from the 
 
 In the following code example `(Const nil)` overwrites the output of `(Math.Sqrt)` (value 3.0) preventing it from reaching the next shard, `(Log)`. Since `(Log)` now receives a 'nothing' value (courtesy `nil`), it prints nothing to the screen.
 
-*Code example 13*
+*Code example 9*
 
 === "EDN"
 
@@ -308,7 +308,7 @@ Let's illustrate this with a real Shards example.
 
 [`(Assert.IsNot)`](https://docs.fragcolor.xyz/shards/Assert/IsNot/) has passthrough permanently enabled (it cannot be turned off). So in the following code, `(Assert.IsNot)` still does its job (compares its input value 8 with its parameter value 7 and concludes assertion is `true`), but letting its input (value 8) passthrough itself as its output and become the input for the next shard, `(Log)`.
 
-*Code example 14*
+*Code example 10*
 
 === "EDN"
 
@@ -328,7 +328,7 @@ For `(Asset.IsNot)` passthrough is default switched on and cannot be changed, bu
 
 In the code example below, passthrough has been turned on for `(Match)` and is already enabled for `(Assert,IsNot)`. As a result, the input to `Match` (value 1) passes through both these shards and ends up as input for `(Log)`, which prints it to the terminal screen.
 
-*Code example 15*
+*Code example 11*
 
 === "EDN"
 

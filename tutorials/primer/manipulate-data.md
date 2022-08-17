@@ -28,7 +28,7 @@ Let's look at some of these data types and literals.
     In this section, we discuss only the common data types in Shards. For the complete list of supported data types see [types](https://docs.fragcolor.xyz/shards/types/). Also, some of these types are available only for internal use by shards (i.e., a programmer may not define and use them explicitly in their code).
 
 
-```{.clojure .annotate linenums="1"}
+```clj
 ;; named literal - denotes nill, nothing, none
 nil                         ;; implicit declaration without keyword `Const`
 (Const nil)                 ;; explicit declaration using keyword `Const`
@@ -103,7 +103,7 @@ A [`color`](https://docs.fragcolor.xyz/shards/types/#color) is a vector of 4 int
 As we saw in the last section - a data type is a description of the data while a literal is an actual data value.
 
 It's straightforward to use literals directly:
-```{.clojure .annotate linenums="1"}
+```clj
 9 (Math.Sqrt)       ;; takes literal 9 as input
 (Log)               ;; outputs literal => 3
 ```
@@ -135,7 +135,7 @@ To print the value of a variable you may explicitly log it via the variable name
 
 Let's see some real code examples of all that we have discussed in this section.
 
-*Code example 16*
+*Code example 12*
 
 === "EDN"
 
@@ -238,7 +238,7 @@ The variables that are accessible across wires or outside wires are called *glob
     3. When `:Global` is used with shards that read, update or modify an existing variable (`(Get)`, `(Update)`, etc.) its value is used in conjunction with the variable's name to identify the right variable (since you can have two variables with the same name but different scope). 
     4. Irrespective of the value of `:Global`, variables created within wires *are not accessible outside the wires* (i.e. a Mal/EDN function like `(prn)` cannot read context variables), though the reverse is true (value aliases declared outside wires using `(def)` are accessible by all the wires in that Shards program).
 
-*Code example 17*
+*Code example 13*
 
 === "EDN"
 
@@ -388,7 +388,7 @@ Additionally, the following general comparison shards can compare numeric quanti
 
 Here's some code demonstrating usage of these shards:
 
-*Code example 18*
+*Code example 14*
 
 === "EDN"
 
