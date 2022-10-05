@@ -51,7 +51,7 @@
   snake (Slice 1 -1)
   (ForEach
    (-> (get-index) >= .limb-index
-       [.limb-index 3] (Assoc .tmp-grid)))  
+       [.limb-index 3] (Assoc .tmp-grid)))
   ; then the fruit
   fruit (get-index) >= .fruit-index
   [.fruit-index 1] (Assoc .tmp-grid)
@@ -61,27 +61,43 @@
   ; return the populated grid
   .tmp-grid)
 
-(defshards render []
-  (GUI.Table
-   :Columns grid-cols :Contents
-   (ForEach
-    (-> (| (GUI.NextColumn))
-        (| (Match
-            [0 (-> ".") ; empty
-             1 (-> "F") ; fruit
-             2 (-> "H") ; head
-             3 (-> "B") ; body
-             4 (-> "T") ; tail
-             ]false)
-           (GUI.Text))))))
+(def cell-size 18)
+(def x-offset 48)
+(def y-offset 36)
+(defn render-cells [n]
+  (if
+   (= n -1)
+    nil
+    (->
+     (| (int2
+         (% n grid-cols)
+         (/ n grid-cols))
+        (ToFloat2)
+        (Math.Multiply (float2 cell-size))
+        (Math.Add (float2 x-offset y-offset)) > .position)
+     (| (Take n)
+        (UI.Area
+         :Position .position
+         :Contents
+         (-> (Match
+              [0 (-> ".") ; empty
+               1 (-> "F") ; fruit
+               2 (-> "H") ; head
+               3 (-> "B") ; body
+               4 (-> "T") ; tail
+               ]false)
+             (UI.Label))))
+     (render-cells (- n 1)))))
 
 (defshards menus []
-  (GUI.MenuBar
-   (-> (GUI.Menu
-        "File" :Contents
-        (-> (GUI.MenuItem "New game" :Shortcut "Space" :Action (initialize))
-            (GUI.Separator)
-            (GUI.MenuItem "Quit" :Shortcut "Alt+F4" :Action (Stop)))))))
+  (UI.MenuBar
+   (->
+    (UI.Menu
+     "File"
+     (->
+      (UI.Button "New game" (-> (initialize) (UI.CloseMenu)))
+      (UI.Separator)
+      (UI.Button "Quit" (Stop)))))))
 
 (defshards initialize []
   [(int2 1 2) (int2 2 2) (int2 3 2) (int2 3 3) (int2 4 3)] >= .snake
@@ -130,38 +146,50 @@
   (GFX.MainWindow
    :Title "Snake game" :Width 480 :Height 360
    :Contents
-   (-> (color 80 80 80 255) (GUI.Style GuiStyle.WindowBgColor)
-       (GUI.Window
-        :Title "canvas" :Width 1.0 :Height 1.0 :Pos (int2 0 0)
-        :Flags [GuiWindowFlags.NoTitleBar GuiWindowFlags.MenuBar
-                GuiWindowFlags.NoResize GuiWindowFlags.NoMove GuiWindowFlags.NoCollapse]
-        :Contents
-        (-> (menus)
-            (color 90 165 80 255) (GUI.Style GuiStyle.ChildBgColor)
-            (GUI.ChildWindow :Height 240 :Contents (-> .grid (render)))
-            (GUI.Separator)
-            (When (-> .game-over)
-                  (-> "GAME OVER" (GUI.Text :Color (color 255 0 0 255))
-                      (Count .snake) (GUI.Text :Format "Final score: {}")))))
+   (->
+    (Setup
+     (GFX.DrawQueue) >= .ui-draw-queue
+     (GFX.UIPass .ui-draw-queue) >> .render-steps)
 
-       (Inputs.KeyDown
-        "up"
-        (When (-> .prev-direction (IsNot "down"))
-              (-> "up" > .direction)))
-       (Inputs.KeyDown
-        "right"
-        (When (-> .prev-direction (IsNot "left"))
-              (-> "right" > .direction)))
-       (Inputs.KeyDown
-        "down"
-        (When (-> .prev-direction (IsNot "up"))
-              (-> "down" > .direction)))
-       (Inputs.KeyDown
-        "left"
-        (When (-> .prev-direction (IsNot "right"))
-              (-> "left" > .direction)))
-       (Inputs.KeyDown
-        "space" (initialize)))))
+    .ui-draw-queue (GFX.ClearQueue)
+
+    (UI
+     .ui-draw-queue
+     (->
+      (UI.TopPanel :Contents (menus))
+      (UI.BottomPanel
+       :Contents
+       (->
+        (When (-> .game-over)
+              (UI.Horizontal
+               (-> "GAME OVER!" (UI.Label :Style {:color (color 255 0 0)})
+                   (UI.Space 10.0)
+                   "Final score: " (UI.Label)
+                   (Count .snake) (ToString) (UI.Label))))))
+      .grid
+      (Setup (float2 0) >= .position)
+      (render-cells (- (* grid-cols grid-rows) 1))))
+
+    (GFX.Render :Steps .render-steps)
+
+    (Inputs.KeyDown
+     "up"
+     (When (-> .prev-direction (IsNot "down"))
+           (-> "up" > .direction)))
+    (Inputs.KeyDown
+     "right"
+     (When (-> .prev-direction (IsNot "left"))
+           (-> "right" > .direction)))
+    (Inputs.KeyDown
+     "down"
+     (When (-> .prev-direction (IsNot "up"))
+           (-> "down" > .direction)))
+    (Inputs.KeyDown
+     "left"
+     (When (-> .prev-direction (IsNot "right"))
+           (-> "left" > .direction)))
+    (Inputs.KeyDown
+     "space" (initialize)))))
 
 (defmesh root)
 (schedule root main-wire)
