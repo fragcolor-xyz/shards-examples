@@ -43,7 +43,7 @@ Now, to compute the index of a grid element in that sequence from its 2D coordin
     5. `>=` is an alias for the shard [`(Set)`](https://docs.fragcolor.xyz/shards/General/Set/) which saves the output of a shard into a context variable.
     6. [`(Math.Multiply)`](https://docs.fragcolor.xyz/shards/Math/Multiply/) multiplies its input (written to the left of the shard) with a given value (written to the right of the shard and enclosed within its brackets) and outputs the result.
     7. [`(Math.Add)`](https://docs.fragcolor.xyz/shards/Math/Add/) adds a value to its input and outputs the result.
-        
+
     ??? note
         Because defn expects a single "value" (called function return value) after the function name and the list of parameters, and our function’s logic (function body) contains multiple shards, a `(->)` shard is required to group these shards in a single (return) shard. Since this is a common situation with `(defn)` function, a convenient alternative is to use [`(defshards)`](https://docs.fragcolor.xyz/functions/macros/#defshards) instead. A `(defshards)` behaves exactly like a function (including the ability to accept input parameters) but can contain multiple shards in its body. These multiple shards are executed in the order that they appear and the `(defshards)` return value is the output of the last shard in its body.
 
@@ -54,7 +54,7 @@ Now, to compute the index of a grid element in that sequence from its 2D coordin
           .y (Math.Multiply grid-cols) (Math.Add .x))
         ```
 
-It can be a bit confusing considering that the function doesn't have any parameters. This is because there is an implicit parameter which is the input. 
+It can be a bit confusing considering that the function doesn't have any parameters. This is because there is an implicit parameter which is the input.
 
 Since the `(Take)`shard statements start with a `(|)`, they both process the same input (i.e. the implicit input parameter) passed to the`get-index` function. The first statement stores the 0th element of the input (sequence) into a context variable `.x`, while the second statement stores the 1st element of the input into a context variable `.y`.
 
@@ -92,33 +92,33 @@ We will render our game as a windowed application. Therefore we first need to de
 === "EDN"
 
     ```{.clojure .annotate linenums="1"}
-    (defloop main-wire ;; (1)
-      (GFX.MainWindow  ;; (2)
-       :Title "Snake game" :Width 480 :Height 360
-       :Contents
-       (-> (GUI.Window ;; (3)
-            :Title "canvas" :Width 1.0 :Height 1.0 :Pos (int2 0 0)
-            :Flags [GuiWindowFlags.NoTitleBar GuiWindowFlags.MenuBar
-                    GuiWindowFlags.NoResize GuiWindowFlags.NoMove GuiWindowFlags.NoCollapse]))))
-
-    (defmesh root)
-    (schedule root main-wire)
-    (run root (/ 1.0 60))
+    --8<-- "tutorials/snake/steps/2-window.edn"
     ```
 
     1. We have already seen `defloop`, `defmesh`, `schedule` and `run` in [step 1](./step-1.md).
     2. [`(GFX.MainWindow)`](https://docs.fragcolor.xyz/shards/GFX/MainWindow/) creates the application window.
-    3. [`(GUI.Window)`](https://docs.fragcolor.xyz/shards/GUI/Window/) creates a UI window inside our application.
 
 === "Result"
 
-    ![](window.png)
+    ![](2-window.png)
 
-Since we are going to use the UI system to display our game, we need to define a render area. This is why we have a UI window inside our application window.
+## Adding UI
 
-However, we don't want that UI window to display a title bar and we want it to stay at position `(0 0)` i.e. anchored at the top left of our application. To that end, we set the width and height of the window to be 100% of the available space and we use a few flags to prevent the moving or resizing of this window.
+We will render the game using UI elements. We need to initialize some code to get the UI working.
 
-You can play around by removing some of the flags or modifying other parameters and see how the game behavior changes.
+=== "EDN"
+    ```{.clojure .annotate linenums="1"}
+    --8<-- "tutorials/snake/steps/2-window-with-ui.edn"
+    ```
+
+    1. Boilerplate code to initialize some stuff required for rendering the UI.
+    2. [`(UI)`](https://docs.fragcolor.xyz/shards/UI/) defines a UI context.
+    3. UI code will go here.
+    4. Actual render of the UI.
+
+=== "Result"
+
+    ![](2-window-with-ui.png)
 
 ## Let's try it out!
 
@@ -127,41 +127,11 @@ Let's give our function a try. First we will change a few values in the grid to 
 === "EDN"
 
     ```clojure linenums="1"
-    (def grid-cols 5)
-    (def grid-rows 4)
-    (def grid
-      [0 2 0 0 3
-       1 0 7 0 0
-       0 0 0 4 0
-       6 0 5 0 8])
-
-    (defn get-index []
-      (-> (| (Take 0) >= .x)
-          (| (Take 1) >= .y)
-          .y (Math.Multiply grid-cols) (Math.Add .x)))
-
-    (defloop main-wire
-      (GFX.MainWindow
-       :Title "Snake game" :Width 480 :Height 360
-       :Contents
-       (-> (GUI.Window
-            :Title "canvas" :Width 1.0 :Height 1.0 :Pos (int2 0 0)
-            :Flags [GuiWindowFlags.NoTitleBar GuiWindowFlags.NoResize
-                    GuiWindowFlags.NoMove GuiWindowFlags.NoCollapse]
-            :Contents
-            (-> (int2 0 1) (get-index) >= .a
-                (int2 3 2) (get-index) >= .b
-
-                grid (Take .a) (GUI.Text)
-                grid (Take .b) (GUI.Text))))))
-
-    (defmesh root)
-    (schedule root main-wire)
-    (run root (/ 1.0 60))
+    --8<-- "tutorials/snake/steps/2-get-index.edn"
     ```
 
 === "Result"
 
-    ![](get-index.png)
+    ![](2-get-index.png)
 
 --8<-- "includes/license.md"
