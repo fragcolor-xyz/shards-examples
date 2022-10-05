@@ -27,13 +27,13 @@ To run the program, execute the following from the command line:
 === "Windows"
 
     ```powershell
-    .\cbl.exe <path\to\program.edn>
+    .\shards.exe <path\to\program.edn>
     ```
 
 === "Unix"
 
     ```bash
-    ./cbl path/to/program.edn
+    ./shards path/to/program.edn
     ```
 
 === "Output"
