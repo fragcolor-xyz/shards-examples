@@ -43,28 +43,18 @@ Now that have conditions to end the game, we can add a bit more logic to display
 === "EDN"
 
     ```{.clojure .annotate linenums="1"}
-    (GUI.Window
-      ; some lines omitted
-      (-> .grid (render)
-          (GUI.Separator)
-          (When (-> .game-over)
-                (-> "GAME OVER" (GUI.Text :Color (color 255 0 0 255)) ;; (1)
-                    (Count .snake) (GUI.Text :Format "Final score: {}"))))) ;; (2)
+    (UI.BottomPanel
+     :Contents
+     (->
+      (When (-> .game-over)
+       (UI.Horizontal
+       (-> "GAME OVER!" (UI.Label :Style {:color (color 255 0 0)}) ;; (1)
+           (UI.Space 10.0)
+           "Final score: " (UI.Label)
+           (Count .snake) (ToString) (UI.Label))))))
     ```
 
-    1. `:Color` is an optional parameter for [`(GUI.Text)`](https://docs.fragcolor.xyz/shards/GUI/Text/). It specifies the color of the dsiplay text using `color` (which is a built-in type that represents an RGBA color, where each component is a value in the `[0, 255]` range.)
-    2. `:Format` is an optional parameter for [`(GUI.Text)`](https://docs.fragcolor.xyz/shards/GUI/Text/). It replaces `{}` in a given string by the input value.
-
-We will also change the background color of the game's play-space. We could change the background color of the whole window, but then the area with the **GAME OVER** text would also share that same color. Instead, we will create a new area for the game itself. To do so we can use a child window.
-
-=== "EDN"
-
-    ```{.clojure .annotate linenums="1"}
-    (color 90 165 80 255) (GUI.Style GuiStyle.ChildBgColor) ;; (1)
-    (GUI.ChildWindow :Height 240 :Contents (-> .grid (render)))
-    ```
-
-    1. [`(GUI.Style)`](https://docs.fragcolor.xyz/shards/GUI/Style/) lets you modify a UI style setting identified by the `GuiStyle` enum.
+    1. `:Style` is an optional parameter for [`(UI.Label)`](https://docs.fragcolor.xyz/shards/UI/Label/). It lets specify the color of the dsiplay text using `(color)` (which is a built-in type that represents an RGBA color, where each component is a value in the `[0, 255]` range.)
 
 We will also add a small menu, to enable the player to cleanly restart or exit the game.
 
@@ -72,17 +62,26 @@ We will also add a small menu, to enable the player to cleanly restart or exit t
 
     ```{.clojure .annotate linenums="1"}
     (defshards menus []
-      (GUI.MenuBar
-       (-> (GUI.Menu ;; (1)
-            "File" :Contents
-            (-> (GUI.MenuItem "New game" :Shortcut "Space" :Action (initialize))
-                (GUI.Separator)
-                (GUI.MenuItem "Quit" :Shortcut "Alt+F4" :Action (Stop)))))))
+      (UI.MenuBar
+       (->
+        (UI.Menu ;; (1)
+         "File"
+         (->
+          (UI.Button "New game" (-> (initialize) (UI.CloseMenu)))
+          (UI.Separator)
+          (UI.Button "Quit" (Stop)))))))
     ```
 
-    1. [`(GUI.Menu)`](https://docs.fragcolor.xyz/shards/GUI/Menu/) contains one or more [`(GUI.MenuItem)`](https://docs.fragcolor.xyz/shards/GUI/MenuItem/) and is hosted in a [`(GUI.MenuBar)`](https://docs.fragcolor.xyz/shards/GUI/MenuBar/).
+    1. [`(UI.Menu)`](https://docs.fragcolor.xyz/shards/UI/Menu/) contains one or more [`(UI.Button)`](https://docs.fragcolor.xyz/shards/UI/Button/) and is hosted in a [`(UI.MenuBar)`](https://docs.fragcolor.xyz/shards/UI/MenuBar/).
 
-To display the menu we need to add the `GuiWindowFlags.MenuBar` to the sequence of flags given to the window.
+To display the menu we need to add it to a `(UI.TopPanel)`.
+
+=== "EDN"
+
+    ```{.clojure .annotate linenums="1"}
+    (UI.TopPanel :Contents (menus))
+    ```
+
 
 That's it! Congratulations on completing the snake tutorial.
 
