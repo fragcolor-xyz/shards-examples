@@ -62,19 +62,33 @@
   ; return the populated grid
   .tmp-grid)
 
-(defshards render []
-  (GUI.Table
-   :Columns grid-cols :Contents
-   (ForEach
-    (-> (| (GUI.NextColumn))
-        (| (Match
-            [0 (-> ".") ; empty
-             1 (-> "F") ; fruit
-             2 (-> "H") ; head
-             3 (-> "B") ; body
-             4 (-> "T") ; tail
-             ]false)
-           (GUI.Text))))))
+(def cell-size 18)
+(def x-offset 48)
+(def y-offset 36)
+(defn render-cells [n]
+  (if
+   (= n -1)
+    nil
+    (->
+     (| (int2
+         (% n grid-cols)
+         (/ n grid-cols))
+        (ToFloat2)
+        (Math.Multiply (float2 cell-size))
+        (Math.Add (float2 x-offset y-offset)) > .position)
+     (| (Take n)
+        (UI.Area
+         :Position .position
+         :Contents
+         (-> (Match
+              [0 (-> ".") ; empty
+               1 (-> "F") ; fruit
+               2 (-> "H") ; head
+               3 (-> "B") ; body
+               4 (-> "T") ; tail
+               ]false)
+             (UI.Label))))
+     (render-cells (- n 1)))))
 
 (defshards initialize []
   [(int2 1 2) (int2 2 2) (int2 3 2) (int2 3 3) (int2 4 3)] >= .snake
@@ -88,7 +102,7 @@
 (defloop main-wire
   (Once (initialize))
   ; logic
-  (When (-> (Time.Now) (Math.Subtract .last-tick) (IsMoreEqual 0.5))
+  (When (-> (Time.Now) (Math.Subtract .last-tick) (IsMoreEqual 0.33))
         (-> (Time.Now) > .last-tick
             ; move the snake
             .direction (Match ["up" (move-snake .snake (int2 0 -1) .grow)
@@ -109,31 +123,39 @@
   (GFX.MainWindow
    :Title "Snake game" :Width 480 :Height 360
    :Contents
-   (-> (GUI.Window
-        :Title "canvas" :Width 1.0 :Height 1.0 :Pos (int2 0 0)
-        :Flags [GuiWindowFlags.NoTitleBar GuiWindowFlags.NoResize
-                GuiWindowFlags.NoMove GuiWindowFlags.NoCollapse]
-        :Contents
-        (-> .grid (render)))
+   (->
+    (Setup
+     (GFX.DrawQueue) >= .ui-draw-queue
+     (GFX.UIPass .ui-draw-queue) >> .render-steps)
+    .ui-draw-queue (GFX.ClearQueue)
 
-       (Inputs.KeyDown
-        "up"
-        (When (-> .prev-direction (IsNot "down"))
-              (-> "up" > .direction)))
-       (Inputs.KeyDown
-        "right"
-        (When (-> .prev-direction (IsNot "left"))
-              (-> "right" > .direction)))
-       (Inputs.KeyDown
-        "down"
-        (When (-> .prev-direction (IsNot "up"))
-              (-> "down" > .direction)))
-       (Inputs.KeyDown
-        "left"
-        (When (-> .prev-direction (IsNot "right"))
-              (-> "left" > .direction)))
-       (Inputs.KeyDown
-        "space" (initialize)))))
+    (UI
+     .ui-draw-queue
+     (->
+      .grid
+      (Setup (float2 0) >= .position)
+      (render-cells (- (* grid-cols grid-rows) 1))))
+
+    (GFX.Render :Steps .render-steps)
+
+    (Inputs.KeyDown
+     "up"
+     (When (-> .prev-direction (IsNot "down"))
+           (-> "up" > .direction)))
+    (Inputs.KeyDown
+     "right"
+     (When (-> .prev-direction (IsNot "left"))
+           (-> "right" > .direction)))
+    (Inputs.KeyDown
+     "down"
+     (When (-> .prev-direction (IsNot "up"))
+           (-> "down" > .direction)))
+    (Inputs.KeyDown
+     "left"
+     (When (-> .prev-direction (IsNot "right"))
+           (-> "left" > .direction)))
+    (Inputs.KeyDown
+     "space" (initialize)))))
 
 (defmesh root)
 (schedule root main-wire)
