@@ -10,8 +10,7 @@ We will assign some values to define what entity each cell of our grid can repre
 | 1     | fruit   | `"F"`     |
 | 2     | head    | `"H"`     |
 | 3     | body    | `"B"`     |
-| 4     | tail    | `"S"`     |
-
+| 4     | tail    | `"T"`     |
 
 A snake has a head and a tail, and a body. We can represent these entities as a sequence of coordinates. The first element is the tail, the last one is the head, and everything in between is the body.
 
@@ -31,30 +30,87 @@ Every other cell is empty (or unoccupied) and is represented with a ‘.’.
     (int2 4 4) >= .fruit
     ```
 
-To simplify the layout we will render the grid using a [`(GUI.Table)`](https://docs.fragcolor.xyz/shards/GUI/Table/). We just need to push each value to the next column in a given row and if there's no more space in that row a new row will be added automatically.
+To position the cells, we will use a [`(UI.Area)`](https://docs.fragcolor.xyz/shards/UI/Area/). By default it is anchored at the top left corner, which means the position at that corner is `(float2 0 0)`.
+
+To calculate the position of our cell, we take into account the number of columns, the size in pixel we want our cell to have (`cell-size`) and additional `x-offset` and `y-offset` so that the overall grid is not stuck at the top left corner but slightly moved right and down.
 
 === "EDN"
 
     ```{.clojure .annotate linenums="1"}
-    (defshards render [] ;; (1)
-      (GUI.Table
-       :Columns grid-cols :Contents
-       (ForEach ;; (2)
-        (-> (| (GUI.NextColumn))
-            (| (Match ;; (3)
-                [0 (-> ".") ; empty
-                 1 (-> "F") ; fruit
-                 2 (-> "H") ; head
-                 3 (-> "B") ; body
-                 4 (-> "T") ; tail
-                 ]false)
-               (GUI.Text)))))) ;; (4)
+    (def cell-size 18)
+    (def x-offset 48)
+    (def y-offset 36)
+    (defn render-cell [n] ;; (1)
+      (| (int2 ;; (2)
+          (% n grid-cols) ;; (3)
+          (/ n grid-cols)) ;; (4)
+        (ToFloat2) ;; (5)
+        (Math.Multiply (float2 cell-size)) ;; (6)
+        (Math.Add (float2 x-offset y-offset)) > .position) ;; (7)
+      (| (Take n) ;; (8)
+        (UI.Area
+          :Position .position
+          :Contents
+          (-> (Match ;; (9)
+              [0 (-> ".") ; empty
+                1 (-> "F") ; fruit
+                2 (-> "H") ; head
+                3 (-> "B") ; body
+                4 (-> "T") ; tail
+                ]false)
+              (UI.Label))))) ;; (10)
     ```
-    
-    1. The input of this function will be our grid.
-    2. The [`(ForEach)`](https://docs.fragcolor.xyz/shards/General/ForEach/) shard iterates through all elements in our grid and executes an action on each one of them.
-    3. In that action, we [`(Match)`](https://docs.fragcolor.xyz/shards/General/Match/) the value to the corresponding character we have chosen.
-    4. Then the matched character is displayed in place of that grid element using [`(GUI.Text)`](https://docs.fragcolor.xyz/shards/GUI/Text/).
+
+    1. The input of this function will be our grid. The parameter `n` is the cell index we want to render.
+    2. We want to apply mathematical functions to integral numbers (so called integers) so we explicitly use the `(int2)`type.
+    3. `%` is the modulo function. We use it to get the `x` coordinate, i.e. then index of the column in our grid.
+    4. `/` is the division function. We use it to get the `y` coordinate, i.e. the index of the row in our grid.
+    5. [`(UI.Area)`](https://docs.fragcolor.xyz/shards/UI/Area/) requires a `(float2)` type for its `:Position` parameter, so we do a conversion using [`(ToFloat2)`](https://docs.fragcolor.xyz/shards/General/ToFloat2/)
+    6. We defined a size for a single cell to be `cell-size`. Without it, it would have been a 1x1 pixel which we could hardly see.
+    7. Finally, we add the offsets so that our grid is more centered. The final valus is saved into the `.position` variable.
+    8. Now, we get the value of `n`-indexed cell from the `.grid` variable that was given as input to the `render-area` function.
+    9. In that action, we [`(Match)`](https://docs.fragcolor.xyz/shards/General/Match/) the value of the cell to the corresponding character we have chosen.
+    10. Then the matched character is displayed in place of that grid element using [`(UI.Label)`](https://docs.fragcolor.xyz/shards/UI/Label/).
+
+The above function only deals with a single cell. We want to render all cells. To do so we will slightly modify it to recursively apply to each cell index (from `0` to `(- (* grid-cols grid-rows) 1)`, i.e. the number of columns times the number of rows, minus 1 because we start our index at `0`).
+
+=== "EDN"
+
+    ```{.clojure .annotate linenums="1"}
+    (def cell-size 18)
+    (def x-offset 48)
+    (def y-offset 36)
+    (defn render-cells [n] ;; (1)
+      (if
+      (= n -1) ;; (2)
+        nil  ;; (3)
+        (-> ;; (4)
+        (| (int2
+            (% n grid-cols)
+            (/ n grid-cols))
+            (ToFloat2)
+            (Math.Multiply (float2 cell-size))
+            (Math.Add (float2 x-offset y-offset)) > .position)
+        (| (Take n)
+            (UI.Area
+            :Position .position
+            :Contents
+            (-> (Match
+                  [0 (-> ".") ; empty
+                  1 (-> "F") ; fruit
+                  2 (-> "H") ; head
+                  3 (-> "B") ; body
+                  4 (-> "T") ; tail
+                  ]false)
+                (UI.Label))))
+        (render-cells (- n 1))))) ;; (5)
+    ```
+
+    1. We pluralized the function since it now renders several cells.
+    2. We test whether `n` equals `-1`. Since we want to render cells from `0` to `(- (* grid-cols grid-rows) 1)`, this is our stopping condition.
+    3. If we are in that case, we do nothing (`nil`).
+    4. Otherwise, we perform the same code as we did above.
+    5. Finally we do the recursion, which basically is just calling the same `render-cells` function but with a decremented value for `n`.
 
 ## Populating the grid
 
@@ -104,85 +160,11 @@ Let's put into practice all that we have seen so far.
 === "EDN"
 
     ```clojure linenums="1"
-    (def grid-cols 12)
-    (def grid-rows 10)
-    (def empty-grid
-      [0 0 0 0 0 0 0 0 0 0 0 0
-       0 0 0 0 0 0 0 0 0 0 0 0
-       0 0 0 0 0 0 0 0 0 0 0 0
-       0 0 0 0 0 0 0 0 0 0 0 0
-       0 0 0 0 0 0 0 0 0 0 0 0
-       0 0 0 0 0 0 0 0 0 0 0 0
-       0 0 0 0 0 0 0 0 0 0 0 0
-       0 0 0 0 0 0 0 0 0 0 0 0
-       0 0 0 0 0 0 0 0 0 0 0 0
-       0 0 0 0 0 0 0 0 0 0 0 0])
-
-    (defshards get-index []
-      (| (Take 0) >= .x)
-      (| (Take 1) >= .y)
-      .y (Math.Multiply grid-cols) (Math.Add .x))
-
-    (defshards populate-grid [fruit snake]
-      ; saves the input into a variable
-      >= .tmp-grid
-
-      ; first the snake tail and body
-      snake (Take 0) (get-index) >= .tail-index
-      [.tail-index 4] (Assoc .tmp-grid)
-      snake (Slice 1 -1)
-      (ForEach
-       (-> (get-index) >= .limb-index
-           [.limb-index 3] (Assoc .tmp-grid)))
-
-      ; then the fruit
-      fruit (get-index) >= .fruit-index
-      [.fruit-index 1] (Assoc .tmp-grid)
-
-      ; finally the snake head
-      snake (RTake 0) (get-index) >= .head-index
-      [.head-index 2] (Assoc .tmp-grid)
-
-      ; return the populated grid
-      .tmp-grid)
-
-    (defshards render []
-      (GUI.Table
-       :Columns grid-cols :Contents
-       (ForEach
-        (-> (| (GUI.NextColumn))
-            (| (Match
-                [0 (-> ".") ; empty
-                 1 (-> "F") ; fruit
-                 2 (-> "H") ; head
-                 3 (-> "B") ; body
-                 4 (-> "T") ; tail
-                 ]false)
-               (GUI.Text))))))
-
-    (defloop main-wire
-      ; logic
-      [(int2 1 2) (int2 2 2) (int2 3 2) (int2 3 3) (int2 4 3)] >= .snake
-      (int2 6 7) >= .fruit
-      empty-grid (populate-grid .fruit .snake) >= .grid
-      ; window
-      (GFX.MainWindow
-       :Title "Snake game" :Width 480 :Height 360
-       :Contents
-       (-> (GUI.Window
-            :Title "canvas" :Width 1.0 :Height 1.0 :Pos (int2 0 0)
-            :Flags [GuiWindowFlags.NoTitleBar GuiWindowFlags.NoResize
-                    GuiWindowFlags.NoMove GuiWindowFlags.NoCollapse]
-            :Contents
-            (-> .grid (render))))))
-
-    (defmesh root)
-    (schedule root main-wire)
-    (run root (/ 1.0 60))
+    --8<-- "tutorials/snake/steps/3-populate-draw-grid.edn"
     ```
 
 === "Result"
 
-    ![](populate-draw-grid.png)
+    ![](3-populate-draw-grid.png)
 
 --8<-- "includes/license.md"
