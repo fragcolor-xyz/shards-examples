@@ -1,0 +1,251 @@
+; SPDX-License-Identifier: BSD-3-Clause
+; Copyright © 2022 Fragcolor Pte. Ltd.
+
+(def left-x-offset -250)
+(def right-x-offset 250)
+(def total-rounds 10)
+(def max-timer 5)
+
+(defshards initialize []
+  (LoadImage "data/cats/cat01.png") (Push :Name .cat-images)
+  (LoadImage "data/cats/cat02.png") (Push :Name .cat-images)
+  (LoadImage "data/cats/cat03.png") (Push :Name .cat-images)
+  (LoadImage "data/cats/cat04.png") (Push :Name .cat-images)
+  (LoadImage "data/cats/cat05.png") (Push :Name .cat-images)
+  (LoadImage "data/dogs/dog01.png") (Push :Name .cat-images)
+  (LoadImage "data/dogs/dog02.png") (Push :Name .dog-images)
+  (LoadImage "data/dogs/dog03.png") (Push :Name .dog-images)
+  (LoadImage "data/dogs/dog04.png") (Push :Name .dog-images)
+  (LoadImage "data/dogs/dog05.png") (Push :Name .dog-images)
+  (LoadImage "data/penguins/penguin01.png") (Push :Name .penguin-images)
+  (LoadImage "data/penguins/penguin02.png") (Push :Name .penguin-images)
+  (LoadImage "data/penguins/penguin03.png") (Push :Name .penguin-images)
+  (LoadImage "data/penguins/penguin04.png") (Push :Name .penguin-images)
+  (LoadImage "data/penguins/penguin05.png") (Push :Name .penguin-images)
+  .cat-images (Push  :Name .all-images)
+  .dog-images (Push :Name .all-images)
+  .penguin-images  (Push :Name .all-images)
+
+  0 >= .left-series-index
+  0 >= .right-series-index
+  0 >= .left-image-index
+  0 >= .right-image-index
+
+  (Count .all-images) >= .total-image-series
+  0 >= .left-images-count
+  0 >= .right-images-count
+
+  .cat-images >= .left-images
+  .cat-images >= .right-images
+  true >= .same-images
+  true >= .new-round
+  0 >= .new-round-number
+
+  ; variables to reset each round
+  1 >= .current-round
+  0 >= .seconds-elapsed
+  0 >= .total-score
+  false >= .yes-input
+  false >= .input-received
+  false >= .game-over)
+
+(defshards reset-values []
+
+  false > .yes-input
+  false > .input-received
+  false > .game-over
+  1 > .current-round
+  0 >  .seconds-elapsed
+  0 > .total-score)
+
+; determines the images used for the round
+(defshards initialize-round []
+
+  0 > .seconds-elapsed
+  
+  ; determine if the images on the left and right will be the same or different
+  (If
+   :Predicate (-> (RandomInt :Max 2) (Is 0))
+   :Then (-> true > .same-images)
+   :Else (-> false > .same-images))
+
+  ; gets the image series to be used for the left side
+  (RandomInt :Max .total-image-series) > .left-series-index
+
+  ; get the number of images in the series to be used for the left
+  .all-images (Take .left-series-index) > .left-images
+  (Count .left-images) > .left-images-count
+
+  ; setup for the right image
+  (If
+   :Predicate (-> .same-images (Is true))
+   ; if images should be from the same series
+   :Then (->
+          .left-series-index > .right-series-index
+          (RandomInt :Max .left-images-count) > .left-image-index
+          (RandomInt :Max .left-images-count) > .right-image-index
+          (Repeat
+           :Action (-> (RandomInt :Max .left-images-count) > .right-image-index)
+           :Forever true
+           :Until (-> .right-image-index (IsNot .left-image-index)))
+
+          .right-image-index (IsNot .left-image-index) (Log "Are they not the same: "))
+
+   ; if images should be from a different series   
+   :Else (->
+          (RandomInt :Max .total-image-series) > .right-series-index
+          (Repeat
+           :Action (-> (RandomInt :Max .total-image-series) > .right-series-index)
+           :Forever true
+           :Until (-> .right-series-index (IsNot .left-series-index)))
+
+          ; get the number of images in the series to be used for the right 
+          .all-images (Take .right-series-index) > .right-images
+          (Count .right-images) > .right-images-count
+          (RandomInt :Max .left-images-count) > .left-image-index
+          (RandomInt :Max .right-images-count) > .right-image-index))
+
+  false > .new-round
+  false > .input-received)
+
+; creates an UI.Area with the left image
+(defshards left-image [image]
+  (UI.Area
+   :Position (float2 left-x-offset, 0.0)
+   :Anchor Anchor.Center
+   :Contents
+   (-> image (UI.Image :Scale (float2 0.5)))))
+
+; creates an UI.Area with the right image
+(defshards right-image [image]
+  (UI.Area
+   :Position (float2 right-x-offset, 0.0)
+   :Anchor Anchor.Center
+   :Contents
+   (-> image (UI.Image :Scale (float2 0.5)))))
+
+; creates the main game area
+(defshards main-game-ui []
+  (UI.TopPanel
+   (->
+    (UI.Horizontal
+     (->
+      "Score: " (UI.Label)
+      .total-score (ToString) (UI.Label)
+      (UI.Separator)
+      "Round: " (UI.Label)
+      .current-round (ToString) (UI.Label)
+      (UI.Separator)
+      "Time Left: " (UI.Label)
+      max-timer(time-remaining)(ToString)(UI.Label)))))
+
+  (UI.BottomPanel
+   (-> "Are they the same type of animal? Press the UP arrow if YES, and the DOWN arrow if NO." (UI.Label)))
+  
+  (UI.CentralPanel
+   (->
+    (UI.Horizontal
+     :Wrap true
+     :Contents
+     (->
+      (left-image (-> .all-images (Take .left-series-index) (Take .left-image-index)))
+      (right-image (-> .all-images (Take .right-series-index) (Take .right-image-index))))))))
+
+; creates the game over screen
+(defshards game-over-ui []
+  (UI.CentralPanel
+   (->
+    (UI.Area
+     :Position (float2 0.0, 0.0)
+     :Anchor Anchor.Center
+     :Contents
+     (->
+      "GAME OVER" (UI.Label)
+      (UI.Horizontal
+       :Contents
+       (->
+        "Final Score: " (UI.Label)
+        .total-score (ToString) (UI.Label)
+        "/"  (UI.Label)
+        total-rounds (ToString) (UI.Label)))
+
+      (UI.Button
+       :Label "Play Again!"
+       :Action (-> (reset-values))))))))
+
+(defshards check-answer [yes-input]
+  (When
+   :Predicate (-> .input-received (Is false))
+   :Action (-> 
+          (When
+           :Predicate (-> .same-images (Is yes-input))
+           :Action (-> (Math.Inc .total-score))) )) 
+  true > .input-received
+  (end-round))
+
+(defshards end-round []
+  .current-round (Math.Add 1) > .new-round-number
+  (If
+   :Predicate (-> .new-round-number (IsMore total-rounds))
+   :Then (->
+          true > .game-over)
+   :Else (->
+          .new-round-number > .current-round
+          true > .new-round)))
+
+(defshards increase-timer []
+  (When
+   :Predicate(-> .game-over(Is false))
+   :Action(->
+           "Increasing Timer"(Log)
+           .seconds-elapsed(Log)
+           (Math.Inc .seconds-elapsed)
+           (When
+            :Predicate (-> .seconds-elapsed (IsMore max-timer))
+            :Action (end-round)))))
+
+(defn time-remaining []
+  (Math.Subtract .seconds-elapsed))
+
+(defloop game-loop
+  (Setup (initialize))
+
+  (Once
+   :Action (-> (increase-timer))
+   :Every 1.0)
+  
+  (When
+   :Predicate  (-> (IsNot .game-over))
+   :Action (->
+          (When
+           :Predicate (-> .new-round)
+           :Action (-> (initialize-round)))))
+
+  (GFX.MainWindow
+   :Title "Yes-No Game" :Width 1280 :Height 768 :Debug false
+   :Contents
+   (->
+    (Setup
+     (GFX.DrawQueue) >= .ui-draw-queue
+     (GFX.UIPass .ui-draw-queue) >> .render-steps)
+    (| .ui-draw-queue (GFX.ClearQueue))
+
+    (If
+     :Predicate (-> .game-over)
+     :Then (-> (UI .ui-draw-queue (game-over-ui)))
+     :Else (-> (UI .ui-draw-queue (main-game-ui))))
+
+    (GFX.Render :Steps .render-steps)
+    
+    (Inputs.KeyDown
+     :Key "up"
+     :Action (-> (check-answer true)))
+
+    (Inputs.KeyDown
+     :Key "down"
+     :Action (-> (check-answer false))))))
+
+(defmesh main)
+(schedule main game-loop)
+(run main (/ 1.0 60.0))
+
