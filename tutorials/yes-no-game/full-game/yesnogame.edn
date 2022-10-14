@@ -12,7 +12,7 @@
   (LoadImage "data/cats/cat03.png") (Push :Name .cat-images)
   (LoadImage "data/cats/cat04.png") (Push :Name .cat-images)
   (LoadImage "data/cats/cat05.png") (Push :Name .cat-images)
-  (LoadImage "data/dogs/dog01.png") (Push :Name .cat-images)
+  (LoadImage "data/dogs/dog01.png") (Push :Name .dog-images)
   (LoadImage "data/dogs/dog02.png") (Push :Name .dog-images)
   (LoadImage "data/dogs/dog03.png") (Push :Name .dog-images)
   (LoadImage "data/dogs/dog04.png") (Push :Name .dog-images)
@@ -34,6 +34,7 @@
   (Count .all-images) >= .total-image-series
   0 >= .left-images-count
   0 >= .right-images-count
+  [0, 0] >= .chosen-indices
 
   .cat-images >= .left-images
   .cat-images >= .right-images
@@ -58,11 +59,53 @@
   0 >  .seconds-elapsed
   0 > .total-score)
 
+(defwire fisher-yates-shuffle
+  = .input-sequence
+
+  (Setup
+   (Sequence .output-sequence)
+   0 >= .input-sequence-length
+   0 >= .x)
+
+  (Clear .output-sequence)
+  (Count .input-sequence) > .input-sequence-length
+  0 > .x
+
+  (Repeat
+   :Action
+   (->
+    (Count .input-sequence) > .input-sequence-length
+    (RandomInt :Max .input-sequence-length) > .x
+    .input-sequence (Take .x) (Push .output-sequence)
+    (Erase .x .input-sequence))
+   :Forever true
+   :Until (-> (Count .input-sequence) (Is 0)))
+
+  .output-sequence)
+
+(defwire select-two-indices
+  = .sequence-length
+
+  (Setup
+   (Sequence .indices-sequence)
+   0 >= .x)
+
+  (Clear .indices-sequence)
+  0 > .x
+
+  (Repeat
+   :Action
+   (->
+    .x (Push .indices-sequence)
+    (Math.Inc .x))
+   :Times .sequence-length)
+  .indices-sequence  (Log "before shuffle") (Do fisher-yates-shuffle) (Take [0 1]))
+
 ; determines the images used for the round
 (defshards initialize-round []
 
   0 > .seconds-elapsed
-  
+
   ; determine if the images on the left and right will be the same or different
   (If
    :Predicate (-> (RandomInt :Max 2) (Is 0))
@@ -80,30 +123,30 @@
   (If
    :Predicate (-> .same-images (Is true))
    ; if images should be from the same series
-   :Then (->
-          .left-series-index > .right-series-index
-          (RandomInt :Max .left-images-count) > .left-image-index
-          (RandomInt :Max .left-images-count) > .right-image-index
-          (Repeat
-           :Action (-> (RandomInt :Max .left-images-count) > .right-image-index)
-           :Forever true
-           :Until (-> .right-image-index (IsNot .left-image-index)))
-
-          .right-image-index (IsNot .left-image-index) (Log "Are they not the same: "))
+   :Then
+   (->
+    .left-series-index > .right-series-index
+    .left-images-count (Do select-two-indices) > .chosen-indices (Log "after select-two-indices")
+    .chosen-indices (Take 0) > .left-image-index
+    .chosen-indices (Take 1) > .right-image-index
+    .right-image-index (IsNot .left-image-index) (Log "are they different?"))
 
    ; if images should be from a different series   
-   :Else (->
-          (RandomInt :Max .total-image-series) > .right-series-index
-          (Repeat
-           :Action (-> (RandomInt :Max .total-image-series) > .right-series-index)
-           :Forever true
-           :Until (-> .right-series-index (IsNot .left-series-index)))
+   :Else
+   (->
+    (RandomInt :Max .total-image-series) > .right-series-index
+    .total-image-series (Do select-two-indices) > .chosen-indices (Log "after select-two-indices")
 
-          ; get the number of images in the series to be used for the right 
-          .all-images (Take .right-series-index) > .right-images
-          (Count .right-images) > .right-images-count
-          (RandomInt :Max .left-images-count) > .left-image-index
-          (RandomInt :Max .right-images-count) > .right-image-index))
+    (Repeat
+     :Action (-> (RandomInt :Max .total-image-series) > .right-series-index)
+     :Forever true
+     :Until (-> .right-series-index (IsNot .left-series-index)))
+
+        ; get the number of images in the series to be used for the right 
+    .all-images (Take .right-series-index) > .right-images
+    (Count .right-images) > .right-images-count
+    (RandomInt :Max .left-images-count) > .left-image-index
+    (RandomInt :Max .right-images-count) > .right-image-index))
 
   false > .new-round
   false > .input-received)
@@ -127,8 +170,10 @@
 ; creates the main game area
 (defshards main-game-ui []
   (UI.TopPanel
+   :Contents
    (->
     (UI.Horizontal
+     :Contents
      (->
       "Score: " (UI.Label)
       .total-score (ToString) (UI.Label)
@@ -137,12 +182,13 @@
       .current-round (ToString) (UI.Label)
       (UI.Separator)
       "Time Left: " (UI.Label)
-      max-timer(time-remaining)(ToString)(UI.Label)))))
+      max-timer (time-remaining) (ToString) (UI.Label)))))
 
   (UI.BottomPanel
-   (-> "Are they the same type of animal? Press the UP arrow if YES, and the DOWN arrow if NO." (UI.Label)))
-  
+   :Contents (-> "Are they the same type of animal? Press the UP arrow if YES, and the DOWN arrow if NO." (UI.Label)))
+
   (UI.CentralPanel
+   :Contents
    (->
     (UI.Horizontal
      :Wrap true
@@ -154,6 +200,7 @@
 ; creates the game over screen
 (defshards game-over-ui []
   (UI.CentralPanel
+   :Contents
    (->
     (UI.Area
      :Position (float2 0.0, 0.0)
@@ -176,10 +223,11 @@
 (defshards check-answer [yes-input]
   (When
    :Predicate (-> .input-received (Is false))
-   :Action (-> 
-          (When
-           :Predicate (-> .same-images (Is yes-input))
-           :Action (-> (Math.Inc .total-score))) )) 
+   :Action
+   (->
+    (When
+     :Predicate (-> .same-images (Is yes-input))
+     :Action (-> (Math.Inc .total-score)))))
   true > .input-received
   (end-round))
 
@@ -187,39 +235,29 @@
   .current-round (Math.Add 1) > .new-round-number
   (If
    :Predicate (-> .new-round-number (IsMore total-rounds))
-   :Then (->
-          true > .game-over)
-   :Else (->
-          .new-round-number > .current-round
-          true > .new-round)))
+   :Then
+   (-> true > .game-over)
+   :Else
+   (->
+    .new-round-number > .current-round
+    true > .new-round)))
 
 (defshards increase-timer []
   (When
-   :Predicate(-> .game-over(Is false))
-   :Action(->
-           "Increasing Timer"(Log)
-           .seconds-elapsed(Log)
-           (Math.Inc .seconds-elapsed)
-           (When
-            :Predicate (-> .seconds-elapsed (IsMore max-timer))
-            :Action (end-round)))))
+   :Predicate (-> .game-over (Is false))
+   :Action
+   (->
+    "Increasing Timer" (Log)
+    .seconds-elapsed (Log)
+    (Math.Inc .seconds-elapsed)
+    (When
+     :Predicate (-> .seconds-elapsed (IsMore max-timer))
+     :Action (end-round)))))
 
 (defn time-remaining []
   (Math.Subtract .seconds-elapsed))
 
-(defloop game-loop
-  (Setup (initialize))
-
-  (Once
-   :Action (-> (increase-timer))
-   :Every 1.0)
-  
-  (When
-   :Predicate  (-> (IsNot .game-over))
-   :Action (->
-          (When
-           :Predicate (-> .new-round)
-           :Action (-> (initialize-round)))))
+(defloop ui-loop
 
   (GFX.MainWindow
    :Title "Yes-No Game" :Width 1280 :Height 768 :Debug false
@@ -236,7 +274,7 @@
      :Else (-> (UI .ui-draw-queue (main-game-ui))))
 
     (GFX.Render :Steps .render-steps)
-    
+
     (Inputs.KeyDown
      :Key "up"
      :Action (-> (check-answer true)))
@@ -245,7 +283,27 @@
      :Key "down"
      :Action (-> (check-answer false))))))
 
+(defloop logic-loop
+  (Once
+   :Action (-> (increase-timer))
+   :Every 1.0)
+
+  (WhenNot
+   :Predicate  (-> .game-over)
+   :Action
+   (->
+    (When
+     :Predicate (-> .new-round)
+     :Action (-> (initialize-round))))))
+
+(defloop debug-loop
+  ; insert debugging code here
+  )
+
+(defloop game-loop
+  (Setup (initialize))
+  (Branch [ui-loop, logic-loop, debug-loop]))
+
 (defmesh main)
 (schedule main game-loop)
 (run main (/ 1.0 60.0))
-
