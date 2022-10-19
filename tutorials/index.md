@@ -6,7 +6,7 @@ These tutorials will help you get familiar with Shards.
 
 We will be using [Visual Studio Code](https://code.visualstudio.com/) although any text editor could work.
 
-You will also need a compiled version of Shards to run these tutorials. Shards can be [built from the sources](https://docs.fragcolor.xyz/contribute/code/building-shards/).
+You will also need a compiled version of Shards to run these tutorials. Shards can be [built from the sources](https://docs.fragcolor.xyz/contribute/code/build-shards/).
 
 * [Snake](./snake/index.md)
 

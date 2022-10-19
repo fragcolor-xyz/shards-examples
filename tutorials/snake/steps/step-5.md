@@ -54,7 +54,7 @@ Now that have conditions to end the game, we can add a bit more logic to display
            (Count .snake) (ToString) (UI.Label))))))
     ```
 
-    1. `:Style` is an optional parameter for [`(UI.Label)`](https://docs.fragcolor.xyz/shards/UI/Label/). It lets specify the color of the dsiplay text using `(color)` (which is a built-in type that represents an RGBA color, where each component is a value in the `[0, 255]` range.)
+    1. `:Style` is an optional parameter for [`(UI.Label)`](https://docs.fragcolor.xyz/docs/shards/UI/Label/). It lets specify the color of the dsiplay text using `(color)` (which is a built-in type that represents an RGBA color, where each component is a value in the `[0, 255]` range.)
 
 We will also add a small menu, to enable the player to cleanly restart or exit the game.
 
@@ -72,7 +72,7 @@ We will also add a small menu, to enable the player to cleanly restart or exit t
           (UI.Button "Quit" (Stop)))))))
     ```
 
-    1. [`(UI.Menu)`](https://docs.fragcolor.xyz/shards/UI/Menu/) contains one or more [`(UI.Button)`](https://docs.fragcolor.xyz/shards/UI/Button/) and is hosted in a [`(UI.MenuBar)`](https://docs.fragcolor.xyz/shards/UI/MenuBar/).
+    1. [`(UI.Menu)`](https://docs.fragcolor.xyz/docs/shards/UI/Menu/) contains one or more [`(UI.Button)`](https://docs.fragcolor.xyz/docs/shards/UI/Button/) and is hosted in a [`(UI.MenuBar)`](https://docs.fragcolor.xyz/docs/shards/UI/MenuBar/).
 
 To display the menu we need to add it to a `(UI.TopPanel)`.
 

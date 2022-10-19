@@ -22,7 +22,7 @@ The trick is to visualize the 1D sequence as a 2D matrix with defined grid row a
        0 0 0 0 0]) ;; (2)
     ```
 
-    1. The [`def`](https://docs.fragcolor.xyz/functions/macros/#def) keyword associates a value with a name.
+    1. The [`def`](https://docs.fragcolor.xyz/docs/functions/macros/#def) keyword associates a value with a name.
     2. `[]` is the syntax to define a sequence of values.
 
 Now, to compute the index of a grid element in that sequence from its 2D coordinates, we can define the following function.
@@ -36,16 +36,16 @@ Now, to compute the index of a grid element in that sequence from its 2D coordin
           .y (Math.Multiply grid-cols) (Math.Add .x))) ;; (6) (7)
     ```
 
-    1. The [`defn`](https://docs.fragcolor.xyz/functions/macros/#defn) keyword associates a function with a name. Note the `[]` after the `get-index` name. This indicates that this function has 0 parameters. We will later see functions that do have parameters.
-    2. [`(->)`](https://docs.fragcolor.xyz/functions/misc/#shard-container) is a shard container that will group and execute its inner shard(s) in order.
-    3. `(|)` is an alias for [`(Sub)`](https://docs.fragcolor.xyz/shards/General/Sub/). It allows reusing the same input across a sequence of shards.
-    4. [`(Take)`](https://docs.fragcolor.xyz/shards/General/Take/) returns the value from a sequence at a given index (starting at `0`).
-    5. `>=` is an alias for the shard [`(Set)`](https://docs.fragcolor.xyz/shards/General/Set/) which saves the output of a shard into a context variable.
-    6. [`(Math.Multiply)`](https://docs.fragcolor.xyz/shards/Math/Multiply/) multiplies its input (written to the left of the shard) with a given value (written to the right of the shard and enclosed within its brackets) and outputs the result.
-    7. [`(Math.Add)`](https://docs.fragcolor.xyz/shards/Math/Add/) adds a value to its input and outputs the result.
+    1. The [`defn`](https://docs.fragcolor.xyz/docs/functions/macros/#defn) keyword associates a function with a name. Note the `[]` after the `get-index` name. This indicates that this function has 0 parameters. We will later see functions that do have parameters.
+    2. [`(->)`](https://docs.fragcolor.xyz/docs/functions/misc/#shard-container) is a shard container that will group and execute its inner shard(s) in order.
+    3. `(|)` is an alias for [`(Sub)`](https://docs.fragcolor.xyz/docs/shards/General/Sub/). It allows reusing the same input across a sequence of shards.
+    4. [`(Take)`](https://docs.fragcolor.xyz/docs/shards/General/Take/) returns the value from a sequence at a given index (starting at `0`).
+    5. `>=` is an alias for the shard [`(Set)`](https://docs.fragcolor.xyz/docs/shards/General/Set/) which saves the output of a shard into a context variable.
+    6. [`(Math.Multiply)`](https://docs.fragcolor.xyz/docs/shards/Math/Multiply/) multiplies its input (written to the left of the shard) with a given value (written to the right of the shard and enclosed within its brackets) and outputs the result.
+    7. [`(Math.Add)`](https://docs.fragcolor.xyz/docs/shards/Math/Add/) adds a value to its input and outputs the result.
 
     ??? note
-        Because defn expects a single "value" (called function return value) after the function name and the list of parameters, and our function’s logic (function body) contains multiple shards, a `(->)` shard is required to group these shards in a single (return) shard. Since this is a common situation with `(defn)` function, a convenient alternative is to use [`(defshards)`](https://docs.fragcolor.xyz/functions/macros/#defshards) instead. A `(defshards)` behaves exactly like a function (including the ability to accept input parameters) but can contain multiple shards in its body. These multiple shards are executed in the order that they appear and the `(defshards)` return value is the output of the last shard in its body.
+        Because defn expects a single "value" (called function return value) after the function name and the list of parameters, and our function’s logic (function body) contains multiple shards, a `(->)` shard is required to group these shards in a single (return) shard. Since this is a common situation with `(defn)` function, a convenient alternative is to use [`(defshards)`](https://docs.fragcolor.xyz/docs/functions/macros/#defshards) instead. A `(defshards)` behaves exactly like a function (including the ability to accept input parameters) but can contain multiple shards in its body. These multiple shards are executed in the order that they appear and the `(defshards)` return value is the output of the last shard in its body.
 
         ```clojure linenums="1"
         (defshards get-index []
@@ -96,7 +96,7 @@ We will render our game as a windowed application. Therefore we first need to de
     ```
 
     1. We have already seen `defloop`, `defmesh`, `schedule` and `run` in [step 1](./step-1.md).
-    2. [`(GFX.MainWindow)`](https://docs.fragcolor.xyz/shards/GFX/MainWindow/) creates the application window.
+    2. [`(GFX.MainWindow)`](https://docs.fragcolor.xyz/docs/shards/GFX/MainWindow/) creates the application window.
 
 === "Result"
 
@@ -112,7 +112,7 @@ We will render the game using UI elements. We need to initialize some code to ge
     ```
 
     1. Boilerplate code to initialize some stuff required for rendering the UI.
-    2. [`(UI)`](https://docs.fragcolor.xyz/shards/UI/) defines a UI context.
+    2. [`(UI)`](https://docs.fragcolor.xyz/docs/shards/UI/) defines a UI context.
     3. UI code will go here.
     4. Actual render of the UI.
 

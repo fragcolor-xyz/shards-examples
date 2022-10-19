@@ -12,11 +12,11 @@ These tutorials are designed to help you learn practical Shards programming step
 
 ## Installation
 
-[Set up your environment](https://docs.fragcolor.xyz/contribute/code/getting-started/) and [build Shards](https://docs.fragcolor.xyz/contribute/code/building-shards/) before working through the tutorials given in this repository.
+[Set up your environment](https://docs.fragcolor.xyz/contribute/getting-started/) and [build Shards](https://docs.fragcolor.xyz/contribute/code/build-shards/) before working through the tutorials given in this repository.
 
 ## Usage
 
-Though there are no hard pre-requisites for these tutorials, if you're new to programming you should read the [Shards primer](https://learn.fragcolor.xyz/how-to/shards-primer/) first.
+Though there are no hard pre-requisites for these tutorials, if you're new to programming you should read the [Shards primer](https://docs.fragcolor.xyz/learn/shards/) first.
 
 It's also recommended to go through the [Shards architecture](https://docs.fragcolor.xyz/architecture-guides/shards) guide to understand what's going on under the hood.
 
@@ -30,7 +30,7 @@ It's also recommended to go through the [Shards architecture](https://docs.fragc
 
 Contributions in the form of new tutorials or fixes/enhancements to the existing ones are welcome! 
 
-Please refer to the [contribution guidelines](https://learn.fragcolor.xyz/how-to/contributing-tutorials/) for submitting your tutorials.
+Please refer to the [contribution guidelines](https://docs.fragcolor.xyz/contribute/contributing-changes/) before submitting your tutorials.
 
 ## Licensing
 
