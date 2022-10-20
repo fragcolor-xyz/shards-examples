@@ -60,46 +60,44 @@
   0 > .total-score)
 
 (defwire fisher-yates-shuffle
-  = .input-sequence
-
-  (Setup
-   (Sequence .output-sequence)
-   0 >= .input-sequence-length
-   0 >= .x)
-
-  (Clear .output-sequence)
-  (Count .input-sequence) > .input-sequence-length
-  0 > .x
+  (ExpectSeq) = .sequence
+  (Count .sequence) (Math.Subtract 1) >= .max-index ; -1 from the sequence size to get the max index number
 
   (Repeat
-   :Action
-   (->
-    (Count .input-sequence) > .input-sequence-length
-    (RandomInt :Max .input-sequence-length) > .x
-    .input-sequence (Take .x) (Push .output-sequence)
-    (Erase .x .input-sequence))
-   :Forever true
-   :Until (-> (Count .input-sequence) (Is 0)))
+   (-> (RandomInt :Max .max-index) >= .random-index ; select an index of the sequence randomly, the last index will never be chosen as :Max is not inclusive
+       .sequence
+       (| (Take .random-index) &> .chosen-value) ; obtains the value stored at the random index of the sequence
+       (| (Take .max-index) &> .last-value) ; obtains the last value in the sequence
 
-  .output-sequence)
+       ; swaps the values in the last index of the sequence with the chosen index
+       [.random-index .last-value] (Assoc .sequence) ; updates the random index selected with the last value of the sequence
+       [.max-index .chosen-value] (Assoc .sequence) ; updates the last index of the sequence with the value of the index randomly chosen
+ 
+       (Math.Dec .max-index) ; decreases the max index value so that the shuffle will leave the newly swapped value of the current max index alone for the next iteration 
+       ) 
+   :Forever true
+   :Until (-> .max-index (Is 0))) ; loops until the there are no two values left to swap between
+
+  .sequence) ; returns the newly shuffled sequence
+
 
 (defwire select-two-indices
   = .sequence-length
 
   (Setup
    (Sequence .indices-sequence)
-   0 >= .x)
+   0 >= .index)
 
   (Clear .indices-sequence)
-  0 > .x
+  0 > .index
 
   (Repeat
    :Action
    (->
-    .x (Push .indices-sequence)
-    (Math.Inc .x))
+    .index (Push .indices-sequence)
+    (Math.Inc .index))
    :Times .sequence-length)
-  .indices-sequence  (Log "before shuffle") (Do fisher-yates-shuffle) (Take [0 1]))
+  .indices-sequence (Do fisher-yates-shuffle) (Take [0 1]))
 
 ; determines the images used for the round
 (defshards initialize-round []
@@ -126,23 +124,19 @@
    :Then
    (->
     .left-series-index > .right-series-index
-    .left-images-count (Do select-two-indices) > .chosen-indices (Log "after select-two-indices")
+    .left-images-count (Do select-two-indices) (ExpectIntSeq) > .chosen-indices
     .chosen-indices (Take 0) > .left-image-index
-    .chosen-indices (Take 1) > .right-image-index
-    .right-image-index (IsNot .left-image-index) (Log "are they different?"))
+    .chosen-indices (Take 1) > .right-image-index)
 
    ; if images should be from a different series   
    :Else
    (->
     (RandomInt :Max .total-image-series) > .right-series-index
-    .total-image-series (Do select-two-indices) > .chosen-indices (Log "after select-two-indices")
+    .total-image-series (Do select-two-indices) (ExpectIntSeq) > .chosen-indices
+    .chosen-indices (Take 0) > .left-series-index
+    .chosen-indices (Take 1) > .right-series-index
 
-    (Repeat
-     :Action (-> (RandomInt :Max .total-image-series) > .right-series-index)
-     :Forever true
-     :Until (-> .right-series-index (IsNot .left-series-index)))
-
-        ; get the number of images in the series to be used for the right 
+   ; get the number of images in the series to be used for the right 
     .all-images (Take .right-series-index) > .right-images
     (Count .right-images) > .right-images-count
     (RandomInt :Max .left-images-count) > .left-image-index
