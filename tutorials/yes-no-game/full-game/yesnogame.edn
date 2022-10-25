@@ -6,7 +6,7 @@
 (def total-rounds 10)
 (def max-timer 5)
 
-(defshards initialize []
+(defshards load-resources []
   (LoadImage "data/cats/cat01.png") (Push :Name .cat-images)
   (LoadImage "data/cats/cat02.png") (Push :Name .cat-images)
   (LoadImage "data/cats/cat03.png") (Push :Name .cat-images)
@@ -25,7 +25,6 @@
   .cat-images (Push  :Name .all-images)
   .dog-images (Push :Name .all-images)
   .penguin-images  (Push :Name .all-images)
-
   0 >= .left-series-index
   0 >= .right-series-index
   0 >= .left-image-index
@@ -34,10 +33,16 @@
   (Count .all-images) >= .total-image-series
   0 >= .left-images-count
   0 >= .right-images-count
-  [0, 0] >= .chosen-indices
 
+  ;(Sequence .left-images)
+  ;(Sequence .right-images)
   .cat-images >= .left-images
   .cat-images >= .right-images
+  )
+
+(defshards initialize-variables []
+
+  [0, 0] >= .chosen-indices
   true >= .same-images
   true >= .new-round
   0 >= .new-round-number
@@ -72,9 +77,9 @@
        ; swaps the values in the last index of the sequence with the chosen index
        [.random-index .last-value] (Assoc .sequence) ; updates the random index selected with the last value of the sequence
        [.max-index .chosen-value] (Assoc .sequence) ; updates the last index of the sequence with the value of the index randomly chosen
- 
+
        (Math.Dec .max-index) ; decreases the max index value so that the shuffle will leave the newly swapped value of the current max index alone for the next iteration 
-       ) 
+       )
    :Forever true
    :Until (-> .max-index (Is 0))) ; loops until the there are no two values left to swap between
 
@@ -236,13 +241,12 @@
     .new-round-number > .current-round
     true > .new-round)))
 
-(defshards increase-timer []
+(defshards increase-timer [] 
   (When
    :Predicate (-> .game-over (Is false))
    :Action
    (->
-    "Increasing Timer" (Log)
-    .seconds-elapsed (Log)
+    .seconds-elapsed (Log "Timer")
     (Math.Inc .seconds-elapsed)
     (When
      :Predicate (-> .seconds-elapsed (IsMore max-timer))
@@ -290,13 +294,9 @@
      :Predicate (-> .new-round)
      :Action (-> (initialize-round))))))
 
-(defloop debug-loop
-  ; insert debugging code here
-  )
-
 (defloop game-loop
-  (Setup (initialize))
-  (Branch [ui-loop, logic-loop, debug-loop]))
+  (Setup (load-resources)(initialize-variables))
+  (Branch [ui-loop, logic-loop]))
 
 (defmesh main)
 (schedule main game-loop)
