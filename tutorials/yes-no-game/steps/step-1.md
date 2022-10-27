@@ -6,7 +6,7 @@ A basic Shards program consists of writing Wires and scheduling them onto a Mesh
 
 A basic Shards program would look like this:
 
-=== "Command"
+=== "Code"
     
     ```clojure linenums="1"
     (defwire game-wire          ; define a Wire named "game-wire"
@@ -33,7 +33,7 @@ In order to have the program run continuously to keep the game running, we will 
 
 Since most games run at 60 FPS (Frames per Second), we will be using `(/ 1.0 60.0)` which reads as "1 divided by 60" to get the time interval between each frame to achieve a 60 FPS loop.
 
-=== "Command"
+=== "Code"
     
     ```clojure linenums="1"
     (defloop game-loop          ; define a Looped Wire named "game-loop"
@@ -51,7 +51,7 @@ In order to keep our code easily readable and organized, it is advisable to spli
 ??? "Branch"
     [`Branch`](https://docs.fragcolor.xyz/docs/shards/General/Branch/) creates a mini-Mesh of sorts and schedules Wires to run on it.
 
-=== "Command"
+=== "Code"
     
     ```clojure linenums="1"
     (defloop ui-loop)                   ; insert UI code here
@@ -76,7 +76,7 @@ We can ready empty shards `load-resources` and `initialize-variables` that will 
     The [`Setup`](https://docs.fragcolor.xyz/docs/shards/General/Once/) shard will only be executed once, even within a Looped Wire. This makes it ideal to hold code that is only used once to ready the game. 
 
 
-=== "Command"
+=== "Code"
     
     ```clojure linenums="1"
     (defshards load-resources)          ; load resources here 

@@ -34,11 +34,8 @@
   0 >= .left-images-count
   0 >= .right-images-count
 
-  ;(Sequence .left-images)
-  ;(Sequence .right-images)
   .cat-images >= .left-images
-  .cat-images >= .right-images
-  )
+  .cat-images >= .right-images)
 
 (defshards initialize-variables []
 
@@ -47,10 +44,10 @@
   true >= .new-round
   0 >= .new-round-number
 
-  ; variables to reset each round
-  1 >= .current-round
-  0 >= .seconds-elapsed
+  ; variables to reset each round 
   0 >= .total-score
+  1 >= .current-round
+  max-timer >= .time-remaining
   false >= .yes-input
   false >= .input-received
   false >= .game-over)
@@ -61,7 +58,7 @@
   false > .input-received
   false > .game-over
   1 > .current-round
-  0 >  .seconds-elapsed
+  max-timer > .time-remaining
   0 > .total-score)
 
 (defwire fisher-yates-shuffle
@@ -107,7 +104,7 @@
 ; determines the images used for the round
 (defshards initialize-round []
 
-  0 > .seconds-elapsed
+  max-timer > .time-remaining
 
   ; determine if the images on the left and right will be the same or different
   (If
@@ -156,7 +153,7 @@
    :Position (float2 left-x-offset, 0.0)
    :Anchor Anchor.Center
    :Contents
-   (-> image (UI.Image :Scale (float2 0.5)))))
+   (-> image (UI.Image))))
 
 ; creates an UI.Area with the right image
 (defshards right-image [image]
@@ -164,7 +161,7 @@
    :Position (float2 right-x-offset, 0.0)
    :Anchor Anchor.Center
    :Contents
-   (-> image (UI.Image :Scale (float2 0.5)))))
+   (-> image (UI.Image))))
 
 ; creates the main game area
 (defshards main-game-ui []
@@ -181,7 +178,7 @@
       .current-round (ToString) (UI.Label)
       (UI.Separator)
       "Time Left: " (UI.Label)
-      max-timer (time-remaining) (ToString) (UI.Label)))))
+      .time-remaining (ToString) (UI.Label)))))
 
   (UI.BottomPanel
    :Contents (-> "Are they the same type of animal? Press the UP arrow if YES, and the DOWN arrow if NO." (UI.Label)))
@@ -190,7 +187,6 @@
    :Contents
    (->
     (UI.Horizontal
-     :Wrap true
      :Contents
      (->
       (left-image (-> .all-images (Take .left-series-index) (Take .left-image-index)))
@@ -241,24 +237,21 @@
     .new-round-number > .current-round
     true > .new-round)))
 
-(defshards increase-timer [] 
+(defshards increase-timer []
   (When
    :Predicate (-> .game-over (Is false))
    :Action
    (->
-    .seconds-elapsed (Log "Timer")
-    (Math.Inc .seconds-elapsed)
+    (Math.Dec .time-remaining)
     (When
-     :Predicate (-> .seconds-elapsed (IsMore max-timer))
+     :Predicate (-> .time-remaining (IsLess 0))
      :Action (end-round)))))
-
-(defn time-remaining []
-  (Math.Subtract .seconds-elapsed))
 
 (defloop ui-loop
 
   (GFX.MainWindow
-   :Title "Yes-No Game" :Width 1280 :Height 768 :Debug false
+   :Title "Yes-No Game"
+   :Width 1280 :Height 768
    :Contents
    (->
     (Setup
@@ -295,7 +288,7 @@
      :Action (-> (initialize-round))))))
 
 (defloop game-loop
-  (Setup (load-resources)(initialize-variables))
+  (Setup (load-resources) (initialize-variables))
   (Branch [ui-loop, logic-loop]))
 
 (defmesh main)
