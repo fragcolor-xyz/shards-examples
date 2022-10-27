@@ -1,8 +1,6 @@
 ; SPDX-License-Identifier: BSD-3-Clause
 ; Copyright © 2022 Fragcolor Pte. Ltd.
 
-(def left-x-offset -250)
-(def right-x-offset 250)
 (def total-rounds 10)
 (def max-timer 5)
 
@@ -147,22 +145,6 @@
   false > .new-round
   false > .input-received)
 
-; creates an UI.Area with the left image
-(defshards left-image [image]
-  (UI.Area
-   :Position (float2 left-x-offset, 0.0)
-   :Anchor Anchor.Center
-   :Contents
-   (-> image (UI.Image))))
-
-; creates an UI.Area with the right image
-(defshards right-image [image]
-  (UI.Area
-   :Position (float2 right-x-offset, 0.0)
-   :Anchor Anchor.Center
-   :Contents
-   (-> image (UI.Image))))
-
 ; creates the main game area
 (defshards main-game-ui []
   (UI.TopPanel
@@ -189,8 +171,16 @@
     (UI.Horizontal
      :Contents
      (->
-      (left-image (-> .all-images (Take .left-series-index) (Take .left-image-index)))
-      (right-image (-> .all-images (Take .right-series-index) (Take .right-image-index))))))))
+       (UI.Area
+        :Position (float2 -250.0, 0.0)
+        :Anchor Anchor.Center
+        :Contents
+        (-> .all-images (Take .left-series-index) (Take .left-image-index) (UI.Image)))
+       (UI.Area
+        :Position (float2 250.0, 0.0)
+        :Anchor Anchor.Center
+        :Contents
+        (-> .all-images (Take .right-series-index) (Take .right-image-index) (UI.Image))))))))
 
 ; creates the game over screen
 (defshards game-over-ui []

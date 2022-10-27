@@ -73,7 +73,7 @@ For the Top Panel, it is a sequence of Labels and Separators in a Horizontal Gro
          (UI.Separator)
          "Round: 1" (UI.Label)
          (UI.Separator)
-         "Time Left: 5" (UI.Label))))
+         "Time Left: 5" (UI.Label)))))
     ```
 
 ??? "UI.Horizontal"
@@ -123,7 +123,7 @@ We can now replace the fixed string numbers in our UI code with variables that w
          .current-round (ToString) (UI.Label)
          (UI.Separator)
          "Time Left: " (UI.Label)
-         .time-remaining (ToString) (UI.Label))))
+         .time-remaining (ToString) (UI.Label)))))
     ```
 
 ??? "ToString"
@@ -138,7 +138,7 @@ The central panel shows two images side by side. In order to draw the images ont
 
     Our images have been standardized to have a height of 400 pixels for vertical images, and a length of 400 pixels for horizontal images. You can use an image editing tool to resize your images for consistency.
 
-To keep our resources organized, each animal type will have their own sequence to store their images. Cat images will be stored in the `.cat-images` sequence, dog images in the `.dog-images` sequence, and penguin images in the `penguin-images` sequence. Use the `Push` shard to push the images into their respective sequences.
+To keep our resources organized, each animal type will have their own sequence to store their images (i.e., cat images will be stored in the `.cat-images` sequence and so on). Use the `Push` shard to push the images into their respective sequences.
 
 
 === "Code"
@@ -169,4 +169,133 @@ To keep our resources organized, each animal type will have their own sequence t
     [`LoadImage`](https://docs.fragcolor.xyz/docs/shards/General/LoadImage/) is used to load images into your game's resources.
 
 
+We will write the code for randomizing the images shown when tackling the logic of the game later. For now, let us display the first image in the dog and cat sequences as a placeholder.
+
+To better control where the images are drawn, we place each image in a `UI.Area` and specify its position.
+
+
+=== "Code"
+    
+    ```clojure linenums="1" 
+    (UI.CentralPanel
+        :Contents
+        (->
+         (UI.Horizontal
+          :Contents
+          (->
+            (UI.Area
+             :Position (float2 -250.0, 0.0)         ; Minus 250 pixels from the center on the x-axis
+             :Anchor Anchor.Center
+             :Contents
+             (-> .cat-images (Take 0) (UI.Image)))
+            (UI.Area
+             :Position (float2 250.0, 0.0)          ; Add 250 pixels from the center on the x-axis
+             :Anchor Anchor.Center
+             :Contents
+             (-> .dog-images (Take 0) (UI.Image)))))))
+    ```
+??? "UI.Area"
+    [`UI.Area`](https://docs.fragcolor.xyz/docs/shards/UI/Area/) is a UI element that is used to place its contents at a specific position.
+
+??? "Take"
+    [`Take`](https://docs.fragcolor.xyz/docs/shards/General/Take/) is used to retrieve the element stored at a specified index of a sequence.
+
+!!! caution
+    When using panels, ensure that `UI.CentralPanel` is always the last of the panels to be drawn to prevent errors.
+
+
+## Outcome
+
+The game's base UI is now ready! Try running the code to see your results.
+
+![The base UI.](assets/step-2-result.png)
+
+=== "Code"
+    
+    ```clojure linenums="1" 
+    (def total-rounds 10)
+    (def max-timer 5)
+
+    (defshards load-resources []
+      (LoadImage "data/cats/cat01.png") (Push :Name .cat-images)
+      (LoadImage "data/cats/cat02.png") (Push :Name .cat-images)
+      (LoadImage "data/cats/cat03.png") (Push :Name .cat-images)
+      (LoadImage "data/cats/cat04.png") (Push :Name .cat-images)
+      (LoadImage "data/cats/cat05.png") (Push :Name .cat-images)
+      (LoadImage "data/dogs/dog01.png") (Push :Name .dog-images)
+      (LoadImage "data/dogs/dog02.png") (Push :Name .dog-images)
+      (LoadImage "data/dogs/dog03.png") (Push :Name .dog-images)
+      (LoadImage "data/dogs/dog04.png") (Push :Name .dog-images)
+      (LoadImage "data/dogs/dog05.png") (Push :Name .dog-images)
+      (LoadImage "data/penguins/penguin01.png") (Push :Name .penguin-images)
+      (LoadImage "data/penguins/penguin02.png") (Push :Name .penguin-images)
+      (LoadImage "data/penguins/penguin03.png") (Push :Name .penguin-images)
+      (LoadImage "data/penguins/penguin04.png") (Push :Name .penguin-images)
+      (LoadImage "data/penguins/penguin05.png") (Push :Name .penguin-images))
+
+    (defshards initialize-variables []
+      0 >= .total-score
+      1 >= .current-round
+      max-timer >= .time-remaining)
+
+    (defshards main-game-ui []
+      (UI.BottomPanel
+       :Contents (-> "Are they the same type of animal? Press the UP arrow if YES, and the DOWN arrow if NO." (UI.Label)))
+
+      (UI.TopPanel
+       :Contents
+       (->
+        (UI.Horizontal
+        :Contents
+         (->
+          "Score: " (UI.Label)
+          .total-score (ToString) (UI.Label)
+          (UI.Separator)
+          "Round: " (UI.Label)
+          .current-round (ToString) (UI.Label)
+          (UI.Separator)
+          "Time Left: " (UI.Label)
+          .time-remaining (ToString) (UI.Label)))))
+
+      (UI.CentralPanel
+       :Contents
+       (->
+        (UI.Horizontal
+         :Contents
+         (->
+          (UI.Area
+           :Position (float2 -250.0, 0.0)
+           :Anchor Anchor.Center
+           :Contents
+           (-> .cat-images (Take 0) (UI.Image)))
+          (UI.Area
+           :Position (float2 250.0, 0.0)
+           :Anchor Anchor.Center
+           :Contents
+           (-> .dog-images (Take 0) (UI.Image))))))))     
+
+    (defloop ui-loop
+      (GFX.MainWindow
+       :Title "Yes-No Game"
+       :Width 1280 :Height 768
+       :Contents
+       (->
+        (Setup
+         (GFX.DrawQueue) >= .ui-draw-queue
+         (GFX.UIPass .ui-draw-queue) >> .render-steps)
+        (| .ui-draw-queue (GFX.ClearQueue))
+        (UI .ui-draw-queue (main-game-ui))
+        (GFX.Render :Steps .render-steps))))
+
+    (defloop logic-loop)
+
+    (defloop game-loop
+      (Setup (load-resources) (initialize-variables))
+      (Branch [ui-loop, logic-loop]))
+
+    (defmesh main)
+    (schedule main game-loop)
+    (run main (/ 1.0 60.0))
+
+    ```
 --8<-- "includes/license.md"
