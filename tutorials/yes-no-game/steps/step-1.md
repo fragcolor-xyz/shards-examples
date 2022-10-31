@@ -1,6 +1,6 @@
 # Step 1
 
-## Setting up the Game Loop
+## The Program's Base
 
 A basic Shards program consists of writing Wires and scheduling them onto a Mesh. To learn more about Wires, Meshes, and the overall flow of Shards, check out the primer [here](https://docs.fragcolor.xyz/learn/shards/).
 
@@ -9,12 +9,12 @@ A basic Shards program would look like this:
 === "Code"
     
     ```clojure linenums="1"
-    (defwire game-wire          ; define a Wire named "game-wire"
-        (Msg "Hello World!"))   ; insert stuff to run here 
+    (defwire game-wire          ; Define a Wire named "game-wire"
+        (Msg "Hello World!"))   ; Insert stuff to run here 
 
-    (defmesh main)              ; define a Mesh named "main"
-    (schedule main game-wire)   ; schedule the Wire on the Mesh
-    (run main)                  ; run the Mesh
+    (defmesh main)              ; Define a Mesh named "main"
+    (schedule main game-wire)   ; Schedule the Wire on the Mesh
+    (run main)                  ; Run the Mesh
     ```
 
 ??? "defwire, defloop and defmesh"
@@ -36,13 +36,15 @@ Since most games run at 60 FPS (Frames per Second), we will be using `(/ 1.0 60.
 === "Code"
     
     ```clojure linenums="1"
-    (defloop game-loop          ; define a Looped Wire named "game-loop"
-        (Msg "Hello World!"))   ; insert stuff to run here 
+    (defloop game-loop          ; Define a Looped Wire named "game-loop"
+        (Msg "Hello World!"))   ; Insert stuff to run here 
 
-    (defmesh main)              ; define a Mesh named "main"
-    (schedule main game-loop)   ; schedule the Loop on the Mesh
-    (run main (/ 1.0 60.0))     ; run the Mesh
+    (defmesh main)              ; Define a Mesh named "main"
+    (schedule main game-loop)   ; Schedule the Loop on the Mesh
+    (run main (/ 1.0 60.0))     ; Run the Mesh
     ```
+
+## Game Loops 
 
 To make a game, you will need code to draw the UI (such as your game menus, text boxes, images, etc.), and code to run the game's logic. It might be quite disorderly if we did everything within a single `defloop`. 
 
@@ -54,8 +56,8 @@ In order to keep our code easily readable and organized, it is advisable to spli
 === "Code"
     
     ```clojure linenums="1"
-    (defloop ui-loop)                   ; insert UI code here
-    (defloop logic-loop)                ; insert logic code here
+    (defloop ui-loop)                   ; Insert UI code here
+    (defloop logic-loop)                ; Insert logic code here
 
     (defloop game-loop
         (Branch [ui-loop, logic-loop]))
@@ -65,9 +67,11 @@ In order to keep our code easily readable and organized, it is advisable to spli
     (run main (/ 1.0 60.0))
     ```
 
+## The Setup Zone
+
 Most games will also require code to prepare itself, such as by loading resources and setting up variables to use. 
 
-We can ready empty shards `load-resources` and `initialize-variables` that will carry out these tasks and place them in a `Setup` shard in the `game-loop`.
+We can ready empty shards `load-resources` and `initialize-variables` that will carry out these tasks. To ensure that they only run once, we place them in a `Setup` shard within the `game-loop`.
 
 ??? "Variables"
     Variables are containers that store values. You define a variable with a name, and assign a value to it. The value can then be retrieved by calling the variable with its assigned name.
@@ -79,10 +83,10 @@ We can ready empty shards `load-resources` and `initialize-variables` that will 
 === "Code"
     
     ```clojure linenums="1"
-    (defshards load-resources)          ; load resources here 
-    (defshards initialize-variables)    ; ready variables here
-    (defloop ui-loop)                   ; insert UI code here
-    (defloop logic-loop)                ; insert logic code here
+    (defshards load-resources)          ; Load resources here 
+    (defshards initialize-variables)    ; Eeady variables here
+    (defloop ui-loop)                   ; Insert UI code here
+    (defloop logic-loop)                ; Insert logic code here
 
     (defloop game-loop
         ; the shards to load resources and initialize variables 

@@ -7,7 +7,7 @@ In order to start drawing the UI in shards, we will first have to ready the GFX 
 === "Code"
     
     ```clojure linenums="1"
-    (defshards main-game-ui [])     ; add your UI shards here
+    (defshards main-game-ui [])     ; Add your UI shards here
 
     (defloop ui-loop
       (GFX.MainWindow
@@ -104,7 +104,6 @@ Let's define the variables `.total-score`, `.current-round` and `.time-remaining
       max-timer >= .time-remaining)
     ```
 
-
 We can now replace the fixed string numbers in our UI code with variables that will be updated as their values change.
 
 === "Code"
@@ -140,7 +139,6 @@ The central panel shows two images side by side. In order to draw the images ont
 
 To keep our resources organized, each animal type will have their own sequence to store their images (i.e., cat images will be stored in the `.cat-images` sequence and so on). Use the `Push` shard to push the images into their respective sequences.
 
-
 === "Code"
     
     ```clojure linenums="1" 
@@ -168,11 +166,9 @@ To keep our resources organized, each animal type will have their own sequence t
 ??? "LoadImage"
     [`LoadImage`](https://docs.fragcolor.xyz/docs/shards/General/LoadImage/) is used to load images into your game's resources.
 
-
 We will write the code for randomizing the images shown when tackling the logic of the game later. For now, let us display the first image in the dog and cat sequences as a placeholder.
 
 To better control where the images are drawn, we place each image in a `UI.Area` and specify its position.
-
 
 === "Code"
     
@@ -202,7 +198,6 @@ To better control where the images are drawn, we place each image in a `UI.Area`
 
 !!! caution
     When using panels, ensure that `UI.CentralPanel` is always the last of the panels to be drawn to prevent errors.
-
 
 ## Outcome
 

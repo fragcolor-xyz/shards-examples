@@ -20,29 +20,29 @@
   (LoadImage "data/penguins/penguin03.png") (Push :Name .penguin-images)
   (LoadImage "data/penguins/penguin04.png") (Push :Name .penguin-images)
   (LoadImage "data/penguins/penguin05.png") (Push :Name .penguin-images)
-  .cat-images (Push  :Name .all-images)
+  .cat-images (Push :Name .all-images)
   .dog-images (Push :Name .all-images)
-  .penguin-images  (Push :Name .all-images)
-  0 >= .left-series-index
-  0 >= .right-series-index
+  .penguin-images (Push :Name .all-images))
+
+(defshards initialize-variables []
+  0 >= .left-animal-type
+  0 >= .right-animal-type
   0 >= .left-image-index
   0 >= .right-image-index
 
-  (Count .all-images) >= .total-image-series
+  (Count .all-images) >= .total-animal-types
   0 >= .left-images-count
   0 >= .right-images-count
 
-  .cat-images >= .left-images
-  .cat-images >= .right-images)
+  (Sequence .left-images :Types Type.Image)
+  (Sequence .right-images :Types Type.Image)
+  (Sequence .chosen-indices :Types Type.Int)
 
-(defshards initialize-variables []
-
-  [0, 0] >= .chosen-indices
-  true >= .same-images
+  true >= .same-animals
   true >= .new-round
   0 >= .new-round-number
 
-  ; variables to reset each round 
+  ; Variables to reset each round 
   0 >= .total-score
   1 >= .current-round
   max-timer >= .time-remaining
@@ -61,25 +61,24 @@
 
 (defwire fisher-yates-shuffle
   (ExpectSeq) = .sequence
-  (Count .sequence) (Math.Subtract 1) >= .max-index ; -1 from the sequence size to get the max index number
+  (Setup (int 0) >= .max-index)
+  (Count .sequence) (Math.Subtract 1) > .max-index      ; -1 from the sequence size to get the max index number
 
   (Repeat
-   (-> (RandomInt :Max .max-index) >= .random-index ; select an index of the sequence randomly, the last index will never be chosen as :Max is not inclusive
+   (-> (RandomInt :Max .max-index) >= .random-index     ; Select an index of the sequence randomly, the last index will never be chosen as :Max is not inclusive
        .sequence
-       (| (Take .random-index) &> .chosen-value) ; obtains the value stored at the random index of the sequence
-       (| (Take .max-index) &> .last-value) ; obtains the last value in the sequence
+       (| (Take .random-index) &> .chosen-value)        ; Obtains the value stored at the random index of the sequence
+       (| (Take .max-index) &> .last-value)             ; Obtains the last value in the sequence
+                                                        ; Swaps the values in the last index of the sequence with the chosen index
+       [.random-index .last-value] (Assoc .sequence)    ; Updates the random index selected with the last value of the sequence
+       [.max-index .chosen-value] (Assoc .sequence)     ; Updates the last index of the sequence with the value of the index randomly chosen
 
-       ; swaps the values in the last index of the sequence with the chosen index
-       [.random-index .last-value] (Assoc .sequence) ; updates the random index selected with the last value of the sequence
-       [.max-index .chosen-value] (Assoc .sequence) ; updates the last index of the sequence with the value of the index randomly chosen
-
-       (Math.Dec .max-index) ; decreases the max index value so that the shuffle will leave the newly swapped value of the current max index alone for the next iteration 
-       )
+       (Math.Dec .max-index))                           ; Decreases the max index value so that the shuffle will leave 
+                                                        ; the newly swapped value of the current max index alone for the next iteration  
    :Forever true
-   :Until (-> .max-index (Is 0))) ; loops until the there are no two values left to swap between
+   :Until (-> .max-index (Is 0)))                       ; Loops until the there are no two values left to swap between
 
-  .sequence) ; returns the newly shuffled sequence
-
+  .sequence)                                            ; Returns the newly shuffled sequence
 
 (defwire select-two-indices
   = .sequence-length
@@ -97,47 +96,47 @@
     .index (Push .indices-sequence)
     (Math.Inc .index))
    :Times .sequence-length)
+
   .indices-sequence (Do fisher-yates-shuffle) (Take [0 1]))
 
-; determines the images used for the round
+; Determines the images used for the round
 (defshards initialize-round []
 
   max-timer > .time-remaining
 
-  ; determine if the images on the left and right will be the same or different
+  ; Determine if the images on the left and right will be the same or different
   (If
    :Predicate (-> (RandomInt :Max 2) (Is 0))
-   :Then (-> true > .same-images)
-   :Else (-> false > .same-images))
+   :Then (-> true > .same-animals)
+   :Else (-> false > .same-animals))
 
-  ; gets the image series to be used for the left side
-  (RandomInt :Max .total-image-series) > .left-series-index
-
-  ; get the number of images in the series to be used for the left
-  .all-images (Take .left-series-index) > .left-images
-  (Count .left-images) > .left-images-count
-
-  ; setup for the right image
   (If
-   :Predicate (-> .same-images (Is true))
-   ; if images should be from the same series
+   :Predicate (-> .same-animals (Is true))
+
+   ; If both images should show the same animal type
    :Then
    (->
-    .left-series-index > .right-series-index
+    ; Randomly selects the animal type to be used for the left side
+    (RandomInt :Max .total-animal-types) > .left-animal-type
+    .left-animal-type > .right-animal-type
+
+    ; Retrieve the images of the chosen animal type for the left image
+    .all-images (Take .left-animal-type) > .left-images
+    (Count .left-images) > .left-images-count
+
     .left-images-count (Do select-two-indices) (ExpectIntSeq) > .chosen-indices
     .chosen-indices (Take 0) > .left-image-index
     .chosen-indices (Take 1) > .right-image-index)
 
-   ; if images should be from a different series   
+   ; If both images should show different animal types
    :Else
    (->
-    (RandomInt :Max .total-image-series) > .right-series-index
-    .total-image-series (Do select-two-indices) (ExpectIntSeq) > .chosen-indices
-    .chosen-indices (Take 0) > .left-series-index
-    .chosen-indices (Take 1) > .right-series-index
-
-   ; get the number of images in the series to be used for the right 
-    .all-images (Take .right-series-index) > .right-images
+    .total-animal-types (Do select-two-indices) (ExpectIntSeq) > .chosen-indices
+    .chosen-indices (Take 0) > .left-animal-type
+    .chosen-indices (Take 1) > .right-animal-type
+    .all-images (Take .left-animal-type) > .left-images
+    .all-images (Take .right-animal-type) > .right-images
+    (Count .left-images) > .left-images-count
     (Count .right-images) > .right-images-count
     (RandomInt :Max .left-images-count) > .left-image-index
     (RandomInt :Max .right-images-count) > .right-image-index))
@@ -145,7 +144,7 @@
   false > .new-round
   false > .input-received)
 
-; creates the main game area
+; Creates the main game area
 (defshards main-game-ui []
   (UI.TopPanel
    :Contents
@@ -171,18 +170,18 @@
     (UI.Horizontal
      :Contents
      (->
-       (UI.Area
-        :Position (float2 -250.0, 0.0)
-        :Anchor Anchor.Center
-        :Contents
-        (-> .all-images (Take .left-series-index) (Take .left-image-index) (UI.Image)))
-       (UI.Area
-        :Position (float2 250.0, 0.0)
-        :Anchor Anchor.Center
-        :Contents
-        (-> .all-images (Take .right-series-index) (Take .right-image-index) (UI.Image))))))))
+      (UI.Area
+       :Position (float2 -250.0, 0.0)
+       :Anchor Anchor.Center
+       :Contents
+       (-> .all-images (Take .left-animal-type) (Take .left-image-index) (UI.Image)))
+      (UI.Area
+       :Position (float2 250.0, 0.0)
+       :Anchor Anchor.Center
+       :Contents
+       (-> .all-images (Take .right-animal-type) (Take .right-image-index) (UI.Image))))))))
 
-; creates the game over screen
+; Creates the game over screen
 (defshards game-over-ui []
   (UI.CentralPanel
    :Contents
@@ -211,7 +210,7 @@
    :Action
    (->
     (When
-     :Predicate (-> .same-images (Is yes-input))
+     :Predicate (-> .same-animals (Is yes-input))
      :Action (-> (Math.Inc .total-score)))))
   true > .input-received
   (end-round))

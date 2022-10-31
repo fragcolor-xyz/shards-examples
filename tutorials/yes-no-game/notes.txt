@@ -1,0 +1,31 @@
+Shards used
+- defwire, defloop and defmesh
+- Msg
+- schedule
+- run
+- Branch
+- Setup
+
+- defshards
+- UI.BottomPanel
+- UI.Label
+- UI.Horizontal
+- UI.Separator
+- ToString
+- Push
+- LoadImage
+- UI.Area
+- Take
+
+- If
+- RandomInt
+
+Short Explanations
+- Variables
+
+- What does the GFX code mean?
+- Declaring Constants
+- Wire or Function?
+
+Warnings
+- ensure that `UI.CentralPanel` is always the last of the panels to be drawn
