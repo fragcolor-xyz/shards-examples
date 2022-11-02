@@ -33,23 +33,19 @@ Next, add code in the `logic-loop` to check if there should be a new round befor
 
 === "Code"
   
-    ```clojure linenums="1"
+    ```{.clojure .annotate linenums="1"}
     (defloop logic-loop
-      (WhenNot
+      (WhenNot                                  ; (1)
        :Predicate (-> .game-over)               ; If the game is not in a Game Over state
        :Action
        (->
-        (When
+        (When                                   ; (2)
          :Predicate (-> .new-round)             ; and it is a new round,
          :Action (-> (initialize-round))))))    ; initialize a new round
     ```
 
-??? "WhenNot"
-    [`WhenNot`](https://docs.fragcolor.xyz/docs/shards/General/WhenNot/) will only execute the `Action` specified when the `Predicate` is false. 
-
-??? "When"
-    [`When`](https://docs.fragcolor.xyz/docs/shards/General/When/) will only execute the `Action` specified when the `Predicate` is true. 
-    
+    1. [`WhenNot`](https://docs.fragcolor.xyz/docs/shards/General/WhenNot/) will only execute the `Action` specified when the `Predicate` is false.
+    2. [`When`](https://docs.fragcolor.xyz/docs/shards/General/When/) will only execute the `Action` specified when the `Predicate` is true.     
     Unlike `If`, it does not have an `Else` parameter.
 
 ## Handling Game States
@@ -123,7 +119,7 @@ We can use `Inputs.KeyDown` to execute code whenever the user presses down on a 
 
 === "Code"
   
-    ```clojure linenums="1"
+    ```{.clojure .annotate linenums="1"}
     (defshards initialize-round [])
     (defloop ui-loop
     (GFX.MainWindow
@@ -131,17 +127,16 @@ We can use `Inputs.KeyDown` to execute code whenever the user presses down on a 
      ...
       (GFX.Render :Steps .render-steps)
 
-      (Inputs.KeyDown
+      (Inputs.KeyDown  ; (1)
        :Key "up"
-       :Action ())                        ; This code is executed when the user presses the ↑ directional key
+       :Action ())     ; This code is executed when the user presses the ↑ directional key
 
       (Inputs.KeyDown
        :Key "down"
-       :Action ()))))                     ; This code is executed when the user presses the ↓ directional key
+       :Action ()))))  ; This code is executed when the user presses the ↓ directional key
     ```
 
-??? "Inputs.KeyDown"
-    [`Inputs.KeyDown`](https://docs.fragcolor.xyz/docs/shards/Inputs/KeyDown/) will run the code in its `Action` parameter when the `Key` specified is pressed down by the user.
+    1. [`Inputs.KeyDown`](https://docs.fragcolor.xyz/docs/shards/Inputs/KeyDown/) will run the code in its `Action` parameter when the `Key` specified is pressed down by the user.
 
 In order to prevent code within the `Inputs.Keydown` shards from executing whenever the user presses the specified key, we define a variable `.input-received` to track if we have already received the user's input.
 
@@ -179,7 +174,7 @@ We will also set `.input-received` to true to prevent further user input and end
 
 === "Code"
   
-    ```clojure linenums="1"
+    ```{.clojure .annotate linenums="1"}
     (defshards check-answer [yes-input]                 ; Take in the user's input
       (When
        :Predicate (-> .input-received (Is false))       ; Check if a user input has already been received
@@ -192,12 +187,10 @@ We will also set `.input-received` to true to prevent further user input and end
         true > .input-received                          ; Prevents this segment of code from running again until it is reset
         (When
          :Predicate (-> .game-over (IsNot true))        ; If it is not Game Over yet,
-         :Action (-> (Dispatch end-round))))))          ; end the round
+         :Action (-> (Dispatch end-round))))))          ; (1) end the round
     ```
 
-??? "Dispatch"
-    [`Dispatch`](https://docs.fragcolor.xyz/docs/shards/General/Dispatch/) runs an unscheduled wire inline.
-    
+    1. [`Dispatch`](https://docs.fragcolor.xyz/docs/shards/General/Dispatch/) runs an unscheduled wire inline.    
     It behaves similarly to [`Do`](https://docs.fragcolor.xyz/docs/shards/General/Do/), except that it has Passthrough enabled. 
     This means that it will ignore the output of the Wire being dispatched and always return the input.
 
@@ -228,7 +221,7 @@ Let us round up this segment by adding in the UI for the Game Over state. We wil
 
 === "Code"
   
-    ```clojure linenums="1"
+    ```{.clojure .annotate linenums="1"}
     (defshards game-over-ui []
       (UI.CentralPanel
        :Contents
@@ -247,13 +240,13 @@ Let us round up this segment by adding in the UI for the Game Over state. We wil
             "/"  (UI.Label)
             total-rounds (ToString) (UI.Label)))
 
-          (UI.Button
+          (UI.Button ; (1)
            :Label "Play Again!"
            :Action (-> (reset-game-variables))))))))
 
     ```
-??? "UI.Button"
-    [`UI.Button`](https://docs.fragcolor.xyz/docs/shards/UI/Button/) is a UI element that appears as a clickable button with the text passed into its `Label` parameter.
+
+    1. [`UI.Button`](https://docs.fragcolor.xyz/docs/shards/UI/Button/) is a UI element that appears as a clickable button with the text passed into its `Label` parameter.
 
 When the button is pressed, we reset the game's variables, including `.game-over` which will be used to decide what is drawn in our game's window.
 
@@ -304,9 +297,9 @@ Place it within the `logic-loop` alongside the rest of our code where we are che
 
 === "Code"
 
-    ```clojure linenums="1"
+    ```{.clojure .annotate linenums="1"}
     (defloop logic-loop
-      (Once                         ; Runs the timer-tick shard every 1 second
+      (Once                         ; (1) Runs the timer-tick shard every 1 second
        :Action (-> (timer-tick))
        :Every 1.0)
 
@@ -319,8 +312,7 @@ Place it within the `logic-loop` alongside the rest of our code where we are che
          :Action (-> (initialize-round))))))
     ```
 
-??? "Once"
-    [`Once`](https://docs.fragcolor.xyz/docs/shards/General/Once/) will run the code in its `Action` parameter every time the duration specified in its `Every` parameter has passed.
+    1. [`Once`](https://docs.fragcolor.xyz/docs/shards/General/Once/) will run the code in its `Action` parameter every time the duration specified in its `Every` parameter has passed.
 
 ## Outcome
 

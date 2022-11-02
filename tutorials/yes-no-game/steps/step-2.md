@@ -7,7 +7,7 @@ In order to start drawing the UI in shards, we will first have to ready the GFX 
 === "Code"
     
     ```clojure linenums="1"
-    (defshards main-game-ui [])     ; Add your UI shards here
+    (defshards main-game-ui [] nil)  ; Add your UI shards here
 
     (defloop ui-loop
       (GFX.MainWindow
@@ -41,43 +41,41 @@ With a design plan, it will be easier to identify the elements that will make up
 Let us start with the simplest panel, the Bottom Panel with a single Label. We will pass a string of instructions into the Label shard, which we then pass into the Bottom Panel shard as its content.
 
 === "Code"
-    
-    ```clojure linenums="1"
-    (UI.BottomPanel
-     :Contents (-> "Are they the same type of animal? Press the UP arrow if YES, and the DOWN arrow if NO." (UI.Label)))
+
+    ```{.clojure .annotate linenums="1"}
+    (UI.BottomPanel ;; (1)
+     :Contents
+     (-> "Are they the same type of animal? Press the UP arrow if YES, and the DOWN arrow if NO."
+     (UI.Label) ;; (2)  
+     ))
     ```
 
-??? "UI.BottomPanel"
-    [`UI.BottomPanel`](https://docs.fragcolor.xyz/docs/shards/UI/BottomPanel/) is a UI element to hold other UI elements within it. It starts from the bottom of the Window.
-
-??? "UI.Label"
-    [`UI.Label`](https://docs.fragcolor.xyz/docs/shards/UI/Label/) is a UI element to hold text.
+    1. [`UI.BottomPanel`](https://docs.fragcolor.xyz/docs/shards/UI/BottomPanel/) is a UI element to hold other UI elements within it. It is placed at the bottom of the containing Window.
+    2. [`UI.Label`](https://docs.fragcolor.xyz/docs/shards/UI/Label/) is a UI element to hold text.
+    
 
 ## The Top Panel
 
 For the Top Panel, it is a sequence of Labels and Separators in a Horizontal Group so that they are naturally aligned from left to right.
 
 === "Code"
-    
-    ```clojure linenums="1" 
+
+    ```{.clojure .annotate linenums="1"}
     (UI.TopPanel
      :Contents
      (->
-      (UI.Horizontal
+      (UI.Horizontal ;; (1)
        :Contents
         (->
          "Score: 0" (UI.Label)
-         (UI.Separator)
+         (UI.Separator) ;; (2)
          "Round: 1" (UI.Label)
          (UI.Separator)
          "Time Left: 5" (UI.Label)))))
     ```
 
-??? "UI.Horizontal"
-    [`UI.Horizontal`](https://docs.fragcolor.xyz/docs/shards/UI/Horizontal/) is a UI element to hold other UI elements within it. It aligns its elements horizontally, from left to right. 
-
-??? "UI.Separator"
-    [`UI.Separator`](https://docs.fragcolor.xyz/docs/shards/UI/Separator/) is a UI element that appears as a horizontal line within a vertical layout, and appears as a vertical line within a horizontal layout.
+    1. [`UI.Horizontal`](https://docs.fragcolor.xyz/docs/shards/UI/Horizontal/) is a UI element to hold other UI elements within it. It aligns its elements horizontally, from left to right. 
+    2. [`UI.Separator`](https://docs.fragcolor.xyz/docs/shards/UI/Separator/) is a UI element that appears as a horizontal line within a vertical layout, and appears as a vertical line within a horizontal layout.
 
 However, we will want to be able to change the values used for Score, the Round Number and Time Left. This is where variables come in. We will be defining our variables in the `initialize-variables` shard created [earlier](../step-1/#the-setup-zone). 
 
@@ -105,7 +103,7 @@ We can now replace the fixed string numbers in our UI code with variables that w
 
 === "Code"
 
-    ```clojure linenums="1" 
+    ```{.clojure .annotate linenums="1"}
     (UI.TopPanel
      :Contents
      (->
@@ -113,7 +111,7 @@ We can now replace the fixed string numbers in our UI code with variables that w
        :Contents
         (->
          "Score: " (UI.Label)
-         .total-score (ToString) (UI.Label)
+         .total-score (ToString) (UI.Label) ;; (1)
          (UI.Separator)
          "Round: " (UI.Label)
          .current-round (ToString) (UI.Label)
@@ -122,8 +120,7 @@ We can now replace the fixed string numbers in our UI code with variables that w
          .time-remaining (ToString) (UI.Label)))))
     ```
 
-??? "ToString"
-    [`ToString`](https://docs.fragcolor.xyz/docs/shards/General/ToString/) converts values into strings. In the code above, `UI.Label` expects a string input, which is why we have to convert the integer variables into strings.
+    1. [`ToString`](https://docs.fragcolor.xyz/docs/shards/General/ToString/) converts values into strings. In the code above, `UI.Label` expects a string input, which is why we have to convert the integer variables into strings.
 
 ## The Central Panel
 
@@ -137,10 +134,10 @@ The central panel shows two images side by side. In order to draw the images ont
 To keep our resources organized, each animal type will have their own sequence to store their images (i.e., cat images will be stored in the `.cat-images` sequence and so on). Use the `Push` shard to push the images into their respective sequences.
 
 === "Code"
-    
-    ```clojure linenums="1" 
+
+    ```{.clojure .annotate linenums="1"}
     (defshards load-resources []
-      (LoadImage "data/cats/cat01.png") (Push :Name .cat-images)
+      (LoadImage "data/cats/cat01.png") (Push :Name .cat-images) ;; (1) (2)
       (LoadImage "data/cats/cat02.png") (Push :Name .cat-images)
       (LoadImage "data/cats/cat03.png") (Push :Name .cat-images)
       (LoadImage "data/cats/cat04.png") (Push :Name .cat-images)
@@ -157,41 +154,36 @@ To keep our resources organized, each animal type will have their own sequence t
       (LoadImage "data/penguins/penguin05.png") (Push :Name .penguin-images))
     ```
 
-??? "Push"
-    [`Push`](https://docs.fragcolor.xyz/docs/shards/General/Push/) adds elements to the back of a sequence. It will create the sequence if it does not exist.
-
-??? "LoadImage"
-    [`LoadImage`](https://docs.fragcolor.xyz/docs/shards/General/LoadImage/) is used to load images into your game's resources.
+    2. [`Push`](https://docs.fragcolor.xyz/docs/shards/General/Push/) adds elements to the back of a sequence. It will create the sequence if it does not exist.
+    1. [`LoadImage`](https://docs.fragcolor.xyz/docs/shards/General/LoadImage/) is used to load images into your game's resources.
 
 We will write the code for randomizing the images shown when tackling the logic of the game later. For now, let us display the first image in the dog and cat sequences as a placeholder.
 
 To better control where the images are drawn, we place each image in a `UI.Area` and specify its position.
 
 === "Code"
-    
-    ```clojure linenums="1" 
+
+    ```{.clojure .annotate linenums="1"}
     (UI.CentralPanel
         :Contents
         (->
          (UI.Horizontal
           :Contents
           (->
-            (UI.Area
+            (UI.Area                                ; (1)
              :Position (float2 -250.0, 0.0)         ; Minus 250 pixels from the center on the x-axis
              :Anchor Anchor.Center
              :Contents
-             (-> .cat-images (Take 0) (UI.Image)))
+             (-> .cat-images (Take 0) (UI.Image)))  ; (2)
             (UI.Area
              :Position (float2 250.0, 0.0)          ; Add 250 pixels from the center on the x-axis
              :Anchor Anchor.Center
              :Contents
              (-> .dog-images (Take 0) (UI.Image)))))))
     ```
-??? "UI.Area"
-    [`UI.Area`](https://docs.fragcolor.xyz/docs/shards/UI/Area/) is a UI element that is used to place its contents at a specific position.
 
-??? "Take"
-    [`Take`](https://docs.fragcolor.xyz/docs/shards/General/Take/) is used to retrieve the element stored at a specified index of a sequence.
+    1. [`UI.Area`](https://docs.fragcolor.xyz/docs/shards/UI/Area/) is a UI element that is used to place its contents at a specific position.
+    2. [`Take`](https://docs.fragcolor.xyz/docs/shards/General/Take/) is used to retrieve the element stored at a specified index of a sequence.
 
 !!! caution
     When using panels, ensure that `UI.CentralPanel` is always the last of the panels to be drawn to prevent errors.
@@ -199,8 +191,6 @@ To better control where the images are drawn, we place each image in a `UI.Area`
 ## Outcome
 
 The game's base UI is now ready! Try running the code to see your results.
-
-![The base UI.](assets/step-2-result.png)
 
 === "Code"
     
@@ -290,4 +280,9 @@ The game's base UI is now ready! Try running the code to see your results.
     (run main (/ 1.0 60.0))
 
     ```
+
+=== "Result"
+
+    ![The base UI.](assets/step-2-result.png)
+
 --8<-- "includes/license.md"

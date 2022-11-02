@@ -39,19 +39,16 @@ We can use the `RandomInt` shard to randomly output 0 or 1, which we can associa
 
 === "Code"
 
-    ```clojure linenums="1" 
+    ```{.clojure .annotate linenums="1"}
     (defshards initialize-round []      
-      (If                                           ; Determine if the images on the left and right will be the same or different
-       :Predicate (-> (RandomInt :Max 2) (Is 0))    ; Checks whether the RandomInt shard returns a 0
+      (If                                           ; (1) Determine if the images on the left and right will be the same or different
+       :Predicate (-> (RandomInt :Max 2) (Is 0))    ; (2) Checks whether the RandomInt shard returns a 0
        :Then (-> true > .same-animals)              ; If it is 0, save the value true to .same-animals
        :Else (-> false > .same-animals))            ; If it is 1, save the value false to .same-animals
     ```
 
-??? "If"
-    [`If`](https://docs.fragcolor.xyz/docs/shards/General/If/) checks the `Predicate` given and runs the code within `Then` if it is true. If false, the code within `Else` is run instead.
-
-??? "RandomInt"
-    [`RandomInt`](https://docs.fragcolor.xyz/docs/shards/General/RandomInt/) will randomly output a number from 0 to the number before the maximum value specified. 
+    1. [`If`](https://docs.fragcolor.xyz/docs/shards/General/If/) checks the `Predicate` given and runs the code within `Then` if it is true. If false, the code within `Else` is run instead.
+    2. [`RandomInt`](https://docs.fragcolor.xyz/docs/shards/General/RandomInt/) will randomly output a number from 0 to the number before the maximum value specified. 
 
     For example, `(RandomInt :Max 2)` will randomly choose a number from 0 to 1.
 
@@ -198,7 +195,7 @@ Create a wire named `select-two-indices` to execute this logic.
 
 === "Code"
 
-    ```clojure linenums="1" 
+    ```{.clojure .annotate linenums="1"}
     (defwire select-two-indices
       = .sequence-length                            ; Input passed into the wire is saved to the variable .sequence-length
 
@@ -209,26 +206,21 @@ Create a wire named `select-two-indices` to execute this logic.
       (Clear .indices-sequence)                     ; Empty the sequence in case it contains values from previous iterations
       0 > .index                                    ; Reset the variable in case it has changed from previous iterations
 
-      (Repeat
+      (Repeat                                       ; (1)
        :Action
        (->
         .index (Push .indices-sequence)             ; Push the counter into the new sequence
-        (Math.Inc .index))                          ; Increase the counter's value
+        (Math.Inc .index))                          ; (2) Increase the counter's value
        :Times .sequence-length)                     ; Repeat for as long as the sequence length
 
-      .indices-sequence (Do fisher-yates-shuffle)   ; Shuffle the order in the sequence of indices
+      .indices-sequence (Do fisher-yates-shuffle)   ; (3) Shuffle the order in the sequence of indices
       (Take [0 1]))                                 ; Retrieve and output the first and second entries
 
     ```
 
-??? "Repeat"
-    [`Repeat`](https://docs.fragcolor.xyz/docs/shards/General/Repeat/) repeats the `Action` passed in by the number of `Times` indicated or when the condition specified in `Until` is no longer true.
-
-??? "Math.Inc"
-    [`Math.Inc`](https://docs.fragcolor.xyz/docs/shards/Math/Inc/) increases the value passed in by 1.
-
-??? "Do"
-    [`Do`](https://docs.fragcolor.xyz/docs/shards/General/Do/) runs an unscheduled Wire inline, similar to how a function is called.
+    1. [`Repeat`](https://docs.fragcolor.xyz/docs/shards/General/Repeat/) repeats the `Action` passed in by the number of `Times` indicated or when the condition specified in `Until` is no longer true.
+    2. [`Math.Inc`](https://docs.fragcolor.xyz/docs/shards/Math/Inc/) increases the value passed in by 1.
+    3. [`Do`](https://docs.fragcolor.xyz/docs/shards/General/Do/) runs an unscheduled Wire inline, similar to how a function is called.
 
 Now that we have the means to obtain two random values from a sequence, we can implement the code to choose the right image.
 
@@ -317,10 +309,6 @@ With the animal type and image indices retrieved, we can update our UI drawing c
 Congratulations! Your game can now display random images. 
 
 Try running the code to see how the images change every time the game is run.
-
-![Randomly selected images for the same animal type.](assets/step-3-result-1.png)
-
-![Randomly selected images for different animal types.](assets/step-3-result-2.png)
 
 === "Code"
 
@@ -508,5 +496,11 @@ Try running the code to see how the images change every time the game is run.
     (run main (/ 1.0 60.0))
 
     ```
+
+=== "Result"
+
+    ![Randomly selected images for the same animal type.](assets/step-3-result-1.png)    
+    ![Randomly selected images for different animal types.](assets/step-3-result-2.png)
+
 
 --8<-- "includes/license.md"

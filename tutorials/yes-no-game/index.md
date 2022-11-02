@@ -1,6 +1,6 @@
 # Yes-No Game Tutorial
 
-Welcome! In this tutorial, we will be creating a simple game of reflexes using [Shards](https://github.com/fragcolor-xyz/shards). 
+Welcome! In this tutorial, we will be creating a simple game of reflexes using [Shards](https://github.com/fragcolor-xyz/shards).
 
 This tutorial assumes that you have a basic understanding of Shards. In order to run the code examples used here, you are required to have Shards built. 
 
@@ -12,7 +12,7 @@ For more information, check out the following links on:
 
 3. [Running Shards](https://docs.fragcolor.xyz/contribute/code/run-shards/)
 
-// TODO: reorganize this in order once completed
+<!-- TODO: reorganize this in order once completed -->
 Here are the key concepts that we will be covering in this tutorial:
 
 1. How to create UI and receive User Input
