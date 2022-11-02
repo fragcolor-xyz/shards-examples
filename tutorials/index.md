@@ -9,6 +9,7 @@ We will be using [Visual Studio Code](https://code.visualstudio.com/) although a
 You will also need a compiled version of Shards to run these tutorials. Shards can be [built from the sources](https://docs.fragcolor.xyz/contribute/code/building-shards/).
 
 * [Snake](./snake/index.md)
+* [Yes-No game](./yes-no-game/index.md)
 
 *More to come. Stay tuned!*
 
