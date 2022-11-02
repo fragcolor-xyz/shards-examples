@@ -169,7 +169,7 @@
      :Predicate (-> .game-over (IsNot true))
      :Action (-> (Dispatch end-round))))))
 
-(defshards increase-timer []
+(defshards timer-tick []
   (When
    :Predicate (-> .game-over (Is false))
    :Action
@@ -267,7 +267,7 @@
 
 (defloop logic-loop
   (Once
-   :Action (-> (increase-timer))
+   :Action (-> (timer-tick))
    :Every 1.0)
 
   (WhenNot

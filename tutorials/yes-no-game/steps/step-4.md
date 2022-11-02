@@ -113,7 +113,7 @@ The wire first checks if the current round is final. If it is, it sets the `.gam
 
     ```
 
-To end a round, the user has to give an answer or wait for the timer to expire. We will be tackling the implementation of the timer in the following step. For now, let us take a look at handling user input.
+To end a round, the user has to give an answer or wait for the timer to expire. Let us first take a look at handling user input.
 
 ## User Input
 
@@ -279,274 +279,37 @@ Navigate to `ui-loop` and add in `.game-over` conditionals.
       ...
     ```
 
-## Outcome
+## Implementing a Timer
+To add additional challenge to the game (for additional fun!), we can impose a time limit on each round.
 
-Congratulations on making it this far!
-
-Your game now has 10 rounds, calculates the total score, shows a Game Over screen and lets you play it again at the end.
-
-![Round number and the score is calculated.](assets/step-4-result-1.png)
-
-![A Game Over screen is shown at the end.](assets/step-4-result-2.png)
-
+Let us write a shard that decreases the variable `.time-remaining` every time it is called. 
 === "Code"
-  
+
     ```clojure linenums="1"
-    (def total-rounds 10)
-    (def max-timer 5)
-
-    (defshards load-resources []
-      (LoadImage "data/cats/cat01.png") (Push :Name .cat-images)
-      (LoadImage "data/cats/cat02.png") (Push :Name .cat-images)
-      (LoadImage "data/cats/cat03.png") (Push :Name .cat-images)
-      (LoadImage "data/cats/cat04.png") (Push :Name .cat-images)
-      (LoadImage "data/cats/cat05.png") (Push :Name .cat-images)
-      (LoadImage "data/dogs/dog01.png") (Push :Name .dog-images)
-      (LoadImage "data/dogs/dog02.png") (Push :Name .dog-images)
-      (LoadImage "data/dogs/dog03.png") (Push :Name .dog-images)
-      (LoadImage "data/dogs/dog04.png") (Push :Name .dog-images)
-      (LoadImage "data/dogs/dog05.png") (Push :Name .dog-images)
-      (LoadImage "data/penguins/penguin01.png") (Push :Name .penguin-images)
-      (LoadImage "data/penguins/penguin02.png") (Push :Name .penguin-images)
-      (LoadImage "data/penguins/penguin03.png") (Push :Name .penguin-images)
-      (LoadImage "data/penguins/penguin04.png") (Push :Name .penguin-images)
-      (LoadImage "data/penguins/penguin05.png") (Push :Name .penguin-images)
-      .cat-images (Push :Name .all-images)
-      .dog-images (Push :Name .all-images)
-      .penguin-images (Push :Name .all-images))
-
-    (defshards initialize-variables []
-      0 >= .left-animal-type
-      0 >= .right-animal-type
-      0 >= .left-image-index
-      0 >= .right-image-index
-
-      (Count .all-images) >= .total-animal-types
-      0 >= .left-images-count
-      0 >= .right-images-count
-
-      (Sequence .left-images :Types Type.Image)
-      (Sequence .right-images :Types Type.Image)
-      (Sequence .chosen-indices :Types Type.Int)
-
-      ; Variables to reset each round 
-      true >= .new-round
-      max-timer >= .time-remaining
-      false >= .input-received
-
-      ; Variables to reset each game 
-      0 >= .total-score
-      1 >= .current-round
-      false >= .game-over
-
-      ; Other Shared Variables
-      true >= .same-animals)
-
-    (defshards reset-round-variables []
-      false > .new-round
-      max-timer > .time-remaining
-      false > .input-received)
-
-    (defshards reset-game-variables []
-      (reset-round-variables)
-      0 > .total-score
-      1 > .current-round
-      false > .game-over)
-
-    (defwire fisher-yates-shuffle
-      (ExpectSeq) = .sequence
-      (Setup (int 0) >= .max-index)
-      (Count .sequence) (Math.Subtract 1) > .max-index      ; -1 from the sequence size to get the max index number
-
-      (Repeat
-       (-> (RandomInt :Max .max-index) >= .random-index     ; Select an index of the sequence randomly, the last index will never be chosen as :Max is not inclusive
-           .sequence
-           (| (Take .random-index) &> .chosen-value)        ; Obtains the value stored at the random index of the sequence
-           (| (Take .max-index) &> .last-value)             ; Obtains the last value in the sequence
-                                                            ; Swaps the values in the last index of the sequence with the chosen index
-           [.random-index .last-value] (Assoc .sequence)    ; Updates the random index selected with the last value of the sequence
-           [.max-index .chosen-value] (Assoc .sequence)     ; Updates the last index of the sequence with the value of the index randomly chosen
-
-           (Math.Dec .max-index))                           ; Decreases the max index value so that the shuffle will leave 
-                                                        ; the newly swapped value of the current max index alone for the next iteration  
-       :Forever true
-       :Until (-> .max-index (Is 0)))                       ; Loops until the there are no two values left to swap between
-
-      .sequence)                                            ; Returns the newly shuffled sequence
-
-    (defwire select-two-indices
-      = .sequence-length
-
-      (Setup
-       (Sequence .indices-sequence)
-       0 >= .index)
-
-      (Clear .indices-sequence)
-      0 > .index
-
-      (Repeat
-       :Action
-       (->
-        .index (Push .indices-sequence)
-        (Math.Inc .index))
-       :Times .sequence-length)
-
-      .indices-sequence (Do fisher-yates-shuffle) (Take [0 1]))
-
-    ; Determines the images used for the round
-    (defshards initialize-round []
-      ; Determine if the images on the left and right will be the same or different
-      (If
-       :Predicate (-> (RandomInt :Max 2) (Is 0))
-       :Then (-> true > .same-animals)
-       :Else (-> false > .same-animals))
-
-      (If
-       :Predicate (-> .same-animals (Is true))
-
-       ; If both images should show the same animal type
-       :Then
-       (->
-        ; Randomly selects the animal type to be used for the left side
-        (RandomInt :Max .total-animal-types) > .left-animal-type
-        .left-animal-type > .right-animal-type
-
-        ; Retrieve the images of the chosen animal type for the left image
-        .all-images (Take .left-animal-type) > .left-images
-        (Count .left-images) > .left-images-count
-
-        .left-images-count (Do select-two-indices) (ExpectIntSeq) > .chosen-indices
-        .chosen-indices (Take 0) > .left-image-index
-        .chosen-indices (Take 1) > .right-image-index)
-
-       ; If both images should show different animal types
-       :Else
-       (->
-        .total-animal-types (Do select-two-indices) (ExpectIntSeq) > .chosen-indices
-        .chosen-indices (Take 0) > .left-animal-type
-        .chosen-indices (Take 1) > .right-animal-type
-        .all-images (Take .left-animal-type) > .left-images
-        .all-images (Take .right-animal-type) > .right-images
-        (Count .left-images) > .left-images-count
-        (Count .right-images) > .right-images-count
-        (RandomInt :Max .left-images-count) > .left-image-index
-        (RandomInt :Max .right-images-count) > .right-image-index))
-
-      (reset-round-variables))
-
-    (defwire end-round
-      (Setup 0 >= .new-round-number)
-      .current-round (Math.Add 1) > .new-round-number
-      (If
-       :Predicate (-> .new-round-number (IsMore total-rounds))
-       :Then
-       (-> true > .game-over)
-       :Else
-       (->
-        .new-round-number > .current-round
-        true > .new-round)))
-
-    (defshards check-answer [yes-input]
+    (defshards timer-tick []
       (When
-       :Predicate (-> .input-received (Is false))
+       :Predicate (-> .game-over (Is false))            ; When the game is still running,
        :Action
        (->
+        (Math.Dec .time-remaining)                      ; Decrease the time remaining by 1
         (When
-         :Predicate (-> .same-animals (Is yes-input))
-         :Action (-> (Math.Inc .total-score)))
-
-        true > .input-received
-        (When
-         :Predicate (-> .game-over (IsNot true))
+         :Predicate (-> .time-remaining (IsLess 0))     ; The round is forced to end if the time remaining falls below 0
          :Action (Dispatch end-round)))))
 
-    ; Creates the main game area
-    (defshards main-game-ui []
-      (UI.BottomPanel
-       :Contents (-> "Are they the same type of animal? Press the UP arrow if YES, and the DOWN arrow if NO." (UI.Label)))
+    ```
 
-      (UI.TopPanel
-       :Contents
-       (->
-        (UI.Horizontal
-         :Contents
-         (->
-          "Score: " (UI.Label)
-          .total-score (ToString) (UI.Label)
-          (UI.Separator)
-          "Round: " (UI.Label)
-          .current-round (ToString) (UI.Label)
-          (UI.Separator)
-          "Time Left: " (UI.Label)
-          .time-remaining (ToString) (UI.Label)))))
-  
-      (UI.CentralPanel
-       :Contents
-       (->
-        (UI.Horizontal
-         :Contents
-         (->
-          (UI.Area
-           :Position (float2 -250.0, 0.0)
-           :Anchor Anchor.Center
-           :Contents
-           (-> .all-images (Take .left-animal-type) (Take .left-image-index) (UI.Image)))
-          (UI.Area
-           :Position (float2 250.0, 0.0)
-           :Anchor Anchor.Center
-           :Contents
-           (-> .all-images (Take .right-animal-type) (Take .right-image-index) (UI.Image))))))))     
+We can have it called every second consistently by using the `Once` shard. 
 
-    ; Creates the game over screen
-    (defshards game-over-ui []
-      (UI.CentralPanel
-       :Contents
-       (->
-        (UI.Area
-         :Position (float2 0.0, 0.0)
-         :Anchor Anchor.Center
-         :Contents
-         (->
-          "GAME OVER" (UI.Label)
-          (UI.Horizontal
-           :Contents
-           (->
-            "Final Score: " (UI.Label)
-            .total-score (ToString) (UI.Label)
-            "/"  (UI.Label)
-            total-rounds (ToString) (UI.Label)))
+Place it within the `logic-loop` alongside the rest of our code where we are checking if a new round should be started.
 
-          (UI.Button
-           :Label "Play Again!"
-           :Action (-> (reset-game-variables))))))))
+=== "Code"
 
-    (defloop ui-loop
-      (GFX.MainWindow
-       :Title "Yes-No Game"
-       :Width 1280 :Height 768
-       :Contents
-       (->
-        (Setup
-         (GFX.DrawQueue) >= .ui-draw-queue
-         (GFX.UIPass .ui-draw-queue) >> .render-steps)
-        (| .ui-draw-queue (GFX.ClearQueue))
-    
-        (If
-         :Predicate (-> .game-over)
-         :Then (-> (UI .ui-draw-queue (game-over-ui)))
-         :Else (-> (UI .ui-draw-queue (main-game-ui))))
-
-        (GFX.Render :Steps .render-steps)
-
-        (Inputs.KeyDown
-         :Key "up"
-         :Action (-> (check-answer true)))
-    
-        (Inputs.KeyDown
-         :Key "down"
-         :Action (-> (check-answer false))))))
-
+    ```clojure linenums="1"
     (defloop logic-loop
+      (Once                         ; Runs the timer-tick shard every 1 second
+       :Action (-> (timer-tick))
+       :Every 1.0)
+
       (WhenNot
        :Predicate (-> .game-over)
        :Action
@@ -554,15 +317,21 @@ Your game now has 10 rounds, calculates the total score, shows a Game Over scree
         (When
          :Predicate (-> .new-round)
          :Action (-> (initialize-round))))))
-
-    (defloop game-loop
-      (Setup (load-resources) (initialize-variables))
-      (Branch [ui-loop, logic-loop]))
-
-    (defmesh main)
-    (schedule main game-loop)
-    (run main (/ 1.0 60.0))
-
     ```
+
+??? "Once"
+    [`Once`](https://docs.fragcolor.xyz/docs/shards/General/Once/) will run the code in its `Action` parameter every time the duration specified in its `Every` parameter has passed.
+
+## Outcome
+
+Congratulations on making it to the end!
+
+Your game now has 10 rounds, calculates the total score, shows a Game Over screen and lets you play it again at the end. It even has a timer to add a time constraint to each round.
+
+![Round number and the score is calculated.](assets/step-4-result-1.png)
+
+![A Game Over screen is shown at the end.](assets/step-4-result-2.png)
+
+The full game script can be found [here](../full-game/yesnogame.edn).
 
 --8<-- "includes/license.md"
