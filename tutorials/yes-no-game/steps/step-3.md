@@ -12,7 +12,7 @@ Let us first create a shard named `initialize-round`.
 
 Place the new shard into the `logic-loop`. Wrap it within a `Setup` shard to ensure it only runs once (for now).
 === "Code"
-    
+
     ```clojure linenums="1"
     (defloop logic-loop
       (Setup (initialize-round)))
@@ -25,7 +25,7 @@ We will need to determine if the same animal type will be used for both images.
 In `initialize-variables`, create a variable named `.same-animals`.
 
 === "Code"
-    
+
     ```clojure linenums="1" 
     (defshards initialize-variables []
       true >= .same-animals          ; Tracks whether the same animal type will be used
@@ -38,7 +38,7 @@ In `initialize-variables`, create a variable named `.same-animals`.
 We can use the `RandomInt` shard to randomly output 0 or 1, which we can associate with the choice to use the same animal type or not.
 
 === "Code"
-    
+
     ```clojure linenums="1" 
     (defshards initialize-round []      
       (If                                           ; Determine if the images on the left and right will be the same or different
@@ -60,7 +60,7 @@ Next, we have to select the animal type to be used. Push the image sequences int
 Navigate to where the images are loaded in `load-resources` and push the animal sequences into a new sequence named `.all-images`.
 
 === "Code"
-    
+
     ```clojure linenums="1" 
     (defshards load-resources []
       (LoadImage "data/cats/cat01.png") (Push :Name .cat-images)
@@ -80,7 +80,7 @@ Navigate back to the shard `initialize-variables`. Define new variables for the 
 We will also define variables to hold the size of each sequence as we will need them for the `Max` parameter in `RandomInt`.
 
 === "Code"
-    
+
     ```clojure linenums="1" 
     (defshards initialize-variables []
       0 >= .left-animal-type                        ; The index in .all-images for the animal type of the left image
@@ -108,7 +108,7 @@ Now that we have our variables ready, we can start coding the logic once more in
 Start with obtaining the values required to display the left image.
 
 === "Code"
-    
+
     ```clojure linenums="1" 
     (defshards initialize-round []
       (If
@@ -135,14 +135,14 @@ Previously we used a placeholder to always show the first image stored in `.cat-
 
 Replace
 === "Code"
-    
+
     ```clojure linenums="1" 
     .cat-images (Take 0) (UI.Image)
     ```
 
 With
 === "Code"
-    
+
     ```clojure linenums="1" 
     .all-images (Take .left-animal-type)        ; Retrieves the sequence of animal images to use
     (Take .left-image-index) (UI.Image)         ; Retrieve the chosen image from the sequence
@@ -157,7 +157,7 @@ To achieve this, we need the two randomly chosen indices to be different from ea
 If you are curious as to how the shuffle technique works, check out our tutorial for it [here](../../fisher-yates-shuffle/index.md). Otherwise, you can simply copy the code below and add it to your script to gain access to the `fisher-yates-shuffle` wire. One of the beauty of Shards is how they can be shared around easily after all!
 
 === "Code"
-    
+
     ```clojure linenums="1" 
     (defwire fisher-yates-shuffle
       (ExpectSeq) = .sequence
@@ -197,7 +197,7 @@ For example, if we know that a sequence has 3 entries and we want to randomly se
 Create a wire named `select-two-indices` to execute this logic.
 
 === "Code"
-    
+
     ```clojure linenums="1" 
     (defwire select-two-indices
       = .sequence-length                            ; Input passed into the wire is saved to the variable .sequence-length
@@ -221,13 +221,22 @@ Create a wire named `select-two-indices` to execute this logic.
 
     ```
 
+??? "Repeat"
+    [`Repeat`](https://docs.fragcolor.xyz/docs/shards/General/Repeat/) repeats the `Action` passed in by the number of `Times` indicated or when the condition specified in `Until` is no longer true.
+
+??? "Math.Inc"
+    [`Math.Inc`](https://docs.fragcolor.xyz/docs/shards/Math/Inc/) increases the value passed in by 1.
+
+??? "Do"
+    [`Do`](https://docs.fragcolor.xyz/docs/shards/General/Do/) runs an unscheduled Wire inline, similar to how a function is called.
+
 Now that we have the means to obtain two random values from a sequence, we can implement the code to choose the right image.
 
 !!! note
     The code to select the left image has been shifted into the `If` shard to account for conditionals.
 
 === "Code"
-    
+
     ```clojure linenums="1" 
     (defshards initialize-round []
       (If
@@ -283,7 +292,7 @@ Now that we have the means to obtain two random values from a sequence, we can i
 With the animal type and image indices retrieved, we can update our UI drawing code to display our randomly selected images.
 
 === "Code"
-    
+
     ```clojure linenums="1" 
     (UI.CentralPanel
         :Contents
@@ -314,7 +323,7 @@ Try running the code to see how the images change every time the game is run.
 ![Randomly selected images for different animal types.](assets/step-3-result-2.png)
 
 === "Code"
-    
+
     ```clojure linenums="1" 
     (def total-rounds 10)
     (def max-timer 5)

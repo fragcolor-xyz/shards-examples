@@ -9,3 +9,6 @@
 
 site/
 *.car
+tutorials/yes-no-game/full-game/yesnogame-test.edn
+tutorials/yes-no-game/full-game/test.edn
+tutorials/yes-no-game/full-game/imgui.ini

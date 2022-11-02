@@ -79,12 +79,11 @@ We can ready empty shards `load-resources` and `initialize-variables` that will 
 ??? "Setup"
     The [`Setup`](https://docs.fragcolor.xyz/docs/shards/General/Once/) shard will only be executed once, even within a Looped Wire. This makes it ideal to hold code that is only used once to ready the game. 
 
-
 === "Code"
     
     ```clojure linenums="1"
     (defshards load-resources)          ; Load resources here 
-    (defshards initialize-variables)    ; Eeady variables here
+    (defshards initialize-variables)    ; Ready variables here
     (defloop ui-loop)                   ; Insert UI code here
     (defloop logic-loop)                ; Insert logic code here
 
@@ -98,6 +97,9 @@ We can ready empty shards `load-resources` and `initialize-variables` that will 
     (schedule main game-loop)
     (run main (/ 1.0 60.0))
     ```
+
+??? "defshards"
+    [`defshards`](https://docs.fragcolor.xyz/docs/functions/macros/#defshards) allows multiple shards to be grouped together into a single shard.
 
 The basic game loop is now ready!
 

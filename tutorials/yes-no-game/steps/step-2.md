@@ -23,9 +23,6 @@ In order to start drawing the UI in shards, we will first have to ready the GFX 
         (GFX.Render :Steps .render-steps))))
     ```
 
-??? "defshards"
-    [`defshards`](https://docs.fragcolor.xyz/docs/functions/macros/#defshards) allows multiple shards to be grouped together into a single shard.
-
 ??? "What does the GFX code mean?"
     How the GFX window works is beyond the scope of this tutorial. The rough idea is that we are giving instructions to the computer on what to draw to the screen. For more information, check out the documentation on the [UI](https://docs.fragcolor.xyz/docs/shards/UI/) class.
 

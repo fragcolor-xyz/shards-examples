@@ -5,8 +5,8 @@ Shards used
 - run
 - Branch
 - Setup
-
 - defshards
+
 - UI.BottomPanel
 - UI.Label
 - UI.Horizontal
@@ -17,8 +17,15 @@ Shards used
 - UI.Area
 - Take
 
+- Repeat
+- Math.Inc
+- Do
 - If
 - RandomInt
+
+- Inputs.KeyDown
+- When
+- Dispatch
 
 Short Explanations
 - Variables

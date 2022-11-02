@@ -38,26 +38,29 @@
   (Sequence .right-images :Types Type.Image)
   (Sequence .chosen-indices :Types Type.Int)
 
-  true >= .same-animals
-  true >= .new-round
-  0 >= .new-round-number
-
   ; Variables to reset each round 
-  0 >= .total-score
-  1 >= .current-round
+  true >= .new-round
   max-timer >= .time-remaining
-  false >= .yes-input
   false >= .input-received
-  false >= .game-over)
+  
+  ; Variables to reset each game 
+  0 >= .total-score
+  1 >= .current-round 
+  false >= .game-over
+  
+  ; Other Shared Variables
+  true >= .same-animals)
 
-(defshards reset-values []
+(defshards reset-round-variables []
+  false > .new-round
+  max-timer > .time-remaining 
+  false > .input-received)
 
-  false > .yes-input
-  false > .input-received
-  false > .game-over
+(defshards reset-game-variables []
+  (reset-round-variables)
+  0 > .total-score
   1 > .current-round
-  max-timer > .time-remaining
-  0 > .total-score)
+  false > .game-over)
 
 (defwire fisher-yates-shuffle
   (ExpectSeq) = .sequence
@@ -100,10 +103,7 @@
   .indices-sequence (Do fisher-yates-shuffle) (Take [0 1]))
 
 ; Determines the images used for the round
-(defshards initialize-round []
-
-  max-timer > .time-remaining
-
+(defshards initialize-round [] 
   ; Determine if the images on the left and right will be the same or different
   (If
    :Predicate (-> (RandomInt :Max 2) (Is 0))
@@ -139,13 +139,51 @@
     (Count .left-images) > .left-images-count
     (Count .right-images) > .right-images-count
     (RandomInt :Max .left-images-count) > .left-image-index
-    (RandomInt :Max .right-images-count) > .right-image-index))
+    (RandomInt :Max .right-images-count) > .right-image-index)) 
+    
+    (reset-round-variables))
 
-  false > .new-round
-  false > .input-received)
+(defwire end-round
+  (Setup 0 >= .new-round-number)
+  .current-round (Math.Add 1) > .new-round-number
+  (If
+   :Predicate (-> .new-round-number (IsMore total-rounds))
+   :Then
+   (-> true > .game-over)
+   :Else
+   (->
+    .new-round-number > .current-round
+    true > .new-round)))
+
+(defshards check-answer [yes-input]
+  (When
+   :Predicate (-> .input-received (Is false))
+   :Action
+   (->
+    (When
+     :Predicate (-> .same-animals (Is yes-input))
+     :Action (-> (Math.Inc .total-score)))
+
+    true > .input-received
+    (When
+     :Predicate (-> .game-over (IsNot true))
+     :Action (-> (Dispatch end-round))))))
+
+(defshards increase-timer []
+  (When
+   :Predicate (-> .game-over (Is false))
+   :Action
+   (->
+    (Math.Dec .time-remaining)
+    (When
+     :Predicate (-> .time-remaining (IsLess 0))
+     :Action (Dispatch end-round)))))
 
 ; Creates the main game area
 (defshards main-game-ui []
+  (UI.BottomPanel
+   :Contents (-> "Are they the same type of animal? Press the UP arrow if YES, and the DOWN arrow if NO." (UI.Label)))
+
   (UI.TopPanel
    :Contents
    (->
@@ -159,10 +197,7 @@
       .current-round (ToString) (UI.Label)
       (UI.Separator)
       "Time Left: " (UI.Label)
-      .time-remaining (ToString) (UI.Label)))))
-
-  (UI.BottomPanel
-   :Contents (-> "Are they the same type of animal? Press the UP arrow if YES, and the DOWN arrow if NO." (UI.Label)))
+      .time-remaining (ToString) (UI.Label))))) 
 
   (UI.CentralPanel
    :Contents
@@ -202,42 +237,9 @@
 
       (UI.Button
        :Label "Play Again!"
-       :Action (-> (reset-values))))))))
-
-(defshards check-answer [yes-input]
-  (When
-   :Predicate (-> .input-received (Is false))
-   :Action
-   (->
-    (When
-     :Predicate (-> .same-animals (Is yes-input))
-     :Action (-> (Math.Inc .total-score)))))
-  true > .input-received
-  (end-round))
-
-(defshards end-round []
-  .current-round (Math.Add 1) > .new-round-number
-  (If
-   :Predicate (-> .new-round-number (IsMore total-rounds))
-   :Then
-   (-> true > .game-over)
-   :Else
-   (->
-    .new-round-number > .current-round
-    true > .new-round)))
-
-(defshards increase-timer []
-  (When
-   :Predicate (-> .game-over (Is false))
-   :Action
-   (->
-    (Math.Dec .time-remaining)
-    (When
-     :Predicate (-> .time-remaining (IsLess 0))
-     :Action (end-round)))))
+       :Action (-> (reset-game-variables))))))))
 
 (defloop ui-loop
-
   (GFX.MainWindow
    :Title "Yes-No Game"
    :Width 1280 :Height 768
@@ -269,7 +271,7 @@
    :Every 1.0)
 
   (WhenNot
-   :Predicate  (-> .game-over)
+   :Predicate (-> .game-over)
    :Action
    (->
     (When
