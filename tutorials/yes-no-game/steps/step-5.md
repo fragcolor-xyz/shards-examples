@@ -174,9 +174,7 @@ We can now employ the `check-answer` shard in our `Inputs.KeyDown` logic.
     1. Check-answer is called, with true being passed in to indicate that the user chose "Yes".
     2. Check-answer is called, with false being passed in to indicate that the user chose "No".
 
-Cheers! Your game can now receive user input, tabulate the score, and allows players to play up to 10 rounds each time. 
-
-![User input, score tabulation, and multiple rounds.](assets/step-5-result.png)
+Cheers! Your game can now receive user input, tabulate the score, and allows players to play up to 10 rounds each time.
 
 
 === "Full Code"
@@ -350,5 +348,9 @@ Cheers! Your game can now receive user input, tabulate the score, and allows pla
     (schedule main game-loop)
     (run main (/ 1.0 60.0))
     ```
+
+=== "Result"    
+    ![User input, score tabulation, and multiple rounds.](assets/step-5-result.png)
+
 
 --8<-- "includes/license.md"

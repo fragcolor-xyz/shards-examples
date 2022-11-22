@@ -139,6 +139,6 @@ Now that the tutorial is over, why not challenge yourself further by implementin
 
 The possibilities are endless with the power of Shards in your hands.
 
-The full game script can be found [here](../full-game/yesnogame.edn).
+The full game script can be found [here](../full-game/index.md).
 
 --8<-- "includes/license.md"

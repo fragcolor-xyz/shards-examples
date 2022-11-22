@@ -115,10 +115,6 @@ Congratulations! Your game can now display random images at the start of each ro
 
 Try running the code to see how the images change every time the game is run.
 
-![Randomly selected images that are the same.](assets/step-3-result-1.png)
-
-![Randomly selected images that are different.](assets/step-3-result-2.png)
-
 In the next chapter, we will be adding multiple rounds to your game to increase its playability.
 
 === "Full Code"
@@ -212,8 +208,8 @@ In the next chapter, we will be adding multiple rounds to your game to increase 
 
 === "Result"
 
-    ![Randomly selected images for the same animal type.](assets/step-3-result-1.png)    
-    ![Randomly selected images for different animal types.](assets/step-3-result-2.png)
+    ![Randomly selected images that are the same.](assets/step-3-result-1.png)    
+    ![Randomly selected images that are different.](assets/step-3-result-2.png)
 
 
 --8<-- "includes/license.md"
