@@ -41,8 +41,9 @@ plugins:
 theme:
   favicon: assets/images/favicon.svg
   features:
-    - navigation.indexes
     - navigation.expand
+    - navigation.footer
+    - navigation.indexes
     - navigation.instant
     - navigation.tabs
     - navigation.tabs.sticky
@@ -51,7 +52,7 @@ theme:
     - toc.integrate
   font:
     code: Fira Code
-    text: Montserrat
+    text: Hind
   language: en
   logo: assets/images/logo.svg
   name: material
