@@ -1,6 +1,6 @@
-# Step 2 - Changing Character Images with Button Inputs
+# Step 2
 
-## Overview
+## Changing Character Images with Button Inputs- Overview
 
 In the previous step we successfully drew our character, the adorable Glod, in a window. Eventually we want this image to be animated. But slow down now! Before we reach that stage, lets first start with having our image change to a different image. Thus, in this step, we will:
 
@@ -262,7 +262,7 @@ First, create the `character-state` variable.
 === "Code Added"
     
     ```{.clojure .annotate linenums="1"}
-    0 >= .character-state ;;       
+    0 >= .character-state ;; (1)      
    
     ```
 
@@ -274,7 +274,7 @@ First, create the `character-state` variable.
             1 (-> .character-left (UI.Image :Scale (float2 0.2)))
             2 (-> .character-right (UI.Image :Scale (float2 0.2)))
             3 (-> .character-jumping (UI.Image :Scale (float2 0.2)))]
-            :Passthrough false) ;;      
+            :Passthrough false) ;; (1)     
   
     ```
 
@@ -367,10 +367,10 @@ If you run the code now, you will see only 1 image this time, but the image does
     :Key "up"
     :Action ( -> 
                 (Msg "up")
-                3 > .character-state)))  ;; (1)      
+                3 > .character-state)))    
     ```
 
-    1. The **button-input** shard was updated to also change the **character-state** on-top of printing messages in the terminal
+    > The `button-input` shard was updated to also change the `character-state` on-top of printing messages in the terminal
 
 === "Full Code So Far"
     
@@ -448,3 +448,6 @@ Now if you run the code and press the up,left and right buttons, you will see Gl
 
 Try running the code. Walah! Now you have an image that changes based on the button pressed. The way we achieved this was by creating a character-state variable and by having a Match shard dictate which image is drawn in the window based on the character-state variable. In the next step we will breathe more life into adorable Glod by finally animating him!
 Looking forward to seeing you in the next step!🙂
+
+<br>
+<br>

@@ -1,6 +1,6 @@
-# Step 1 - Drawing a Character Image using UI
+# Step 1 
 
-## Overview
+## Drawing a Character Image using UI - Overview
 
 In this step, to start things off nice and easy. We will simply be:
 
@@ -172,3 +172,5 @@ Try running the program now. You should see adorable little Glod in the center o
 In this step we have successfully drawn an image on screen by innitializing our image variable, creating a Window, and lastly, by using the UI.Area and UI.Image Shards to draw our image within the window.
 We would be very hard pressed however to make a game out of a single static unchanging image. Hence in the next step, we will learn how to dynamically change adorable Glod's image by pressing buttons.
 God job so far and see you in the next step! 👋
+<br>
+<br>

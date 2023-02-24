@@ -1,5 +1,5 @@
-# Step 3 - Animating Character using Image Arrays
-## Overview
+# Step 3
+##  Animating Character using Image Arrays - Overview
 
 In the last step we managed to have Glod's image change based on the button input. Now, let's breathe more life into him. Instead of having static images, lets have him animated. To do this we will:
 
@@ -13,7 +13,7 @@ Without further ado, let's get into it!
 
 As usual before we can create our animation, we will have to download the images that we will use for the animation. Lets create a folder within "GlodImages" called "Character_Idle" . Within "Character_Idle" create another folder "Idle_Left" and save the images there.
 
-![Glod Idle Gif](assets/step3_1_Gif.gif)
+![Glod Idle Gif](assets/step3_1_Gif.gif){ style="display: block; margin: 0 auto; padding-bottom: 30px"  }
 
 - Download Glod's adorable idle animation frames [here](https://drive.google.com/drive/folders/1BJVK5WL5lBaL3coZXsDWB_YgOHW0f7fQ?usp=share_link).
 
@@ -24,7 +24,7 @@ Once you have the images downloaded, the next step is to have an image array to 
 === "Code Added"
     
     ```{.clojure .annotate linenums="1"}
-    ;; ---------- Character Idle Array ---------- ;; (1)
+    ;; ---------- Character Idle Array ----------
     (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> .idle-left-image-array
     (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> .idle-left-image-array
     (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> .idle-left-image-array
@@ -34,7 +34,7 @@ Once you have the images downloaded, the next step is to have an image array to 
     (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> .idle-left-image-array  
     ```
 
-    1. Remember to use `;; comments` to help segment and organize your code for better readabillity!
+    > Remember to use `;; comments` to help segment and organize your code for better readabillity!
 
 === "Full Code So Far"
     
@@ -125,16 +125,16 @@ Now that we have an array of images, we can take an element from this array and 
 === "Code Added"
     
     ```{.clojure .annotate linenums="1"}
-    0 >= .idle-image-index ;; (1)
+    0 >= .idle-image-index
     ```
 
-    1. Create an .idle_image_index variable and add it  under Initialize_Character line 22
+    > Create an `.idle-image-index` variable and add it  under `initialize-character` line 22
 
     ```{.clojure .annotate linenums="1"}
-    .idle-left-image-array (Take .idle-image-index) ;; (1)
+    .idle-left-image-array (Take .idle-image-index)
     ```
 
-    1. `UI_Image` displaying the idle image has been changed from `.character-image` to instead show an image from  the `idle_Left_image_array` using  the `Take` shard Line 79
+    > `UI-Image` displaying the idle image has been changed from `.character-image` to instead show an image from  the `idle-left-image-array` using  the `Take` shard Line 79
 
 === "Full Code So Far"
     
@@ -226,10 +226,10 @@ Almost there! Now to have this image animated, we have to dynamically increase `
     ```{.clojure .annotate linenums="1"}
     (defloop idle-animation
       .idle-image-index (Math.Add 1)
-      > .idle-image-index) ;; (1)
+      > .idle-image-index)
     ```
 
-    1. Whenever you make changes to a *variable*, remember to *push* it to the *variable* again at the end if you plan on using it in another segment of the code.
+    > Whenever you make changes to a *variable*, remember to *push* it to the *variable* again at the end if you plan on using it in another segment of the code.
     Using *defloop* to create a looping wire that will *add 1* to *.idle-image-index* everytime it is called. Added to lines 24 -26
 
 === "Full Code So Far"
@@ -323,10 +323,10 @@ Now before we call this wire, we have to create some variables to help us loop i
     
     ```{.clojure .annotate linenums="1"}
     (Count .idle-left-image-array) = .idle-image-index-max
-    0.08 = .idle-animation-speed ;;(1)
+    0.08 = .idle-animation-speed
     ```
 
-    1. **.idle-image-index-max** will be used to ensure that **.idle-image-index** does not exceed this value .**idle-animation-speed** ensures how fast our idle animation will play. Code added to line 23 & 24.
+    > `.idle-image-index-max` will be used to ensure that `.idle-image-index `does not exceed this value .`idle-animation-speed` ensures how fast our idle animation will play. Code added to line 23 & 24.
 
     ```{.clojure .annotate linenums="1"}
     (defloop idle-animation
@@ -334,10 +334,10 @@ Now before we call this wire, we have to create some variables to help us loop i
       > .idle-image-index
       (When :Predicate (IsMoreEqual .idle-image-index-max)
             :Action (-> 0 > .idle-image-index))
-      (Pause .idle-animation-speed)) ;; (1)
+      (Pause .idle-animation-speed))
     ```
 
-    1. The when conditional statement ensures that .idle_animation_index will not exceed .idle_image_index_max. This ensures that we will not try to draw an image that is beyond what the array has. This will cause the programme to crash Pause is used as this defloop will eventually be stepped. This pause will cause the defloop to be called every .Idle_Animation_Speed seconds added to line 26 - 31.
+    > The `when` conditional statement ensures that `.idle-animation-index` will not exceed `.idle-image-index-max`. This ensures that we will not try to draw an image that is beyond what the array has. This will cause the programme to crash. `Pause` is used as this defloop will eventually be stepped. This pause will cause the defloop to be called every .`idle-animation-speed` seconds added to line 26 - 31.
 
 === "Full Code So Far"
     
@@ -452,10 +452,10 @@ Now we just have to call this wire in our main wire using `Step`.
 === "Code Added"
     
     ```{.clojure .annotate linenums="1"}
-    (Step idle-animation) ;; (1)
+    (Step idle-animation)
     ```
 
-    1. `Step` allows us to run a code in paralell to the main wire this line is added to line 56
+    > `Step` allows us to run a code in paralell to the main wire this line is added to line 56
 
 === "Full Code So Far"
     
@@ -573,10 +573,10 @@ Now, before we proceed to the next chapter, lets give Glod his other animations.
     (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> .idle-right-image-array
     (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> .idle-right-image-array
     (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> .idle-right-image-array
-    (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> .idle-right-image-array ;; (1)
+    (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> .idle-right-image-array
     ```
 
-    1. Similar to how we created an image array for the idle animation when Glod is facing left, we create one for when glod is facing right.
+    > Similar to how we created an image array for the idle animation when Glod is facing left, we create one for when glod is facing right.
 
     ```{.clojure .annotate linenums="1"}
     ;; -------------- Walking Array (Facing Left) -----------------
@@ -599,18 +599,18 @@ Now, before we proceed to the next chapter, lets give Glod his other animations.
 
     (Count .walking-left-image-array) (Math.Subtract 1) >= .walking-image-index-max
     0 >= .walking-image-index
-    0.08 >= .walking-animation-speed) ;; Reduce number to increase animation speed ;; (1)
+    0.08 >= .walking-animation-speed) ;; Reduce number to increase animation speed
     ```
 
-    1. Similarly, we create image arrays for when glod is facing left and for when Glod is facing right. Since the walking animation is  a different animation from the idle animatio, we will be making new animation speed, image index and max image index variables. Code added to lines  35 - 51.
+    > Similarly, we create image arrays for when glod is facing left and for when Glod is facing right. Since the walking animation is  a different animation from the idle animatio, we will be making new animation speed, image index and max image index variables. Code added to lines  35 - 51.
 
     ```{.clojure .annotate linenums="1"}
     ;; ---------- Character Idle Array (Facing Right) ----------------
     .walking-left-image-array (Take .walking-image-index)
-    .walking-right-image-array (Take .walking-image-index) ;; (1)
+    .walking-right-image-array (Take .walking-image-index)
     ```
 
-    1. Similarly, **.character-left** & **.character-right** are replaced to display an image from their respective arrays.
+    > Similarly, **.character-left** & **.character-right** are replaced to display an image from their respective arrays.
 
 === "Full Code So Far"
     
@@ -759,16 +759,16 @@ Now similarly, we will create wires for the walking animation and also Step it.
       > .walking-image-index
       (When :Predicate (IsMore .walking-image-index-max)
             :Action (-> 0 > .walking-image-index))
-      (Pause .walking-animation-speed)) ;;(1)
+      (Pause .walking-animation-speed))
     ```
 
-    1. The logic for the Walking_Animation is exactly the same  as the Idle animation Code added to lines 65-71
+    > The logic for the Walking_Animation is exactly the same  as the Idle animation Code added to lines 65-71
 
     ```{.clojure .annotate linenums="1"}
-    (Step walking-animation) ;;(1)
+    (Step walking-animation)
     ```
 
-    1. Code added to line 109
+    > Code added to line 109
 
 === "Full Code So Far"
     
@@ -930,10 +930,10 @@ So let's fix these problems. Why don't we start with the easier one first. Lets 
 === "Code Added"
     
     ```{.clojure .annotate linenums="1"}
-    0 >= .character-direction;;(1)
+    0 >= .character-direction
     ```
 
-    1. 0 means the player is facing left and 1 means the player is facing right. Added to line 12 under initialize character
+    > 0 means the player is facing left and 1 means the player is facing right. Added to line 12 under initialize character
 
     ```{.clojure .annotate linenums="1"}
     ;; ------- Button Inputs ----------
@@ -964,10 +964,10 @@ So let's fix these problems. Why don't we start with the easier one first. Lets 
 
       (Inputs.KeyUp
       :Key "right"
-      :Action (-> 0 > .character-state))) ;;(1)
+      :Action (-> 0 > .character-state)))
     ```
 
-    1. When the left and right buttons are released, .character-state will revert back to 0. When the left and right buttons are pressed .character-direction will be 0 and 1 respectively.
+    > When the left and right buttons are released, .character-state will revert back to 0. When the left and right buttons are pressed .character-direction will be 0 and 1 respectively.
 
     ```{.clojure .annotate linenums="1"}
       (Match [0 (-> .character-direction
@@ -977,10 +977,10 @@ So let's fix these problems. Why don't we start with the easier one first. Lets 
               1 (-> .walking-left-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
               2 (-> .walking-right-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
               3 (-> .character-jumping (UI.Image :Scale (float2 0.2)))]
-              :Passthrough false) ;; (1)
+              :Passthrough false)
     ```
 
-    1. Lastly we add another **(Match)** to our **Match [0(->)]** so that Glod displays the correct image based on his direction
+    > Lastly we add another **(Match)** to our **Match [0(->)]** so that Glod displays the correct image based on his direction
 
 === "Full Code So Far"
     
@@ -1142,10 +1142,10 @@ When you run the programme, Glod will  return to his idle animation whenever you
     ```{.clojure .annotate linenums="1"}
     ;; -------------- Character Jumping  ----------
     (LoadTexture "GlodImages/Character1_Jumping_Left.png") = .character-jumping-left
-    (LoadTexture "GlodImages/Character1_Jumping_Right.png") = .character-jumping-right ;;(1)
+    (LoadTexture "GlodImages/Character1_Jumping_Right.png") = .character-jumping-right
     ```
 
-    1. Add in a jumping right image and rename our original **.character-jumping** to **.character-jumping-left** added to line 5 - 7.
+    > Add in a jumping right image and rename our original **.character-jumping** to **.character-jumping-left** added to line 5 - 7.
 
     ```{.clojure .annotate linenums="1"}
     (Match [0 (-> .character-direction
@@ -1158,10 +1158,10 @@ When you run the programme, Glod will  return to his idle animation whenever you
                   (Match [0 (-> .character-jumping-left (UI.Image :Scale (float2 0.2)))
                           1 (-> .character-jumping-right (UI.Image :Scale (float2 0.2)))]
                           :Passthrough false))]
-            :Passthrough false) ;; (1)
+            :Passthrough false)
     ```
 
-    1. Then add another **Match** to our original **Match** to show the corresponding jump image depending on Glod's direction.Code added to lines 127-137.
+    > Then add another **Match** to our original **Match** to show the corresponding jump image depending on Glod's direction.Code added to lines 127-137.
 
 === "Full Code So Far"
     
@@ -1314,4 +1314,7 @@ When you run the programme, Glod will  return to his idle animation whenever you
     (run main (/ 1.0 60))
     ```
 
-Try running the code now! Your adorable Glod should be fully animated and be facing in the correct directions! Congratulations on making your first animated character. We will break the chains that bind Glod and make him no longer stationary. See you in the next chapter! 😄
+## Recap
+Try running the code now! Your adorable Glod should be fully animated and be facing in the correct directions! Congratulations on making your first animated character. To recap, in this step we used arrays of images to animate Glod. Next, we will break the chains that bind Glod and make him no longer stationary. See you in the next chapter! 😄
+<br>
+<br>
