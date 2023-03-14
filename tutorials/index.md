@@ -10,6 +10,7 @@ You will also need a compiled version of Shards to run these tutorials. Shards c
 
 * [Snake](./snake/index.md)
 * [Yes-No game](./yes-no-game/index.md)
+* [Glod game](./glod-game/index.md)
 
 *More to come. Stay tuned!*
 
