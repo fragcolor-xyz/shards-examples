@@ -1,4 +1,4 @@
-# Yes-No Game Tutorial
+# Glod Game Tutorial
 
 Hello there! In this tutorial we will be making a 2D point collection game using [Shards](https://github.com/fragcolor-xyz/shards).
 
