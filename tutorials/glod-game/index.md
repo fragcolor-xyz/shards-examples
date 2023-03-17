@@ -2,15 +2,13 @@
 
 Hello there! In this tutorial we will be making a 2D point collection game using [Shards](https://github.com/fragcolor-xyz/shards).
 
-This tutorial assumes that you have a basic understanding of Shards. In order to run the code examples used here, you are required to have Shards built. 
+This tutorial assumes that you have a basic understanding of Shards. In order to run the code examples used here, you are required to have Shards installed. 
 
 For more information, check out the following links on:
 
 1. [The Basics of Shards](https://docs.fragcolor.xyz/learn/shards/)
 
-2. [Building Shards](https://docs.fragcolor.xyz/contribute/code/build-shards/)
-
-3. [Running Shards](https://docs.fragcolor.xyz/contribute/code/run-shards/)
+2. [Install Shards](https://github.com/fragcolor-xyz/shards/releases)
 
 ## Key Concepts
 Here are the key concepts that we will be covering in this tutorial:
