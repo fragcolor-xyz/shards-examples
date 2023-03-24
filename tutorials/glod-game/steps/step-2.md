@@ -169,7 +169,9 @@ Next, instead of just having messages appear on the terminal, let's start trying
            (->
             .character-image (UI.Image :Scale (float2 0.2))))))
 
-        (GFX.Render :Steps .render-steps))))
+        (GFX.Render :Steps .render-steps)
+
+        (button-inputs))))
 
     (defmesh main)
     (schedule main main-wire)
@@ -241,7 +243,9 @@ Now, let's draw the new images onto the screen. Place them under the same `UI.Ar
             .character-right (UI.Image :Scale (float2 0.2))
             .character-jumping (UI.Image :Scale (float2 0.2))))))
 
-        (GFX.Render :Steps .render-steps))))
+        (GFX.Render :Steps .render-steps)
+
+        (button-inputs))))
 
     (defmesh main)
     (schedule main main-wire)
@@ -298,7 +302,6 @@ First, create the `.character-state` variable.
     
     ```{.clojure .annotate linenums="1"}
 
-
     (defshards load-texture [name]
       (LoadImage name)
       (GFX.Texture))
@@ -352,7 +355,9 @@ First, create the `.character-state` variable.
                     3 (-> .character-jumping (UI.Image :Scale (float2 0.2)))]
                    :Passthrough false)))))
 
-        (GFX.Render :Steps .render-steps))))
+        (GFX.Render :Steps .render-steps)
+
+        (button-inputs))))
 
     (defmesh main)
     (schedule main main-wire)
@@ -399,8 +404,6 @@ Update the `button-inputs` shard to let it modify the value of `.character-state
     
     ```{.clojure .annotate linenums="1"}
 
-
-
     (defshards load-texture [name]
       (LoadImage name)
       (GFX.Texture))
@@ -409,7 +412,9 @@ Update the `button-inputs` shard to let it modify the value of `.character-state
       (LoadTexture "GlodImages/Character1.png") = .character-image
       (LoadTexture "GlodImages/Character1_Left.png") = .character-left
       (LoadTexture "GlodImages/Character1_Right.png") = .character-right
-      (LoadTexture "GlodImages/Character1_Jumping.png") = .character-jumping)
+      (LoadTexture "GlodImages/Character1_Jumping.png") = .character-jumping
+
+      0 >= .character-state)
 
     (defshards button-inputs []
       (Inputs.KeyDown
@@ -454,9 +459,16 @@ Update the `button-inputs` shard to let it modify the value of `.character-state
            :Anchor Anchor.Center
            :Contents
            (->
-            .character-image (UI.Image :Scale (float2 0.2))))))
+            .character-state
+            (Match [0 (-> .character-image (UI.Image :Scale (float2 0.2)))
+                    1 (-> .character-left (UI.Image :Scale (float2 0.2)))
+                    2 (-> .character-right (UI.Image :Scale (float2 0.2)))
+                    3 (-> .character-jumping (UI.Image :Scale (float2 0.2)))]
+                   :Passthrough false))))
 
-        (GFX.Render :Steps .render-steps))))
+        (GFX.Render :Steps .render-steps)
+
+        (button-inputs))))
 
     (defmesh main)
     (schedule main main-wire)
