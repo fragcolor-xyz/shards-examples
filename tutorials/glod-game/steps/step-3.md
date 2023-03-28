@@ -906,7 +906,7 @@ Create a Wire for the walking animation and `Step` it.
        :Action (-> 0 > .idle-image-index))
       (Pause .idle-animation-speed))
 
-     ;; -------- Walking Animation Loop --------
+    ;; -------- Walking Animation Loop --------
     (defloop walking-animation
       .walking-image-index (Math.Add 1)
       > .walking-image-index
@@ -1313,7 +1313,7 @@ When you run the programme, Glod will  return to his idle animation whenever you
        :Action (-> 0 > .idle-image-index))
       (Pause .idle-animation-speed))
 
-     ;; -------- Walking Animation Loop --------
+    ;; -------- Walking Animation Loop --------
     (defloop walking-animation
       .walking-image-index (Math.Add 1)
       > .walking-image-index
