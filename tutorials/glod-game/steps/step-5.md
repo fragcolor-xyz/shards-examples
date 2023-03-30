@@ -2,21 +2,35 @@
 
 ## Dropping Coins and Scoring Points - Overview
 
-Good job on reaching this far! Now that we have moving character, we can add more game elements. As mentioned in the intro, this will be a point collection game. So let's start by creating coins for Glod to collect. In this chapter we will be:
+Good job on reaching this far!
 
-1. Drawing a coin image on screen
-2. Having it move by using variables
+Now that we have a moving character, we can add more game elements.
+
+As mentioned in the intro, this will be a point collection game. We'll start by creating coins for Glod to collect.
+
+In this chapter we will be:
+
+1. Drawing a coin image on screen.
+
+2. Having it move by using variables.
+
 3. Creating a spawning system to randomly spawn coins on screen.
-4. Creating a collision system to have Glod be able to collect 
-5. Reuse code to create more coins by making shards accept arguments.
+
+4. Creating a collision system to have Glod be able to collect coins.
+
+5. Reusing code to create more coins by making shards accept arguments.
 
 ## Step 5.1
 
-Drawing an image on screen and using variables to move them. Does that not sound familiar? 🤔 Yes! It is using the same logic as making Glod. Let's start, first of all download the images that we will be using.
+Drawing an image on screen and using variables to move them... Does that not sound familiar? 🤔
 
-- Download Coin Images [here](https://drive.google.com/file/d/1zqdvZtocDsU9mI_VmN4oqpAYF6L5vSzJ/view?usp=share_link)
+Yes! It is using the same logic to make Glod appear on the screen. First of all, download the images that we will be using:
 
-Let's start off nice and easy by first drawing the coin image on screen.
+- Download Coin Images [here](https://drive.google.com/file/d/1zqdvZtocDsU9mI_VmN4oqpAYF6L5vSzJ/view?usp=share_link).
+
+Let's start off nice and easy by first drawing the coin image on the screen.
+
+Create a new `initialize-coin` shard. We will separate the initializing of our coin and character variables to make our code neater.
 
 === "Code Added"
     
@@ -25,49 +39,52 @@ Let's start off nice and easy by first drawing the coin image on screen.
     (defshards initialize-coin []
       (LoadTexture "GlodImages/Coin/Coin_1.png") = .coin-1)
     ```
-    > Let's start of by creating a new Initialize_Coin Defshard. We will separate initializing variables related to our coins from Innitialize_Character to make our code more neater.
+
+Remember to call `initialize-coin` in the `Setup` of the `main-wire`to ensure that these variables are only created once.
 
     ```{.clojure .annotate linenums="1"}
     (defloop main-wire
       (Setup
-      (initialize-character)
-      (initialize-coin))
+       (initialize-character)
+       (initialize-coin)) ;; (1)
     ```
 
-    > Then, remember to call `innitialize-coin` in the `Setup` of the `main-wire`. We are calling `initialize-coin` in setup as we only need to create these variables once.
+    1. Added to line 179.
+
+We then create a new `UI.Area` to draw the coin on the screen.
 
     ```{.clojure .annotate linenums="1"}
-    (UI.Area :Position (float2 0 0)
-            :Anchor Anchor.Top
-            :Contents (->
-                          .coin-1 (UI.Image :Scale (float2 0.2))))
+    (UI.Area
+     :Position (float2 0 0)
+     :Anchor Anchor.Top
+     :Contents (-> .coin-1 (UI.Image :Scale (float2 0.2)))
     ```
-
-    > We then create a new UI.Area to draw this coin on screen.
 
 === "Full Code So Far"
     
     ```{.clojure .annotate linenums="1"}
-    (defshards LoadTexture [name]
+    (defshards load-texture [name]
       (LoadImage name)
       (GFX.Texture))
 
     (defshards initialize-character []
-      (LoadTexture "GlodImages/Character1_Jumping_Left.png") = .character-jumping-left
-      (LoadTexture "GlodImages/Character1_Jumping_Right.png") = .character-jumping-right
+      (LoadTexture "GlodImages/Character1.png") = .idle-left-image-array
+      (LoadTexture "GlodImages/Character1_Left.png") = .character-left
+      (LoadTexture "GlodImages/Character1_Right.png") = .character-right
+      (LoadTexture "GlodImages/Character1_Jumping.png") = .character-jumping
 
       0 >= .character-state
-      0 >= .character-direction
+      0 >= .character-direction ;; 0 = facing left, 1 = facing right
       true >= .can-jump
 
-      0.0 >= .X
-      620.0 >= .Y
-      (float2 .X .Y) >= .character-position
+      0.0 >= .x
+      310.0 >= .y
+      (float2 .x .y) >= .character-position
       0.0 >= .character-x-velocity
       0.0 >= .character-y-velocity
       0.0 >= .character-y-acceleration
 
-      ;; ---------- Character Idle Array (Facing Left) ----------
+      ;; ---------- Character Idle Array (Facing Left)----------
       (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> .idle-left-image-array
       (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> .idle-left-image-array
       (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> .idle-left-image-array
@@ -109,119 +126,123 @@ Let's start off nice and easy by first drawing the coin image on screen.
 
       (Count .walking-left-image-array) = .walking-image-index-max
       0 >= .walking-image-index
-      0.08 = .walking-animation-speed) ;; Reduce number to increase animation speed
-
+      0.08 = .walking-animation-speed ;; Reduce number to increase animation speed
+      )
+    
     ;; --------- Idle Animation Loop ---------
     (defloop idle-animation
       .idle-image-index (Math.Add 1)
       > .idle-image-index
-      (When :Predicate (IsMoreEqual .idle-image-index-max)
-            :Action (-> 0 > .idle-image-index))
+      (When
+       :Predicate (IsMoreEqual .idle-image-index-max)
+       :Action (-> 0 > .idle-image-index))
       (Pause .idle-animation-speed))
 
     ;; -------- Walking Animation Loop --------
     (defloop walking-animation
       .walking-image-index (Math.Add 1)
       > .walking-image-index
-      (When :Predicate (IsMoreEqual .walking-image-index-max)
-            :Action (-> 0 > .walking-image-index))
+      (When
+       :Predicate (IsMoreEqual .walking-image-index-max) 
+       :Action (-> 0 > .walking-image-index))
       (Pause .walking-animation-speed))
 
-    ;; ---------- character-boundary ------------
-
+    ;; ---------- Character Boundary ------------
     (defshards clamp [var min max]
       var (Max min) (Min max) > var)
 
     ;; ------------ Character Run Logic ----------------
     (defshards run-logic []
-      .X (Math.Add .character-x-velocity)
-      > .X
+      .x (Math.Add .character-x-velocity)
+      > .x
 
-      (float2 .X .Y) > .character-position
-
+      (float2 .x .y) > .character-position
+      
       (clamp .X -600.0 600.0))
 
-    ;; ------------ Character gravity-logic ---------------
+    ;; ------------ Character Gravity Logic ---------------
     (defshards gravity-logic []
-      .Y (Math.Add .character-y-velocity)
-      > .Y
+      .y (Math.Add .character-y-velocity)
+      > .y
 
       .character-y-velocity (Math.Add .character-y-acceleration)
       > .character-y-velocity
 
-      (float2 .X .Y) > .character-position
+      (float2 .x .y) > .character-position
 
-      (clamp .Y -620.0 620.0)
-      .Y
-      (When :Predicate (IsMoreEqual 620.0)
-            :Action (->
-                    0.0 > .character-y-velocity
-                    0.0 > .character-y-acceleration
-                    true > .can-jump
-                    .character-state
-                    (When :Predicate (Is 3)
-                          :Action (->
-                                    0 > .character-state)))))
+      (clamp .y -620.0 620.0)
+      .y
+      (When
+       :Predicate (IsMoreEqual 620.0)
+       :Action (->
+                0.0 > .character-y-velocity
+                0.0 > .character-y-acceleration
+                true > .can-jump
+                .character-state
+                (When
+                 :Predicate (Is 3)
+                 :Action (->
+                          0 > .character-state)))))
 
     ;; ------- Button Inputs ----------
     (defshards button-inputs []
       (Inputs.KeyDown
-      :Key "left"
-      :Action (->
-                (Msg "left")
-
-                .character-state
-                (When :Predicate (Is 0)
-                      :Action (-> 1 > .character-state))
-
-                0 > .character-direction
-                -5.0 > .character-x-velocity))
-
-      (Inputs.KeyDown
-      :Key "right"
-      :Action (->
-                (Msg "right")
-
-                .character-state
-                (When :Predicate (Is 0)
-                      :Action (-> 2 > .character-state))
-                1 > .character-direction
-                5.0 > .character-x-velocity))
+       :Key "left"
+       :Action
+       (->
+        (Msg "left")
+        .character-state
+        (When
+         :Predicate (Is 0)
+         :Action (-> 1 > .character-state))
+        0 > .character-direction
+        -5.0 > .character-x-velocity))
 
       (Inputs.KeyDown
-      :Key "up"
-      :Action (->
-                (Msg "up")
-                3 > .character-state
-                .can-jump
-                (When :Predicate (Is true)
-                      :Action (->
-                              -20.0 > .character-y-velocity
-                              1.0 >  .character-y-acceleration
-                              false >= .can-jump))))
+       :Key "right"
+       :Action
+       (->
+        (Msg "right")
+        .character-state
+        (When
+         :Predicate (Is 0)
+         :Action (-> 2 > .character-state))
+        1 > .character-direction
+        5.0 > .character-x-velocity))
+
+      (Inputs.KeyDown
+       :Key "up"
+       :Action
+       (->
+        (Msg "up")
+        3 > .character-state
+        .can-jump
+        (When
+         :Predicate (Is true)
+         :Action (->
+                  -20.0 > .character-y-velocity
+                  1.0 >  .character-y-acceleration
+                  false >= .can-jump))))
 
       (Inputs.KeyUp
-      :Key "left"
-      :Action (->
-                0 > .character-state
-                0.0 > .character-x-velocity))
+       :Key "left"
+       :Action 
+       (->
+        0 > .character-state
+        0.0 > .character-x-velocity))
 
       (Inputs.KeyUp
-      :Key "right"
-      :Action (->
-                0 > .character-state
-                0.0 > .character-x-velocity)))
+       :Key "right"
+       :Action
+       (->
+        0 > .character-state
+        0.0 > .character-x-velocity)))
 
-    ;; -------------- Initialize Coin ----------
-    (defshards initialize-coin []
-      (LoadTexture "GlodImages/Coin/Coin_1.png") = .coin-1)
-
-    ;;---------- main-wire ------------
     (defloop main-wire
       (Setup
-      (initialize-character)
-      (initialize-coin))
-
+       (initialize-character)
+       (initialize-coin))
+      
       (run-logic)
       (gravity-logic)
 
@@ -229,41 +250,40 @@ Let's start off nice and easy by first drawing the coin image on screen.
       (Step walking-animation)
 
       (GFX.MainWindow
-      :Title "MainWindow" :Width 1920 :Height 1080
-      :Contents
-      (-> (Setup
-            (GFX.DrawQueue) >= .ui-draw-queue
-            (GFX.UIPass .ui-draw-queue) >> .render-steps)
-          .ui-draw-queue (GFX.ClearQueue)
+       :Title "MainWindow" :Width 1920 :Height 1080
+       :Contents
+       (->
+        (Setup
+         (GFX.DrawQueue) >= .ui-draw-queue
+         (GFX.UIPass .ui-draw-queue) >> .render-steps)
+        .ui-draw-queue (GFX.ClearQueue)
 
-          (UI
-            .ui-draw-queue
-            (->
-            (UI.Area :Position .character-position
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                .character-state
-                                (Match [0 (-> .character-direction
-                                              (Match [0 (-> .idle-left-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))
-                                                      1 (-> .idle-right-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))]
-                                                      :Passthrough false))
-                                        1 (-> .walking-left-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-                                        2 (-> .walking-right-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-                                        3 (->  .character-direction
-                                                (Match [0 (-> .character-jumping-left (UI.Image :Scale (float2 0.2)))
-                                                        1 (-> .character-jumping-right (UI.Image :Scale (float2 0.2)))]
-                                                      :Passthrough false))]
-                                        :Passthrough false)))
+        (UI
+         .ui-draw-queue
+         (->
+          (UI.Area
+           :Position .character-position
+           :Anchor Anchor.Top
+           :Contents
+           (->
+            .character-state
+            (Match [0 (-> .character-direction
+                          (Match [0 (-> .idle-left-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))
+                                  1 (-> .idle-right-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))]
+                                 :Passthrough false))
+                    1 (-> .walking-left-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
+                    2 (-> .walking-right-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
+                    3 (-> .character-jumping (UI.Image :Scale (float2 0.2)))]
+                   :Passthrough false)))
 
-            (UI.Area :Position (float2 0 0)
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                .coin-1 (UI.Image :Scale (float2 0.2))))))
+          (UI.Area
+           :Position (float2 0 0)
+           :Anchor Anchor.Top
+           :Contents (-> .coin-1 (UI.Image :Scale (float2 0.2))))))
 
-          (button-inputs)
+        (GFX.Render :Steps .render-steps)
 
-          (GFX.Render :Steps .render-steps))))
-
+        (button-inputs))))
 
     (defmesh main)
     (schedule main main-wire)
@@ -272,9 +292,17 @@ Let's start off nice and easy by first drawing the coin image on screen.
 
 ## Step 5.2
 
-Try running your code now. You should see a coin being drawn on the top of the screen. Congrats! We are off to a good start. Now, let's animate this coin. Yes! The logic will be exactly the same as when we animated Glod. Except this will be much easier as we won't need any conditional statements to control the coin.
+Try running your code now. You should see a coin being drawn on the top of the screen.
+
+Congrats!
+
+We are off to a good start. Now, let's animate this coin.
+
+The logic will be exactly the same as when we animated Glod. This will be much easier however as we won't need any conditional statements to control the coin.
 
 - Download coin images [here](https://drive.google.com/drive/folders/1_iAhj70R3kS5hBXKtqh67Cfb_jBKRlzh?usp=share_link).
+
+Create the coin's x, y and position variables.
 
 === "Code Added"
     
@@ -283,54 +311,58 @@ Try running your code now. You should see a coin being drawn on the top of the s
     0.0 >= .coiny-1
     (float2 .coinx-1 .coiny-1) >= .coin-position-1
     ```
-    > First we create the coin's X, Y and position variables.
 
+Set `.coin-position-1` in the `Position` parameter in our coin's `UI.Area`.
+
+Update your coin's `UI.Area` to draw the image in the index of the `.coin-image-array` as specified by `.coin-image-index`.
+
+=== "Code Added"
     ```{.clojure .annotate linenums="1"}
-    (UI.Area :Position .coin-position-1
-            :Anchor Anchor.Top
-            :Contents (->
-                          .coin-image-array (Take .coin-image-index) (UI.Image :Scale (float2 0.2))))
+    (UI.Area
+     :Position .coin-position-1 ;; (1)
+     :Anchor Anchor.Top
+     :Contents 
+     (-> .coin-image-array ;; (2)
+         (Take .coin-image-index) (UI.Image :Scale (float2 0.2)))
     ```
-    > We then replace the position under the :`Position` tag in our coin's `UI.Area`.
 
+    1. Updated at line 215.
+    2. Updated at line 218.
+
+Remember to `Step` into the Coin animation in your `main-wire`.
+
+=== "Code Added"
     ```{.clojure .annotate linenums="1"}
     (Step coin-animation) ;; (1)
     ```
 
-    1. Then remember to `Step` into the Coin animation in your main-wire
-
-    ```{.clojure .annotate linenums="1"}
-    (UI.Area :Position (float2 0 0)
-         :Anchor Anchor.Top
-         :Contents (->
-                      .coin-image-array (Take .coin-image-index) (UI.Image :Scale (float2 0.2))))
-    ```
-
-    > Lastly, update your coin `UI.Area` to draw the .coin-image-index'th image in the `.coin-image-array`.
+    1.  Added to line 187.
 
 === "Full Code So Far"
     
     ```{.clojure .annotate linenums="1"}
-    (defshards LoadTexture [name]
+    (defshards load-texture [name]
       (LoadImage name)
       (GFX.Texture))
 
     (defshards initialize-character []
-      (LoadTexture "GlodImages/Character1_Jumping_Left.png") = .character-jumping-left
-      (LoadTexture "GlodImages/Character1_Jumping_Right.png") = .character-jumping-right
+      (LoadTexture "GlodImages/Character1.png") = .idle-left-image-array
+      (LoadTexture "GlodImages/Character1_Left.png") = .character-left
+      (LoadTexture "GlodImages/Character1_Right.png") = .character-right
+      (LoadTexture "GlodImages/Character1_Jumping.png") = .character-jumping
 
       0 >= .character-state
-      0 >= .character-direction
+      0 >= .character-direction ;; 0 = facing left, 1 = facing right
       true >= .can-jump
 
-      0.0 >= .X
-      620.0 >= .Y
-      (float2 .X .Y) >= .character-position
+      0.0 >= .x
+      310.0 >= .y
+      (float2 .x .y) >= .character-position
       0.0 >= .character-x-velocity
       0.0 >= .character-y-velocity
       0.0 >= .character-y-acceleration
 
-      ;; ---------- Character Idle Array (Facing Left) ----------
+      ;; ---------- Character Idle Array (Facing Left)----------
       (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> .idle-left-image-array
       (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> .idle-left-image-array
       (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> .idle-left-image-array
@@ -372,137 +404,123 @@ Try running your code now. You should see a coin being drawn on the top of the s
 
       (Count .walking-left-image-array) = .walking-image-index-max
       0 >= .walking-image-index
-      0.08 = .walking-animation-speed) ;; Reduce number to increase animation speed
-
+      0.08 = .walking-animation-speed ;; Reduce number to increase animation speed
+      )
+    
     ;; --------- Idle Animation Loop ---------
     (defloop idle-animation
       .idle-image-index (Math.Add 1)
       > .idle-image-index
-      (When :Predicate (IsMoreEqual .idle-image-index-max)
-            :Action (-> 0 > .idle-image-index))
+      (When
+       :Predicate (IsMoreEqual .idle-image-index-max)
+       :Action (-> 0 > .idle-image-index))
       (Pause .idle-animation-speed))
 
     ;; -------- Walking Animation Loop --------
     (defloop walking-animation
       .walking-image-index (Math.Add 1)
       > .walking-image-index
-      (When :Predicate (IsMoreEqual .walking-image-index-max)
-            :Action (-> 0 > .walking-image-index))
+      (When
+       :Predicate (IsMoreEqual .walking-image-index-max) 
+       :Action (-> 0 > .walking-image-index))
       (Pause .walking-animation-speed))
 
-    ;; ---------- character-boundary ------------
-
+    ;; ---------- Character Boundary ------------
     (defshards clamp [var min max]
       var (Max min) (Min max) > var)
 
     ;; ------------ Character Run Logic ----------------
     (defshards run-logic []
-      .X (Math.Add .character-x-velocity)
-      > .X
+      .x (Math.Add .character-x-velocity)
+      > .x
 
-      (float2 .X .Y) > .character-position
-
+      (float2 .x .y) > .character-position
+      
       (clamp .X -600.0 600.0))
 
-    ;; ------------ Character gravity-logic ---------------
+    ;; ------------ Character Gravity Logic ---------------
     (defshards gravity-logic []
-      .Y (Math.Add .character-y-velocity)
-      > .Y
+      .y (Math.Add .character-y-velocity)
+      > .y
 
       .character-y-velocity (Math.Add .character-y-acceleration)
       > .character-y-velocity
 
-      (float2 .X .Y) > .character-position
+      (float2 .x .y) > .character-position
 
-      (clamp .Y -620.0 620.0)
-      .Y
-      (When :Predicate (IsMoreEqual 620.0)
-            :Action (->
-                    0.0 > .character-y-velocity
-                    0.0 > .character-y-acceleration
-                    true > .can-jump
-                    .character-state
-                    (When :Predicate (Is 3)
-                          :Action (->
-                                    0 > .character-state)))))
+      (clamp .y -620.0 620.0)
+      .y
+      (When
+       :Predicate (IsMoreEqual 620.0)
+       :Action (->
+                0.0 > .character-y-velocity
+                0.0 > .character-y-acceleration
+                true > .can-jump
+                .character-state
+                (When
+                 :Predicate (Is 3)
+                 :Action (->
+                          0 > .character-state)))))
 
     ;; ------- Button Inputs ----------
     (defshards button-inputs []
       (Inputs.KeyDown
-      :Key "left"
-      :Action (->
-                (Msg "left")
-
-                .character-state
-                (When :Predicate (Is 0)
-                      :Action (-> 1 > .character-state))
-
-                0 > .character-direction
-                -5.0 > .character-x-velocity))
-
-      (Inputs.KeyDown
-      :Key "right"
-      :Action (->
-                (Msg "right")
-
-                .character-state
-                (When :Predicate (Is 0)
-                      :Action (-> 2 > .character-state))
-                1 > .character-direction
-                5.0 > .character-x-velocity))
+       :Key "left"
+       :Action
+       (->
+        (Msg "left")
+        .character-state
+        (When
+         :Predicate (Is 0)
+         :Action (-> 1 > .character-state))
+        0 > .character-direction
+        -5.0 > .character-x-velocity))
 
       (Inputs.KeyDown
-      :Key "up"
-      :Action (->
-                (Msg "up")
-                3 > .character-state
-                .can-jump
-                (When :Predicate (Is true)
-                      :Action (->
-                              -20.0 > .character-y-velocity
-                              1.0 >  .character-y-acceleration
-                              false >= .can-jump))))
+       :Key "right"
+       :Action
+       (->
+        (Msg "right")
+        .character-state
+        (When
+         :Predicate (Is 0)
+         :Action (-> 2 > .character-state))
+        1 > .character-direction
+        5.0 > .character-x-velocity))
+
+      (Inputs.KeyDown
+       :Key "up"
+       :Action
+       (->
+        (Msg "up")
+        3 > .character-state
+        .can-jump
+        (When
+         :Predicate (Is true)
+         :Action (->
+                  -20.0 > .character-y-velocity
+                  1.0 >  .character-y-acceleration
+                  false >= .can-jump))))
 
       (Inputs.KeyUp
-      :Key "left"
-      :Action (->
-                0 > .character-state
-                0.0 > .character-x-velocity))
+       :Key "left"
+       :Action 
+       (->
+        0 > .character-state
+        0.0 > .character-x-velocity))
 
       (Inputs.KeyUp
-      :Key "right"
-      :Action (->
-                0 > .character-state
-                0.0 > .character-x-velocity)))
+       :Key "right"
+       :Action
+       (->
+        0 > .character-state
+        0.0 > .character-x-velocity)))
 
-    ;; -------------- Initialize Coin ----------
-    (defshards initialize-coin []
-      (LoadTexture "GlodImages/Coin/Coin_1.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_2.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_3.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_4.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_5.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_6.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_7.png") >> .coin-image-array
-      (Count .coin-image-array) = .coin-image-index-max
-      0 >= .coin-image-index
-      0.1 = .coin-animation-speed)
-
-    ;; -------------- Coin Animation ------------------
-    (defloop coin-animation
-      .coin-image-index (Math.Add 1)
-      > .coin-image-index
-      (When :Predicate (IsMoreEqual .coin-image-index-max)
-            :Action (-> 0 > .coin-image-index))
-
-      (Pause .coin-animation-speed))
-
-    ;;---------- main-wire ------------
     (defloop main-wire
       (Setup
-      (initialize-character)
-      (initialize-coin))
-
+       (initialize-character)
+       (initialize-coin))
+      
       (run-logic)
       (gravity-logic)
 
@@ -512,48 +530,49 @@ Try running your code now. You should see a coin being drawn on the top of the s
       (Step coin-animation)
 
       (GFX.MainWindow
-      :Title "MainWindow" :Width 1920 :Height 1080
-      :Contents
-      (-> (Setup
-            (GFX.DrawQueue) >= .ui-draw-queue
-            (GFX.UIPass .ui-draw-queue) >> .render-steps)
-          .ui-draw-queue (GFX.ClearQueue)
+       :Title "MainWindow" :Width 1920 :Height 1080
+       :Contents
+       (->
+        (Setup
+         (GFX.DrawQueue) >= .ui-draw-queue
+         (GFX.UIPass .ui-draw-queue) >> .render-steps)
+        .ui-draw-queue (GFX.ClearQueue)
 
-          (UI
-            .ui-draw-queue
-            (->
-            (UI.Area :Position .character-position
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                .character-state
-                                (Match [0 (-> .character-direction
-                                              (Match [0 (-> .idle-left-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))
-                                                      1 (-> .idle-right-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))]
-                                                      :Passthrough false))
-                                        1 (-> .walking-left-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-                                        2 (-> .walking-right-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-                                        3 (->  .character-direction
-                                                (Match [0 (-> .character-jumping-left (UI.Image :Scale (float2 0.2)))
-                                                        1 (-> .character-jumping-right (UI.Image :Scale (float2 0.2)))]
-                                                      :Passthrough false))]
-                                        :Passthrough false)))
+        (UI
+         .ui-draw-queue
+         (->
+          (UI.Area
+           :Position .character-position
+           :Anchor Anchor.Top
+           :Contents
+           (->
+            .character-state
+            (Match [0 (-> .character-direction
+                          (Match [0 (-> .idle-left-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))
+                                  1 (-> .idle-right-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))]
+                                 :Passthrough false))
+                    1 (-> .walking-left-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
+                    2 (-> .walking-right-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
+                    3 (-> .character-jumping (UI.Image :Scale (float2 0.2)))]
+                   :Passthrough false)))
 
-            (UI.Area :Position (float2 0 0)
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                .coin-image-array (Take .coin-image-index) (UI.Image :Scale (float2 0.2))))))
+          (UI.Area
+           :Position .coin-position-1
+           :Anchor Anchor.Top
+           :Contents
+           (-> .coin-image-array
+               (Take .coin-image-index) (UI.Image :Scale (float2 0.2))))
 
-          (button-inputs)
+           (GFX.Render :Steps .render-steps)
 
-          (GFX.Render :Steps .render-steps))))
-
+           (button-inputs))))))
 
     (defmesh main)
     (schedule main main-wire)
     (run main (/ 1.0 60))
     ```
 
-Try running your code to see if your coin is animated. Good job!
+Try running your code to see if your coin is animated. Good job if it is!
 
 ## Step 5.2
 
