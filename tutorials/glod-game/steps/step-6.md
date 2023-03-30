@@ -454,11 +454,11 @@ Now similar as to what we did with our coin, let's animate it.
       0.06 >= .spikeball-animation-speed
     ```
 
-    > ;; Once again to create an animation we follow the same steps as we have done
+    > Once again to create an animation we follow the same steps as we have done
     <br>
-    1. Create an Image array
+    Firstly - Create an Image array
     <br>
-    2. Create the necessary variables, An Index, a Max Index, and a Animation Speed variable.
+    Secondly -  Create the necessary variables, An Index, a Max Index, and a Animation Speed variable.
 
     ```{.clojure .annotate linenums="1"}
     ;;------------- Spiked CanonBall Animation -------------
@@ -471,7 +471,7 @@ Now similar as to what we did with our coin, let's animate it.
       (Pause .spikeball-animation-speed))
     ```
 
-    > ;; 3. Create an animation defloop that uses the variables we have just created. This defloop should add 1 to our index every loop. It should also have a conditional statement that ensures that our index does not go above the `index-max`. Lastly the loop should loop every x seconds. X being the Animation Speed.
+    > Thirdly - Create an animation defloop that uses the variables we have just created. This defloop should add 1 to our index every loop. It should also have a conditional statement that ensures that our index does not go above the `index-max`. Lastly the loop should loop every x seconds. X being the Animation Speed.
 
     ```{.clojure .annotate linenums="1"}
     (Step spiked-canonball-animation) ;; (1)
@@ -489,7 +489,7 @@ Now similar as to what we did with our coin, let's animate it.
                                 .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
     ```
 
-    > 4. Lastly remember to update our Spiked CanonBall `UI.Area` to display the Index'th image in the Image Array.
+    > Lastly - remember to update our Spiked CanonBall `UI.Area` to display the Index'th image in the Image Array.
 
 === "Full Code So Far"
     
@@ -902,7 +902,7 @@ Now similar as to what we did with our coin, let's animate it.
 
 Next, would be to make our Spiked CanonBall fall. As in the previous chapter to do this, we 
 
-1. Create variables that dictate the position of our Spiked Canon Ball
+1. Create variables that dictate the position of our Spiked CanonBall
 2. Change our `UI.Area` :Position tag to use this variable
 3. Change the variable by using velocity and acceleration 
 
