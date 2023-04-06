@@ -1,29 +1,49 @@
 # Step 7
 
-# Polishing the game - Overview
+# Polishing up the Game
 
-At this point we technically have a fully functional game that we can have fun playing! However it could use some polish. So that is what we will be doing in this step! We will be:
+At this point in the tutorial, we already possess a fully functional game that we can have fun playing.
+
+However, it could use some polishing to add more flair and make it more exciting... and that is what we will be doing in the final step of the tutorial.
+
+We will be:
 
 1. Adding a visual effect that happens when Glod collects a coin.
-2. Adding a visual effect that happens when Glod get's hit by a Spiked Canonball
-3. Adding a background image
-4. Adding a timer and a gameover screen
+
+2. Adding a visual effect that happens when Glod is hit by a spiked cannonball.
+
+3. Adding a background image.
+
+4. Adding a timer and a Game Over screen.
+
 5. Adding a reset function to play the game again.
 
-So let's get to it 💪🏼
+So let's get to it! 💪🏼
 
-# Step  7.1
+## Visual Effect for Collecting
 
-To make collecting more satisfying, we will add a visual feedback that happens whenever Glod collects a coin. This will use the same logic and principles as creating an animation.
+To make collecting more satisfying, we will add a visual feedback that happens whenever Glod collects a coin.
+
+This will use the same logic and principles as when creating an animation.
 
 - Download Scoring Effect Images [here](https://drive.google.com/drive/folders/1r3e-ITFRLB5D3Yg5qqbYS6NaKUyp85Fg?usp=share_link).
 
-??? "Feedback"
-    *"Feedback is information relayed to the player in response to an in-game interaction"
+!!! note "Visual Feedback"
+    *"Feedback is information relayed to the player in response to an in-game interaction."*
     <br>
-    ( - Liam Charlton , Game Design Psychology: Signs & Feedback)*
-    <br>
-    Here we use positive visual feedback to make it more obvious and satisfying whenever a player collect's coins. So that they would be more motivated to collect more coins. We also use negative visual feedback to make it more clear when a player has been hit by a Spiked CanonBall to discourage them from getting hit. Feddback can come in many forms, tactile, audiotory, visual and even as rewards. What are some feedback from your favourite games that you have found effective?
+    <span style="text-align: right"> - Liam Charlton , Game Design Psychology: Signs & Feedback </span>
+    <br> <br>
+    Here we use positive visual feedback to make it more satisfying whenever a player collects coins. The sense of satisfaction encourages the player to want to play more and continue playing.
+    
+    We also use negative visual feedback when a player collides with a spiked cannonball to discourage them from getting hit.
+    
+    Feedback can come in many forms - tactile, auditory, visual, and even as rewards!
+    
+    What are some feedback from your favorite games that you have found effective?
+
+You should be familiar with creating animations by now!
+
+As per before, let us create a new shard `initialize-effects` that will house all the variables that we need. Remember to call `initialize-effects` under `Setup` in `main-wire`.
 
 === "Code Added"
     
@@ -52,64 +72,75 @@ To make collecting more satisfying, we will add a visual feedback that happens w
     (initialize-effects)
     ```
 
-    > By now you should be very familiar with creating animations. As usual,lets create a new defshards that will house all the new variables that we need. Remember to call (initialize-effects) under setup in the main-wire.
+Next we create a `UI.Area` that will house our animation.
 
-    ```{.clojure .annotate linenums="1"}
-    ;; ----------------- Visual Effects  -------------------
+=== "Code Added"
+    
+  ```{.clojure .annotate linenums="1"}
+  ;; ----------------- Visual Effects  -------------------
     (UI.Area :Position .score-effect-position
-            :Anchor Anchor.Top
-            :Contents (->
-                          .score-effect-array (Take .score-effect-array-index) (UI.Image :Scale (float2 0.15))))
-    ```
+        :Anchor Anchor.Top
+        :Contents (->
+              .score-effect-array (Take .score-effect-array-index) (UI.Image :Scale (float2 0.15))))
+  ```
 
-    > Next we create a UI.Area that will house our animation.
+We adjust the value of `.character-x-velocity` whenever the left and right directional keys are pressed.
 
-    ```{.clojure .annotate linenums="1"}
-    ;; ------------ ScoreEffect Animation Position ------------
-    (defshards scoreEffect-animation-position []
-      .Y (Math.Add -15.0)
-      > .score-effect-position-y
+Remember to return the value of `.character-x-velocity` to zero when the directional keys are released - otherwise Glod will move to the left or right forever!
 
-      .X
-      > .score-effect-position-x
+=== "Code Added"
+    
+  ```{.clojure .annotate linenums="1"}
+  ;; ------------ ScoreEffect Animation Position ------------
+  (defshards scoreEffect-animation-position []
+    .Y (Math.Add -15.0)
+    > .score-effect-position-y
+    .X
+    > .score-effect-position-x
 
-      (float2 .score-effect-position-x .score-effect-position-y)
-      > .score-effect-position)
-    ```
-    > Then we just change `.character-x-velocity` whenever the Left and Right buttons are pressed. Remember to change back the `.character-x-velocity` to 0 when the buttons are released or Glod will move to the left or right forever.Added under `button-inputs` on lines 84 - 118
+    (float2 .score-effect-position-x .score-effect-position-y)
+    > .score-effect-position)
+  ```
 
-    ```{.clojure .annotate linenums="1"}
-    ;; ------------ ScoreEffect Animation ------------
-    (defloop scoreEffect-animation-logic
+  ```{.clojure .annotate linenums="1"}
+  ;; ------------ ScoreEffect Animation ------------
+  (defloop scoreEffect-animation-logic
+    .score-effect-play
+    (When
+     :Predicate (Is true)
+     :Action
+     (->
+      .score-effect-array-index (Math.Add 1)
+      > .score-effect-array-index
+      (When
+       :Predicate (IsMore .score-effect-array-index-max)
+       :Action
+       (->
+        0 > .score-effect-array-index
+        false > .score-effect-play))))
+    (Pause .score-effect-animation-speed))
+  ```
 
-      .score-effect-play
-      (When :Predicate (Is true)
-            :Action (->
-                    .score-effect-array-index (Math.Add 1)
-                    > .score-effect-array-index
-                    (When :Predicate (IsMore .score-effect-array-index-max)
-                          :Action (->
-                                    0 > .score-effect-array-index
-                                    false > .score-effect-play))))
+Next we have some logic to loop and play our animation. This animation plays when `.score-effect-play` is true.
 
+This variable will then go false at the end of the animation for it to stop. This is the technique to use when you want an animation to only play once.
 
-      (Pause .score-effect-animation-speed))
-    ```
+=== "Code Added"
+    
+  ```{.clojure .annotate linenums="1"}
+  true > .score-effect-play
+  ```
 
-    > Next we have some logic to loop and play our animation. This animation plays when the .score-effect-play is true. This variable will then go false at then of the animation for it to stop. This is the technique to use when you want an animation to only play once.
+Then remember to make `.score-effect-play` true whenever we collect a coin. We can add this line in our scoring code that we have written previously.
 
-    ```{.clojure .annotate linenums="1"}
-    true > .score-effect-play
-    ```
+=== "Code Added"
+    
+  ```{.clojure .annotate linenums="1"}
+  (scoreEffect-animation-position)
+  (Step scoreEffect-animation-logic)
+  ```
 
-    > Then remember to make .Score_Effect_Play true whenever we collect a coin.We can add this line in our Scoring code that we have written previously.
-
-    ```{.clojure .annotate linenums="1"}
-    (scoreEffect-animation-position)
-    (Step scoreEffect-animation-logic)
-    ```
-
-    > Lastly,remember to call your shard and your loop in your main-wire
+Lastly, remember to call your shard and loop in your `main-wire`.
 
 === "Full Code So Far"
     
@@ -704,7 +735,10 @@ Now, it should be more fun for you to collect coins! 💰
 ## Step 7.2
 
 Now following the same logic, we will create feedback for when we are damaged.
+
 - Download Damage Effect images [here](https://drive.google.com/drive/folders/1NYoURr7sryqWfbC0OMSf52CsbkHPPk25?usp=share_link).
+
+Create all the variables that we need for creating animations. Add it under `initialize-effects`.
 
 === "Code Added"
     
@@ -723,8 +757,11 @@ Now following the same logic, we will create feedback for when we are damaged.
     0.02 >=  .damage-effect-animation-speed ;; Reduce number to increase animation speed
     false >= .damage-effect-play
     ```
-    > First create all the variables that we need for creating animations. Let's add it under `initialize-effects`
 
+Create a `UI.Area` which will house our animation.
+
+=== "Code Added"
+   
     ```{.clojure .annotate linenums="1"}
     (UI.Area :Position (float2 0 0)
             :Anchor Anchor.TopLeft
@@ -732,8 +769,10 @@ Now following the same logic, we will create feedback for when we are damaged.
                           .damage-effect-array (Take .damage-effect-array-index) (UI.Image :Scale (float2 10))))
     ```
 
-    > Then create a `UI.Area` which will house our animation
+Create our logic to loop our damage effect animation which plays when `.damage-effect-play` is true.
 
+=== "Code Added"
+   
     ```{.clojure .annotate linenums="1"}
     ;; ------------ DamageEffect Animation ------------
     (defloop damage-effect-animation-logic
@@ -750,14 +789,16 @@ Now following the same logic, we will create feedback for when we are damaged.
 
 
       (Pause .damage-effect-animation-speed))
+      
     ```
 
-    > Then create our logic to loop our damage effect animation which plays, only when `.damage-effect-play` is true
+ Make `.damage-effect-play` `true` whenever we collide with our spiked cannonballs. This will be added to our `spikeball-damage-logic`, which we have created earlier.
 
+=== "Code Added"
+   
     ```{.clojure .annotate linenums="1"}
     true > .damage-effect-play
     ```
-    > Lastly, we make `.damage-effect-play` `true` whenever we collide with our Spiked CanonBalls. This can be added to our spikeball-damage-logic, which we have created earlier.
 
 === "Full Code So Far"
     
@@ -1385,12 +1426,19 @@ Now following the same logic, we will create feedback for when we are damaged.
     (run main (/ 1.0 60))
     ```
 
-Good job! Now we have even more motivation to avoid getting hit! 🚨🚨🚨🚨🚨
+Good job!
+
+Now we have even more motivation to avoid getting hit! 🚨🚨🚨🚨🚨
 
 ## Step 7.3
-This step will be extremely easy. We will simply be adding a background image to our game to make it more visually appealing. This would simply be drawing an image in our game.
+
+This step will be extremely easy.
+
+We will simply be adding a background image to our game to make it more visually appealing.
 
 - Download background image [here](https://drive.google.com/file/d/1qP6JDdKfhwsc9guBkkIy9sjK02LMTGq3/view?usp=share_link).
+
+First, load our image.
 
 === "Code Added"
     
@@ -1398,16 +1446,18 @@ This step will be extremely easy. We will simply be adding a background image to
     (LoadTexture "GlodImages/BG.png") = .bg-image 
     ```
 
-    > First load our image
+Next, create a `UI.Area` to house our new image.
 
+Remember to add this `UI.Area` before the `UI.Area` which houses your character to ensure that it is drawn below your character.
+
+=== "Code Added"
+    
     ```{.clojure .annotate linenums="1"}
     (UI.Area :Position (float2 0 0)
                       :Anchor Anchor.TopLeft
                       :Contents (->
                                 .bg-image (UI.Image :Scale (float2 0.7))))
     ```
-
-    > Then create your UI.Area to house our new Background image. Remember to add this UI.Area before the UI.Area which houses your character to ensure that it is drawn below your character.
 
 === "Full Code So Far"
     
@@ -2049,7 +2099,9 @@ Now we have a background image! 🖼️
 
 ## Step 7.4
 
-Now lets make our game more challenging by adding a timer. ⏱️
+Let's make our game more challenging by adding a timer. ⏱️
+
+Create a `.timer` variable and add it under `initialize-game-elements`.
 
 === "Code Added"
     
@@ -2058,7 +2110,9 @@ Now lets make our game more challenging by adding a timer. ⏱️
     0 >= .gameOver
     ```
 
-    1. First lets create out Timer variable. Add them under initialize-game-elements
+Create a `UI.Area` to draw our timer variable. Place it on the top left.
+
+=== "Code Added"
 
     ```{.clojure .annotate linenums="1"}
     (UI.Area :Position (float2 40 20)
@@ -2067,9 +2121,14 @@ Now lets make our game more challenging by adding a timer. ⏱️
     style (UI.Style)
     .timer (ToString) (UI.Label)))
     ```
+Create a countdown logic.
 
-    > Then we create a UI.Area to draw our Timer Variable, let's put it on the top left.
+Here, we subtract one from our `.timer` variable and `Step` into the loop every second.
 
+Set a conditional statement to ensure that this only happens while `.gameOver` is false and `.timer` is greater than zero.
+
+=== "Code Added"
+    
     ```{.clojure .annotate linenums="1"}
     ;; -------- Timer -----------
     (defloop timer-countdown
@@ -2085,8 +2144,10 @@ Now lets make our game more challenging by adding a timer. ⏱️
       (Pause 1.0))
     ```
 
-    > Next, we create a countdown logic. Here we subtract 1 from our .timer .timer variable and Step into the loop every 1 second. We  also set a conditional statement to ensure that this only happens while .gameOver is false and .timer is greater than 0.
+Create the Game Over logic to dictate that `.gameOver` becomes true when `.timer` reaches zero.
 
+=== "Code Added"
+    
     ```{.clojure .annotate linenums="1"}
     ;; ---------- GameOver Logic ------------
     (defshards gameOver-logic []
@@ -2096,14 +2157,14 @@ Now lets make our game more challenging by adding a timer. ⏱️
                     1 > .gameOver)))
     ```
 
-    > And now we create the GameOver logic to dictate that .GameOver becomes true when .timer reaches  0.
+Remember to call and `Step` them in the `main-wire`.
 
+=== "Code Added"
+    
     ```{.clojure .annotate linenums="1"}
     (Step timer-countdown)
     (gameOver-logic)
     ```
-
-    > Remember to call and Step them in your main-wire
 
 === "Full Code So Far"
     
@@ -3589,4 +3650,8 @@ Finally its time to code the final bit for our game. We need to add some finalit
     (run main (/ 1.0 60))
     ```
 
-CONGRATULATIONS! 🎉🎉🎉🎉🎉🎉 You have successfully created a game! Give it a whirl and see hoow many points you can get!
+CONGRATULATIONS! 🎉🎉🎉🎉🎉🎉
+
+You have successfully created a game!
+
+Give it a whirl and see how many points you can get!

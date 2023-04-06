@@ -1,25 +1,38 @@
 # Step 6
 
-## Making the game harder - Overview
+## Making the Game Harder - Overview
 
-We are almost towards the end of the tutorial wahoo! In the last chapter we learnt how to make coins for Glod to collect. In this chapter, we will do the opposite. We will make the game more challenging by creating hazards for Glod to avoid! Poor Glod 😢. To do this we will be:
+We are almost towards the end of the tutorial. Wahoo!
 
-1. Drawing a Spiked Canonball image on screen
+In the previous chapter, we learnt how to make coins for Glod to collect.
 
-2. Having it move using variables
+In this chapter, we will do the opposite. We will make the game more challenging by creating hazards for Glod to avoid!
 
-3. Creating a spawning system to randomly spawn Spiked Canonball on screen.
+Poor Glod. 😢
 
-4. Creating a collision system to have Glod be able to be damaged 
+To do this we will be:
 
-5. Reuse code to create more Spiked Canonball by making shards accept arguments.
+1. Drawing a spiked cannonball image on screen.
 
-If you are wondering why the above list sounds familiar ... you are right! We will be using the exact same logic and methods as we used in the previous chapter, to create falling hazards instead. Let's get to it 🔥.
+2. Having it move using variables.
+
+3. Creating a spawning system to randomly spawn a spiked cannonball on screen.
+
+4. Creating a collision system to allow Glod to be hit.
+
+5. Reusing code to create more Spiked Cannonballs by making shards accept arguments.
+
+If you are wondering why the list above seems familiar, it is because the exact same logic and methods were used in the previous chapter.
+
+Let's get to it. 🔥
 
 # Step 6.1
-As usual lets start of nice and easy by first downloading the required images and showing one of them on screen.
 
-1. Download Spiked CanonBall images [here](https://drive.google.com/drive/folders/1qbuwq-DiO0AqiprdQPtm_UeqBG67uN6K?usp=share_link).
+We start off nice and easy by downloading the required images and displaying one of them on the screen.
+
+1. Download spiked cannonball images [here](https://drive.google.com/drive/folders/1qbuwq-DiO0AqiprdQPtm_UeqBG67uN6K?usp=share_link).
+
+Load one image first. To keep our code organized, create a new `initialize-spiked-cannonballs` shard.
 
 === "Code Added"
     
@@ -29,13 +42,17 @@ As usual lets start of nice and easy by first downloading the required images an
       (LoadTexture "GlodImages/SpikeBall/SpikeBall1.png") = .spikeball-1)
     ```
 
-    > As usual lets load one image first. To keep our code organized, lets create a new initialize-spiked-canonballs defshard
+Remember to call your new shard in `main-wire`.
+
+=== "Code Added"
 
     ```{.clojure .annotate linenums="1"}
     (initialize-spiked-canonballs) ;; (1)
     ```
 
-    1. Then remember to call your new defshards in your main-wire
+To draw our loaded image, create a `UI.Area`.
+
+=== "Code Added"
 
     ```{.clojure .annotate linenums="1"}
     (UI.Area :Position (float2 0 0)
@@ -43,7 +60,6 @@ As usual lets start of nice and easy by first downloading the required images an
     :Contents (->
     .spikeball-1 (UI.Image :Scale (float2 0.15))))
     ```
-    > To draw our loaded image, create a UI.Area to draw our new Spiked Canonball.
 
 === "Full Code So Far"
     
@@ -429,7 +445,13 @@ As usual lets start of nice and easy by first downloading the required images an
 
 ## Step 6.2
 
-Now similar as to what we did with our coin, let's animate it.
+Similar to what we did with our coin, it's time to animate our spiked cannonball.
+
+Follow these steps to create an animation once more:
+
+1. Create an `Image` array.
+
+2. Create the necessary variables - an index, max index, and animation speed variable.
 
 === "Code Added"
     
@@ -454,11 +476,9 @@ Now similar as to what we did with our coin, let's animate it.
       0.06 >= .spikeball-animation-speed
     ```
 
-    > Once again to create an animation we follow the same steps as we have done
-    <br>
-    Firstly - Create an Image array
-    <br>
-    Secondly -  Create the necessary variables, An Index, a Max Index, and a Animation Speed variable.
+ Create an animation loop that uses the variables we created. This loop should add one to our index every iteration. It should also have a conditional statement that ensures that our index does not go above the `index-max`.
+ 
+ Lastly, the loop should loop every x seconds, with x being the animation speed.
 
     ```{.clojure .annotate linenums="1"}
     ;;------------- Spiked CanonBall Animation -------------
@@ -471,14 +491,14 @@ Now similar as to what we did with our coin, let's animate it.
       (Pause .spikeball-animation-speed))
     ```
 
-    > Thirdly - Create an animation defloop that uses the variables we have just created. This defloop should add 1 to our index every loop. It should also have a conditional statement that ensures that our index does not go above the `index-max`. Lastly the loop should loop every x seconds. X being the Animation Speed.
+As with all loops, remember to `Step` it in `main-wire`.
 
     ```{.clojure .annotate linenums="1"}
     (Step spiked-canonball-animation) ;; (1)
 
     ```
 
-    1. As with all defloops, remember to `Step` it in your main wire
+Remember to update our spiked cannonball's `UI.Area` to display the correct image in the image array, as specified by `.spikeball-index`.
 
     ```{.clojure .annotate linenums="1"}
     ;; ------------ Character Run Logic ----------------
@@ -488,8 +508,6 @@ Now similar as to what we did with our coin, let's animate it.
                       :Contents (->
                                 .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
     ```
-
-    > Lastly - remember to update our Spiked CanonBall `UI.Area` to display the Index'th image in the Image Array.
 
 === "Full Code So Far"
     
@@ -900,11 +918,17 @@ Now similar as to what we did with our coin, let's animate it.
 
 ## Step 6.3
 
-Next, would be to make our Spiked CanonBall fall. As in the previous chapter to do this, we 
+Time to make our spiked cannonball fall.
 
-1. Create variables that dictate the position of our Spiked CanonBall
-2. Change our `UI.Area` :Position tag to use this variable
-3. Change the variable by using velocity and acceleration 
+As in the previous chapter, we will:
+
+1. Create variables that dictate the position of our spiked cannonball.
+
+2. Change our `UI.Area`'s `position` parameter to use this variable.
+
+3. Change the variable by using velocity and acceleration.
+
+Initialize the code variables that we will be using to move our spiked cannonball.
 
 === "Code Added"
     
@@ -918,8 +942,12 @@ Next, would be to make our Spiked CanonBall fall. As in the previous chapter to 
     0.5 >= .spikeball-acceleration
     ```
 
-    > as usualy our first step is to initialize the code variables that we will  be using to move our Spiked CanonBall
+Locate the `UI.Area` housing our spiked cannonball image.
 
+Replace the value of the `Position` attribute with the `.spikeball-position-1` variable.
+
+=== "Code Added"
+    
     ```{.clojure .annotate linenums="1"}
     ;; -------- Spiked CanonBall UI.Area ----------
     (UI.Area :Position .spikeball-position-1
@@ -928,8 +956,12 @@ Next, would be to make our Spiked CanonBall fall. As in the previous chapter to 
                           LoadTexture .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
     ```
 
-    > Then we replace the value initially placed in the `:Position` tag of our `UI.Area` housing our Spiked CanonBall image with the `.spikeball-position-1` variable we have just created.
+To make our image move, we create the gravity logic for it.
 
+Create a shard that accepts arguments to allow for the creating of more spiked cannonballs in the future.
+
+=== "Code Added"
+    
     ```{.clojure .annotate linenums="1"}
     ;; ------------- SpikeBall Gravity Logic -------------
     (defshards spikeball-gravity-logic [spikeball-y spikeball-velocity spikeball-position spikeball-x]
@@ -938,16 +970,15 @@ Next, would be to make our Spiked CanonBall fall. As in the previous chapter to 
       spikeball-velocity (Math.Add .spikeball-acceleration)
       > spikeball-velocity
       (float2 spikeball-x spikeball-y) > spikeball-position)
-
     ```
 
-    > Now to make our Image move, we create gravity logic for it. This time however we already have the notion to create more Spiked CanonBalls, hence we will straightaway create a defshard that will accept arguments.
+Remember to call your shard in the `main-wire` with the appropriate variables passed in.
 
+=== "Code Added"
+    
     ```{.clojure .annotate linenums="1"}
     (spikeball-gravity-logic .spikeball-y-1 .spikeball-velocity-1 .spikeball-position-1 .spikeball-x-1)
     ```
-
-    > Lastly remember to call your defshard in your main-wire with the appropriate variables plugged. 
 
 === "Full Code So Far"
     
@@ -1377,7 +1408,11 @@ Try running your code now to see if it falls!
 
 ## Step 6.4
 
-Now that our Spiked CanonBall falls, going down the list, the next step is to make sure it loops and randomly spawns in a different location. To do that we simply have to create the same spawning logic.
+To make sure that our spiked cannonball loops and randomly spawns in different locations, we will implement the same spawning logic used previously.
+
+Create our `randomise-spikeball` logic. Similar to our coin, we reset the spiked cannonball's y value back to zero, so that it appears at the top of the screen again.
+
+This time however, we will have different randomized x values and have this happen every `pausefloat` number of seconds.
 
 === "Code Added"
     
@@ -1396,20 +1431,24 @@ Now that our Spiked CanonBall falls, going down the list, the next step is to ma
       .spikeball-x-1
       (Pause pausefloat))
     ```
-    > First we create our `randomise-spikeball` Logic. Similar to our coin, we basically reset our Spiked CanonBall's Y value back to 0, so it appears at the top of the screen again, but this time at a different randomised X value and have this happen every `pausefloat` amount of seconds.
 
+We then plug this shard into a loop and fill in the appropriate variables.
+
+=== "Code Added"
+    
     ```{.clojure .annotate linenums="1"}
     (defloop spikeball-1
       (randomise-spikeball .spikeball-x-1 .spikeball-y-1 .spikeball-velocity-1 .spikeball-position-1 2))
     ```
-    > Then, we plug this defshards into a defloop and fill in the appropriate variables.
 
+Call your `spikeball-1` loop in the `main-wire`.
+
+=== "Code Added"
 
     ```{.clojure .annotate linenums="1"}
     ;; ------- Button Inputs ----------
-    (Step  spikeball-1)
+    (Step spikeball-1)
     ```
-    > And lastly, call your spikeball-1 Loop in your main-wire
 
 === "Full Code So Far"
     
@@ -1855,7 +1894,15 @@ Now that our Spiked CanonBall falls, going down the list, the next step is to ma
 
 # Step 6.5
 
-Now that we have our Spiked CanonBall looping and randomising, the next step is to have it damage Glod. Poor Glod 😢. It will still follow the same logic as our coin, except, instead of gaining points when Glod collides with it, they will lose points instead.
+Now that we have our spiked cannonball looping and randomizing, the next step is to have it damage Glod.
+
+Poor Glod. 😢
+
+It will follow the same logic as our coin. However, instead of gaining points when Glod collides with it, points will be lost.
+
+Create the variables that we will be using. They are similar to the collision box we used for scoring.
+
+Add this to the `initialize-game-elements` shard.
 
 === "Code Added"
     
@@ -1874,8 +1921,10 @@ Now that we have our Spiked CanonBall looping and randomising, the next step is 
     false >= .damaged
     ```
 
-    > As usual firstly, we create the variables that we will be using. They are similar to the collision box we used for scoring. This time it will be a collision box for being damaged. Add this to the initialize-game-elements shard.
+Create the logic to dictate what happens when our spiked cannonball hits Glod. Remember to call this in `main-wire`.
 
+=== "Code Added"
+    
     ```{.clojure .annotate linenums="1"}
     ;; ------------- spikeBall-collision-logic --------------
     (defshards spikeBall-collision-logic [spikeBall-x spikeBall-y]
@@ -1923,8 +1972,6 @@ Now that we have our Spiked CanonBall looping and randomising, the next step is 
     ```{.clojure .annotate linenums="1"}
     (damaging)
     ```
-
-    > Then we create the logic to dictate what happens when our Spiked_Canonball hits our Glod. Remember to call in in main-wire.
 
 === "Full Code So Far"
     
@@ -2423,13 +2470,21 @@ Now that we have our Spiked CanonBall looping and randomising, the next step is 
     (run main (/ 1.0 60))
     ```
 
-Now that we have our Spiked CanonBall system up we can create as many as we want. And since we already set up our defshards to take in arguments, this time it would be much easier! So let's  do that. Let's create more Spiked CanonBalls. And all we have to do is follow these easy steps!
+Now that we have our spiked cannonball system up, we can create as many as we want. And since we already set up our shards to take in arguments, this time it would be much easier!
 
-1. Create the variables for our new Spiked CanonBalls
-2. Create new UI.Area to house our new Spiked Canon Balls.
-3. Add in SpikeBall_Gravity_Logic to ensure it falls
-4. Add in Randomise_SpikeBall_Logic to ensure it randomises.
-5. Ensure that Glod get's damaged whenever they are hit.
+Create more spiked cannonballs.
+
+All we have to do is to follow these easy steps:
+
+1. Create the variables for our new spiked cannonball.
+
+2. Create new `UI.Area` for each new spiked cannonball.
+
+3. Add in `spikeball-gravity-logic` to ensure it falls.
+
+4. Add in `randomise_spikeball_logic` to ensure that it randomizes.
+
+5. Ensure that Glod get's damaged whenever he gets hit.
 
 === "Code Added"
     
@@ -3021,11 +3076,12 @@ Now that we have our Spiked CanonBall system up we can create as many as we want
 
 ## Recap
 
-Good job in reaching this far! In this chapter we created falling Spiked Canonballs using the same logic as our coins. In the next chapter we will round off and finish the game by adding a few more elements will be the icing on the cake for our game. Almost there 😀! And see you in the next chapter.
+Good job in reaching this far!
 
-<br>
-<br>
+In this chapter, we created falling spiked cannonballs using the same logic as our coins.
 
+In the next chapter, we will round off and finish the game by adding a few more elements that will be the icing on the cake for our game.
 
+Almost there! 😀 
 
-
+See you in the next chapter.
