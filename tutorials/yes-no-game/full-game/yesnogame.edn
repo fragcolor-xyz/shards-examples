@@ -2,9 +2,9 @@
 (def max-timer 5)
 
 (defshards load-resources []
-  (LoadImage "data/cat01.png") (Push :Name .images)
-  (LoadImage "data/cat02.png") (Push :Name .images)
-  (LoadImage "data/cat03.png") (Push :Name .images))
+  (LoadImage "data/cats/cat01.png") (Push :Name .images)
+  (LoadImage "data/cats/cat02.png") (Push :Name .images)
+  (LoadImage "data/cats/cat03.png") (Push :Name .images))
 
 (defshards initialize-variables []
   ;; Variables to reset each round 
