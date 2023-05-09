@@ -77,7 +77,6 @@ With `.total-images` as the upper limit for our random index range, we can now u
 
     ```{.clojure .annotate linenums="1"}
     (defshards initialize-round []
-      .total-images
       (RandomInt :Max .total-images) > .left-image-index ;; (1)(2)
       (RandomInt :Max .total-images) > .right-image-index)
        
@@ -120,9 +119,6 @@ In the next chapter, we will be adding multiple rounds to your game to increase 
 === "Full Code"
 
     ```{.clojure .annotate linenums="1"}
-    (def total-rounds 10)
-    (def max-timer 5)
-
     (def total-rounds 10)
     (def max-timer 5)
 

@@ -89,7 +89,6 @@ Check if the chosen images are the same, and assign `true` or `false` to `.same-
 
     ```{.clojure .annotate linenums="1"}
     (defshards initialize-round [] 
-      .total-images
       (RandomInt :Max .total-images) > .left-image-index
       (RandomInt :Max .total-images) > .right-image-index
   
