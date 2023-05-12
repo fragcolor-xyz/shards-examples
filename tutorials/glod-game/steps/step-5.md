@@ -100,7 +100,7 @@ We then create a new `UI.Area` to draw the coin on the screen.
       (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> .idle-left-image-array
       (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> .idle-left-image-array
       (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> .idle-left-image-array
-
+h
       ;; ---------- Character Idle Array (Facing Right) ----------------
       (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> .idle-right-image-array
       (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> .idle-right-image-array
@@ -166,7 +166,7 @@ We then create a new `UI.Area` to draw the coin on the screen.
 
       (float2 .x .y) > .character-position
       
-      (clamp .X -600.0 600.0))
+      (clamp .x -600.0 600.0))
 
     ;; ------------ Character Gravity Logic ---------------
     (defshards gravity-logic []
@@ -476,7 +476,7 @@ Lastly, update your coin's `UI.Area` to draw the image located in an index of `.
 
       (float2 .x .y) > .character-position
       
-      (clamp .X -600.0 600.0))
+      (clamp .x -600.0 600.0))
 
     ;; ------------ Character Gravity Logic ---------------
     (defshards gravity-logic []
@@ -775,7 +775,7 @@ We then replace the value of the `Position` parameter in our coin's `UI.Area`.
 
       (float2 .x .y) > .character-position
       
-      (clamp .X -600.0 600.0))
+      (clamp .x -600.0 600.0))
 
     ;; ------------ Character Gravity Logic ---------------
     (defshards gravity-logic []
@@ -1082,7 +1082,7 @@ Remember to call the `coin-gravity-logic` shard in our `main-wire` loop.
 
       (float2 .x .y) > .character-position
       
-      (clamp .X -600.0 600.0))
+      (clamp .x -600.0 600.0))
 
     ;; ------------ Character Gravity Logic ---------------
     (defshards gravity-logic []
@@ -1339,9 +1339,9 @@ We first create a style shard and then call this shard before we draw our `UI.La
       0 >= .character-direction
       true >= .can-jump
 
-      0.0 >= .X
-      620.0 >= .Y
-      (float2 .X .Y) >= .character-position
+      0.0 >= .x
+      620.0 >= .y
+      (float2 .x .y) >= .character-position
       0.0 >= .character-x-velocity
       0.0 >= .character-y-velocity
       0.0 >= .character-y-acceleration
@@ -1413,25 +1413,25 @@ We first create a style shard and then call this shard before we draw our `UI.La
 
     ;; ------------ Character Run Logic ----------------
     (defshards run-logic []
-      .X (Math.Add .character-x-velocity)
-      > .X
+      .x (Math.Add .character-x-velocity)
+      > .x
 
-      (float2 .X .Y) > .character-position
+      (float2 .x .y) > .character-position
 
-      (clamp .X -600.0 600.0))
+      (clamp .x -600.0 600.0))
 
     ;; ------------ Character gravity-logic ---------------
     (defshards gravity-logic []
-      .Y (Math.Add .character-y-velocity)
-      > .Y
+      .y (Math.Add .character-y-velocity)
+      > .y
 
       .character-y-velocity (Math.Add .character-y-acceleration)
       > .character-y-velocity
 
-      (float2 .X .Y) > .character-position
+      (float2 .x .y) > .character-position
 
-      (clamp .Y -620.0 620.0)
-      .Y
+      (clamp .y -620.0 620.0)
+      .y
       (When :Predicate (IsMoreEqual 620.0)
             :Action (->
                     0.0 > .character-y-velocity
@@ -1629,14 +1629,14 @@ We also create a `.scored` variable to limit the number of times we can score fr
 === "Code Added"
     
     ```{.clojure .annotate linenums="1"}
-    .X (Math.Add 50.0)
+    .x (Math.Add 50.0)
     >= .scoringUpper-x-limit
-    .X (Math.Subtract 50.0)
+    .x (Math.Subtract 50.0)
     >= .scoringLower-x-limit
 
-    .Y (Math.Add 10.0)
+    .y (Math.Add 10.0)
     >= .scoringUpper-y-limit
-    .Y (Math.Subtract 10.0)
+    .y (Math.Subtract 10.0)
     >= .scoringLower-y-limit
     
     false >= .scored
@@ -1677,14 +1677,14 @@ Whenever the `.scored` variable is true, gain a point. Once a point is gained, R
                     (Log "Score: "))))
 
     (defshards scoring []
-      .X (Math.Add 50.0)
+      .x (Math.Add 50.0)
       > .scoringUpper-x-limit
-      .X (Math.Subtract 50.0)
+      .x (Math.Subtract 50.0)
       > .scoringLower-x-limit
 
-      .Y (Math.Add 10.0)
+      .y (Math.Add 10.0)
       > .scoringUpper-y-limit
-      .Y (Math.Subtract 10.0)
+      .y (Math.Subtract 10.0)
       > .scoringLower-y-limit 
 
       (score-collision)
@@ -1712,9 +1712,9 @@ Whenever the `.scored` variable is true, gain a point. Once a point is gained, R
       0 >= .character-direction
       true >= .can-jump
 
-      0.0 >= .X
-      620.0 >= .Y
-      (float2 .X .Y) >= .character-position
+      0.0 >= .x
+      620.0 >= .y
+      (float2 .x .y) >= .character-position
       0.0 >= .character-x-velocity
       0.0 >= .character-y-velocity
       0.0 >= .character-y-acceleration
@@ -1786,25 +1786,25 @@ Whenever the `.scored` variable is true, gain a point. Once a point is gained, R
 
     ;; ------------ Character Run Logic ----------------
     (defshards run-logic []
-      .X (Math.Add .character-x-velocity)
-      > .X
+      .x (Math.Add .character-x-velocity)
+      > .x
 
-      (float2 .X .Y) > .character-position
+      (float2 .x .y) > .character-position
 
-      (clamp .X -600.0 600.0))
+      (clamp .x -600.0 600.0))
 
     ;; ------------ Character gravity-logic ---------------
     (defshards gravity-logic []
-      .Y (Math.Add .character-y-velocity)
-      > .Y
+      .y (Math.Add .character-y-velocity)
+      > .y
 
       .character-y-velocity (Math.Add .character-y-acceleration)
       > .character-y-velocity
 
-      (float2 .X .Y) > .character-position
+      (float2 .x .y) > .character-position
 
-      (clamp .Y -620.0 620.0)
-      .Y
+      (clamp .y -620.0 620.0)
+      .y
       (When :Predicate (IsMoreEqual 620.0)
             :Action (->
                     0.0 > .character-y-velocity
@@ -1908,14 +1908,14 @@ Whenever the `.scored` variable is true, gain a point. Once a point is gained, R
     ;; --------- Game Elements ------------
     (defshards initialize-game-elements []
       0 >= .score
-      .X (Math.Add 50.0)
+      .x (Math.Add 50.0)
       >= .scoringUpper-x-limit
-      .X (Math.Subtract 50.0)
+      .x (Math.Subtract 50.0)
       >= .scoringLower-x-limit
 
-      .Y (Math.Add 10.0)
+      .y (Math.Add 10.0)
       >= .scoringUpper-y-limit
-      .Y (Math.Subtract 10.0)
+      .y (Math.Subtract 10.0)
       >= .scoringLower-y-limit
 
       false >= .scored)
@@ -1938,14 +1938,14 @@ Whenever the `.scored` variable is true, gain a point. Once a point is gained, R
                     (Log "Score: "))))
 
     (defshards scoring []
-      .X (Math.Add 50.0)
+      .x (Math.Add 50.0)
       > .scoringUpper-x-limit
-      .X (Math.Subtract 50.0)
+      .x (Math.Subtract 50.0)
       > .scoringLower-x-limit
 
-      .Y (Math.Add 10.0)
+      .y (Math.Add 10.0)
       > .scoringUpper-y-limit
-      .Y (Math.Subtract 10.0)
+      .y (Math.Subtract 10.0)
       > .scoringLower-y-limit
 
       (score-collision)
@@ -2083,9 +2083,9 @@ Remember to `Step` into your loop in your main wire.
       0 >= .character-direction
       true >= .can-jump
 
-      0.0 >= .X
-      620.0 >= .Y
-      (float2 .X .Y) >= .character-position
+      0.0 >= .x
+      620.0 >= .y
+      (float2 .x .y) >= .character-position
       0.0 >= .character-x-velocity
       0.0 >= .character-y-velocity
       0.0 >= .character-y-acceleration
@@ -2157,25 +2157,25 @@ Remember to `Step` into your loop in your main wire.
 
     ;; ------------ Character Run Logic ----------------
     (defshards run-logic []
-      .X (Math.Add .character-x-velocity)
-      > .X
+      .x (Math.Add .character-x-velocity)
+      > .x
 
-      (float2 .X .Y) > .character-position
+      (float2 .x .y) > .character-position
 
-      (clamp .X -600.0 600.0))
+      (clamp .x -600.0 600.0))
 
     ;; ------------ Character gravity-logic ---------------
     (defshards gravity-logic []
-      .Y (Math.Add .character-y-velocity)
-      > .Y
+      .y (Math.Add .character-y-velocity)
+      > .y
 
       .character-y-velocity (Math.Add .character-y-acceleration)
       > .character-y-velocity
 
-      (float2 .X .Y) > .character-position
+      (float2 .x .y) > .character-position
 
-      (clamp .Y -620.0 620.0)
-      .Y
+      (clamp .y -620.0 620.0)
+      .y
       (When :Predicate (IsMoreEqual 620.0)
             :Action (->
                     0.0 > .character-y-velocity
@@ -2292,14 +2292,14 @@ Remember to `Step` into your loop in your main wire.
     ;; --------- Game Elements ------------
     (defshards initialize-game-elements []
       0 >= .score
-      .X (Math.Add 50.0)
+      .x (Math.Add 50.0)
       >= .scoringUpper-x-limit
-      .X (Math.Subtract 50.0)
+      .x (Math.Subtract 50.0)
       >= .scoringLower-x-limit
 
-      .Y (Math.Add 10.0)
+      .y (Math.Add 10.0)
       >= .scoringUpper-y-limit
-      .Y (Math.Subtract 10.0)
+      .y (Math.Subtract 10.0)
       >= .scoringLower-y-limit
 
       false >= .scored)
@@ -2322,14 +2322,14 @@ Remember to `Step` into your loop in your main wire.
                     (Log "Score: "))))
 
     (defshards scoring []
-      .X (Math.Add 50.0)
+      .x (Math.Add 50.0)
       > .scoringUpper-x-limit
-      .X (Math.Subtract 50.0)
+      .x (Math.Subtract 50.0)
       > .scoringLower-x-limit
 
-      .Y (Math.Add 10.0)
+      .y (Math.Add 10.0)
       > .scoringUpper-y-limit
-      .Y (Math.Subtract 10.0)
+      .y (Math.Subtract 10.0)
       > .scoringLower-y-limit
 
       (score-collision)
@@ -2564,14 +2564,14 @@ Now, last but not least, we will convert our scoring logic into a ``defshards`` 
                     (Log "Score: "))))
 
     (defshards scoring []
-      .X (Math.Add 50.0)
+      .x (Math.Add 50.0)
       > .scoringUpper-x-limit
-      .X (Math.Subtract 50.0)
+      .x (Math.Subtract 50.0)
       > .scoringLower-x-limit
 
-      .Y (Math.Add 10.0)
+      .y (Math.Add 10.0)
       > .scoringUpper-y-limit
-      .Y (Math.Subtract 10.0)
+      .y (Math.Subtract 10.0)
       > .scoringLower-y-limit
 
       (score-collision .coinx-1 .coiny-1)
@@ -2600,9 +2600,9 @@ Now, last but not least, we will convert our scoring logic into a ``defshards`` 
       0 >= .character-direction
       true >= .can-jump
 
-      0.0 >= .X
-      620.0 >= .Y
-      (float2 .X .Y) >= .character-position
+      0.0 >= .x
+      620.0 >= .y
+      (float2 .x .y) >= .character-position
       0.0 >= .character-x-velocity
       0.0 >= .character-y-velocity
       0.0 >= .character-y-acceleration
@@ -2674,25 +2674,25 @@ Now, last but not least, we will convert our scoring logic into a ``defshards`` 
 
     ;; ------------ Character Run Logic ----------------
     (defshards run-logic []
-      .X (Math.Add .character-x-velocity)
-      > .X
+      .x (Math.Add .character-x-velocity)
+      > .x
 
-      (float2 .X .Y) > .character-position
+      (float2 .x .y) > .character-position
 
-      (clamp .X -600.0 600.0))
+      (clamp .x -600.0 600.0))
 
     ;; ------------ Character gravity-logic ---------------
     (defshards gravity-logic []
-      .Y (Math.Add .character-y-velocity)
-      > .Y
+      .y (Math.Add .character-y-velocity)
+      > .y
 
       .character-y-velocity (Math.Add .character-y-acceleration)
       > .character-y-velocity
 
-      (float2 .X .Y) > .character-position
+      (float2 .x .y) > .character-position
 
-      (clamp .Y -620.0 620.0)
-      .Y
+      (clamp .y -620.0 620.0)
+      .y
       (When :Predicate (IsMoreEqual 620.0)
             :Action (->
                     0.0 > .character-y-velocity
@@ -2822,14 +2822,14 @@ Now, last but not least, we will convert our scoring logic into a ``defshards`` 
       0 >= .score
       false >= .scored
 
-      .X (Math.Add 50.0)
+      .x (Math.Add 50.0)
       >= .scoringUpper-x-limit
-      .X (Math.Subtract 50.0)
+      .x (Math.Subtract 50.0)
       >= .scoringLower-x-limit
 
-      .Y (Math.Add 10.0)
+      .y (Math.Add 10.0)
       >= .scoringUpper-y-limit
-      .Y (Math.Subtract 10.0)
+      .y (Math.Subtract 10.0)
       >= .scoringLower-y-limit)
 
     ;; --------- Scoring ----------
@@ -2850,14 +2850,14 @@ Now, last but not least, we will convert our scoring logic into a ``defshards`` 
                     (Log "Score: "))))
 
     (defshards scoring []
-      .X (Math.Add 50.0)
+      .x (Math.Add 50.0)
       > .scoringUpper-x-limit
-      .X (Math.Subtract 50.0)
+      .x (Math.Subtract 50.0)
       > .scoringLower-x-limit
 
-      .Y (Math.Add 10.0)
+      .y (Math.Add 10.0)
       > .scoringUpper-y-limit
-      .Y (Math.Subtract 10.0)
+      .y (Math.Subtract 10.0)
       > .scoringLower-y-limit
 
       (score-collision .coinx-1 .coiny-1)

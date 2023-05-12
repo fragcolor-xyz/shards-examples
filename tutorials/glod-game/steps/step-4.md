@@ -599,7 +599,7 @@ Call our `clamp` function in `run-logic` and set the `var` parameter to be `.x`,
 
       (float2 .x .y) > .character-position
       
-      (clamp .X -600.0 600.0))
+      (clamp .x -600.0 600.0))
 
     ;; ------- Button Inputs ----------
     (defshards button-inputs []
@@ -845,7 +845,7 @@ Lastly we modify the value of `.character-y-velocity` and `.character-y-accelera
 
       (float2 .x .y) > .character-position
       
-      (clamp .X -600.0 600.0))
+      (clamp .x -600.0 600.0))
 
     ;; ------------ Character Gravity Logic ---------------
     (defshards gravity-logic []
@@ -1087,7 +1087,7 @@ Next, add a conditional statement to ensure that our y velocity and acceleration
 
       (float2 .x .y) > .character-position
       
-      (clamp .X -600.0 600.0))
+      (clamp .x -600.0 600.0))
 
     ;; ------------ Character Gravity Logic ---------------
     (defshards gravity-logic []
@@ -1329,7 +1329,7 @@ In `gravity-logic`, revert `character-state` to 0 when the character is jumping.
 
       (float2 .x .y) > .character-position
       
-      (clamp .X -600.0 600.0))
+      (clamp .x -600.0 600.0))
 
     ;; ------------ Character Gravity Logic ---------------
     (defshards gravity-logic []
@@ -1579,7 +1579,7 @@ The second problem is also an easy fix. We simply put a `When` conditional state
 
       (float2 .x .y) > .character-position
       
-      (clamp .X -600.0 600.0))
+      (clamp .x -600.0 600.0))
 
     ;; ------------ Character Gravity Logic ---------------
     (defshards gravity-logic []
@@ -1854,7 +1854,7 @@ Lastly we reset `.can-jump` back to true when Glod touches the floor again.
 
       (float2 .x .y) > .character-position
       
-      (clamp .X -600.0 600.0))
+      (clamp .x -600.0 600.0))
 
     ;; ------------ Character Gravity Logic ---------------
     (defshards gravity-logic []

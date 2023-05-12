@@ -10,9 +10,9 @@
   0 >= .character-direction
   true >= .can-jump
 
-  0.0 >= .X
-  620.0 >= .Y
-  (float2 .X .Y) >= .character-position
+  0.0 >= .x
+  620.0 >= .y
+  (float2 .x .y) >= .character-position
   0.0 >= .character-x-velocity
   0.0 >= .character-y-velocity
   0.0 >= .character-y-acceleration
@@ -84,25 +84,25 @@
 
 ;; ------------ Character Run Logic ----------------
 (defshards run-logic []
-  .X (Math.Add .character-x-velocity)
-  > .X
+  .x (Math.Add .character-x-velocity)
+  > .x
 
-  (float2 .X .Y) > .character-position
+  (float2 .x .y) > .character-position
 
-  (clamp .X -600.0 600.0))
+  (clamp .x -600.0 600.0))
 
 ;; ------------ Character gravity-logic ---------------
 (defshards gravity-logic []
-  .Y (Math.Add .character-y-velocity)
-  > .Y
+  .y (Math.Add .character-y-velocity)
+  > .y
 
   .character-y-velocity (Math.Add .character-y-acceleration)
   > .character-y-velocity
 
-  (float2 .X .Y) > .character-position
+  (float2 .x .y) > .character-position
 
-  (clamp .Y -620.0 620.0)
-  .Y
+  (clamp .y -620.0 620.0)
+  .y
   (When :Predicate (IsMoreEqual 620.0)
         :Action (->
                  0.0 > .character-y-velocity
@@ -310,25 +310,25 @@
   0 >= .score
   false >= .scored
 
-  .X (Math.Add 50.0)
+  .x (Math.Add 50.0)
   >= .scoringUpper-x-limit
-  .X (Math.Subtract 50.0)
+  .x (Math.Subtract 50.0)
   >= .scoringLower-x-limit
 
-  .Y (Math.Add 10.0)
+  .y (Math.Add 10.0)
   >= .scoringUpper-y-limit
-  .Y (Math.Subtract 10.0)
+  .y (Math.Subtract 10.0)
   >= .scoringLower-y-limit
 
   ;; ---------- Damage Limits ------------
-  .X (Math.Add 50.0)
+  .x (Math.Add 50.0)
   >= .damageUpper-x-limit
-  .X (Math.Subtract 50.0)
+  .x (Math.Subtract 50.0)
   >= .damageLower-x-limit
 
-  .Y (Math.Add 5.0)
+  .y (Math.Add 5.0)
   >= .damageUpper-y-limit
-  .Y (Math.Subtract 5.0)
+  .y (Math.Subtract 5.0)
   >= .damageLower-y-limit
 
   false >= .damaged
@@ -354,14 +354,14 @@
                  (Log "Score: "))))
 
 (defshards scoring []
-  .X (Math.Add 50.0)
+  .x (Math.Add 50.0)
   > .scoringUpper-x-limit
-  .X (Math.Subtract 50.0)
+  .x (Math.Subtract 50.0)
   > .scoringLower-x-limit
 
-  .Y (Math.Add 10.0)
+  .y (Math.Add 10.0)
   > .scoringUpper-y-limit
-  .Y (Math.Subtract 10.0)
+  .y (Math.Subtract 10.0)
   > .scoringLower-y-limit
 
   (score-collision .coinx-1 .coiny-1)
@@ -396,14 +396,14 @@
 ;; -------------- Damaging --------------
 (defshards damaging []
 
-  .X (Math.Add 120.0)
+  .x (Math.Add 120.0)
   > .damageUpper-x-limit
-  .X (Math.Subtract 120.0)
+  .x (Math.Subtract 120.0)
   > .damageLower-x-limit
 
-  .Y (Math.Add 15.0)
+  .y (Math.Add 15.0)
   > .damageUpper-y-limit
-  .Y (Math.Subtract 15.0)
+  .y (Math.Subtract 15.0)
   > .damageLower-y-limit
 
   (spikeBall-collision-logic .spikeball-x-1 .spikeball-y-1)
@@ -470,10 +470,10 @@
 
 ;; ------------ ScoreEffect_Animation_Position ------------
 (defshards scoreEffect-animation-position []
-  .Y (Math.Add -15.0)
+  .y (Math.Add -15.0)
   > .score-effect-position-y
 
-  .X
+  .x
   > .score-effect-position-x
 
   (float2 .score-effect-position-x .score-effect-position-y)
