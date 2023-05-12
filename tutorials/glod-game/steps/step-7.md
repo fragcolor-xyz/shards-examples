@@ -50,14 +50,14 @@ As per before, let us create a new shard `initialize-effects` that will house al
     ```{.clojure .annotate linenums="1"}
     ;; ------------- initialize effects -------------
     (defshards initialize-effects []
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_1.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_2.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_3.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_4.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_5.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_6.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_7.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_8.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_1.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_2.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_3.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_4.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_5.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_6.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_7.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_8.png") >> .score-effect-array
       (Count .score-effect-array) (Math.Subtract 1) >= .score-effect-array-index-max
       0 >= .score-effect-array-index
       0.05 >=  .score-effect-animation-speed ;; Reduce number to increase animation speed
@@ -145,13 +145,13 @@ Lastly, remember to call your shard and loop in your `main-wire`.
 === "Full Code So Far"
     
     ```{.clojure .annotate linenums="1"}
-    (defshards LoadTexture [name]
+    (defshards load-texture [name]
       (LoadImage name)
       (GFX.Texture))
 
     (defshards initialize-character []
-      (LoadTexture "GlodImages/Character1_Jumping_Left.png") = .character-jumping-left
-      (LoadTexture "GlodImages/Character1_Jumping_Right.png") = .character-jumping-right
+      (load-texture "GlodImages/Character1_Jumping_Left.png") = .character-jumping-left
+      (load-texture "GlodImages/Character1_Jumping_Right.png") = .character-jumping-right
 
       0 >= .character-state
       0 >= .character-direction
@@ -165,44 +165,44 @@ Lastly, remember to call your shard and loop in your `main-wire`.
       0.0 >= .character-y-acceleration
 
       ;; ---------- Character Idle Array (Facing Left) ----------
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_4.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_4.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> .idle-left-image-array
 
       ;; ---------- Character Idle Array (Facing Right) ----------------
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> .idle-right-image-array
 
       0 >= .idle-image-index
       (Count .idle-left-image-array) = .idle-image-index-max
       0.08 = .idle-animation-speed
 
       ;; -------------- Walking Array (Facing Left) -----------------
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> .walking-left-image-array
 
       ;; ----------- Walking Array (Facing Right) ---------------
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> .walking-right-image-array
 
       (Count .walking-left-image-array) = .walking-image-index-max
       0 >= .walking-image-index
@@ -311,13 +311,13 @@ Lastly, remember to call your shard and loop in your `main-wire`.
 
     ;; -------------- Initialize Coin ----------
     (defshards initialize-coin []
-      (LoadTexture "GlodImages/Coin/Coin_1.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_2.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_3.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_4.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_5.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_6.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_7.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_1.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_2.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_3.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_4.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_5.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_6.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_7.png") >> .coin-image-array
       (Count .coin-image-array) = .coin-image-index-max
       0 >= .coin-image-index
       0.1 = .coin-animation-speed
@@ -376,18 +376,18 @@ Lastly, remember to call your shard and loop in your `main-wire`.
 
     ;; ------------ Initialize Spiked CanonBalls ---------------
     (defshards initialize-spiked-canonballs []
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall1.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall2.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall3.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall4.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall5.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall6.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall7.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall8.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall9.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall10.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall11.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall12.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall1.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall2.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall3.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall4.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall5.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall6.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall7.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall8.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall9.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall10.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall11.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall12.png") >> .spikeball-array
 
       (Count .spikeball-array) = .spikeball-array-index-max
       0 >= .spikeball-index
@@ -563,14 +563,14 @@ Lastly, remember to call your shard and loop in your `main-wire`.
 
     ;; ------------- initialize effects -------------
     (defshards initialize-effects []
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_1.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_2.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_3.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_4.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_5.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_6.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_7.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_8.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_1.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_2.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_3.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_4.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_5.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_6.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_7.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_8.png") >> .score-effect-array
       (Count .score-effect-array) (Math.Subtract 1) >= .score-effect-array-index-max
       0 >= .score-effect-array-index
       0.05 >=  .score-effect-animation-speed ;; Reduce number to increase animation speed
@@ -744,14 +744,14 @@ Create all the variables that we need for creating animations. Add it under `ini
     
     ```{.clojure .annotate linenums="1"}
     ;; --------------- Damaged Effect ----------------
-    (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_1.png") >> .damage-effect-array
-    (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_2.png") >> .damage-effect-array
-    (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_3.png") >> .damage-effect-array
-    (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_4.png") >> .damage-effect-array
-    (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_5.png") >> .damage-effect-array
-    (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_6.png") >> .damage-effect-array
-    (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_7.png") >> .damage-effect-array
-    (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_8.png") >> .damage-effect-array
+    (load-texture "GlodImages/Damage_Effect/Damaged_Effect_1.png") >> .damage-effect-array
+    (load-texture "GlodImages/Damage_Effect/Damaged_Effect_2.png") >> .damage-effect-array
+    (load-texture "GlodImages/Damage_Effect/Damaged_Effect_3.png") >> .damage-effect-array
+    (load-texture "GlodImages/Damage_Effect/Damaged_Effect_4.png") >> .damage-effect-array
+    (load-texture "GlodImages/Damage_Effect/Damaged_Effect_5.png") >> .damage-effect-array
+    (load-texture "GlodImages/Damage_Effect/Damaged_Effect_6.png") >> .damage-effect-array
+    (load-texture "GlodImages/Damage_Effect/Damaged_Effect_7.png") >> .damage-effect-array
+    (load-texture "GlodImages/Damage_Effect/Damaged_Effect_8.png") >> .damage-effect-array
     (Count .damage-effect-array) (Math.Subtract 1) >= .damage-effect-array-index-max
     0 >= .damage-effect-array-index
     0.02 >=  .damage-effect-animation-speed ;; Reduce number to increase animation speed
@@ -803,13 +803,13 @@ Create our logic to loop our damage effect animation which plays when `.damage-e
 === "Full Code So Far"
     
     ```{.clojure .annotate linenums="1"}
-    (defshards LoadTexture [name]
+    (defshards load-texture [name]
       (LoadImage name)
       (GFX.Texture))
 
     (defshards initialize-character []
-      (LoadTexture "GlodImages/Character1_Jumping_Left.png") = .character-jumping-left
-      (LoadTexture "GlodImages/Character1_Jumping_Right.png") = .character-jumping-right
+      (load-texture "GlodImages/Character1_Jumping_Left.png") = .character-jumping-left
+      (load-texture "GlodImages/Character1_Jumping_Right.png") = .character-jumping-right
 
       0 >= .character-state
       0 >= .character-direction
@@ -823,44 +823,44 @@ Create our logic to loop our damage effect animation which plays when `.damage-e
       0.0 >= .character-y-acceleration
 
       ;; ---------- Character Idle Array (Facing Left) ----------
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_4.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_4.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> .idle-left-image-array
 
       ;; ---------- Character Idle Array (Facing Right) ----------------
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> .idle-right-image-array
 
       0 >= .idle-image-index
       (Count .idle-left-image-array) = .idle-image-index-max
       0.08 = .idle-animation-speed
 
       ;; -------------- Walking Array (Facing Left) -----------------
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> .walking-left-image-array
 
       ;; ----------- Walking Array (Facing Right) ---------------
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> .walking-right-image-array
 
       (Count .walking-left-image-array) = .walking-image-index-max
       0 >= .walking-image-index
@@ -969,13 +969,13 @@ Create our logic to loop our damage effect animation which plays when `.damage-e
 
     ;; -------------- Initialize Coin ----------
     (defshards initialize-coin []
-      (LoadTexture "GlodImages/Coin/Coin_1.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_2.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_3.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_4.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_5.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_6.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_7.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_1.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_2.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_3.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_4.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_5.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_6.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_7.png") >> .coin-image-array
       (Count .coin-image-array) = .coin-image-index-max
       0 >= .coin-image-index
       0.1 = .coin-animation-speed
@@ -1034,18 +1034,18 @@ Create our logic to loop our damage effect animation which plays when `.damage-e
 
     ;; ------------ Initialize Spiked CanonBalls ---------------
     (defshards initialize-spiked-canonballs []
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall1.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall2.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall3.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall4.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall5.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall6.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall7.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall8.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall9.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall10.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall11.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall12.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall1.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall2.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall3.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall4.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall5.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall6.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall7.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall8.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall9.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall10.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall11.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall12.png") >> .spikeball-array
 
       (Count .spikeball-array) = .spikeball-array-index-max
       0 >= .spikeball-index
@@ -1222,14 +1222,14 @@ Create our logic to loop our damage effect animation which plays when `.damage-e
 
     ;; ------------- initialize effects -------------
     (defshards initialize-effects []
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_1.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_2.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_3.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_4.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_5.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_6.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_7.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_8.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_1.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_2.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_3.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_4.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_5.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_6.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_7.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_8.png") >> .score-effect-array
       (Count .score-effect-array) (Math.Subtract 1) >= .score-effect-array-index-max
       0 >= .score-effect-array-index
       0.05 >=  .score-effect-animation-speed ;; Reduce number to increase animation speed
@@ -1240,14 +1240,14 @@ Create our logic to loop our damage effect animation which plays when `.damage-e
       (float2 .score-effect-position-x .score-effect-position-y) >= .score-effect-position
 
       ;; --------------- Damaged Effect ----------------
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_1.png") >> .damage-effect-array
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_2.png") >> .damage-effect-array
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_3.png") >> .damage-effect-array
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_4.png") >> .damage-effect-array
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_5.png") >> .damage-effect-array
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_6.png") >> .damage-effect-array
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_7.png") >> .damage-effect-array
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_8.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_1.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_2.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_3.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_4.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_5.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_6.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_7.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_8.png") >> .damage-effect-array
       (Count .damage-effect-array) (Math.Subtract 1) >= .damage-effect-array-index-max
       0 >= .damage-effect-array-index
       0.02 >=  .damage-effect-animation-speed ;; Reduce number to increase animation speed
@@ -1443,7 +1443,7 @@ First, load our image.
 === "Code Added"
     
     ```{.clojure .annotate linenums="1"}
-    (LoadTexture "GlodImages/BG.png") = .bg-image 
+    (load-texture "GlodImages/BG.png") = .bg-image 
     ```
 
 Next, create a `UI.Area` to house our new image.
@@ -1463,8 +1463,8 @@ Remember to add this `UI.Area` before the `UI.Area` which houses your character 
     
     ```{.clojure .annotate linenums="1"}
     (defshards initialize-character []
-      (LoadImage "GlodImages/Character1_Jumping_Left.png") = .character-jumping-left
-      (LoadImage "GlodImages/Character1_Jumping_Right.png") = .character-jumping-right
+      (load-texture "GlodImages/Character1_Jumping_Left.png") = .character-jumping-left
+      (load-texture "GlodImages/Character1_Jumping_Right.png") = .character-jumping-right
 
       0 >= .character-state
       0 >= .character-direction
@@ -1478,44 +1478,44 @@ Remember to add this `UI.Area` before the `UI.Area` which houses your character 
       0.0 >= .character-y-acceleration
 
       ;; ---------- Character Idle Array (Facing Left) ----------
-      (LoadImage "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> .idle-left-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> .idle-left-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> .idle-left-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_4.png") >> .idle-left-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> .idle-left-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> .idle-left-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_4.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> .idle-left-image-array
 
       ;; ---------- Character Idle Array (Facing Right) ----------------
-      (LoadImage "GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> .idle-right-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> .idle-right-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> .idle-right-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> .idle-right-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> .idle-right-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> .idle-right-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> .idle-right-image-array
 
       0 >= .idle-image-index
       (Count .idle-left-image-array) (Math.Subtract 1) >= .idle-image-index-max
       0.08 >= .idle-animation-speed
 
       ;; -------------- Walking Array (Facing Left) -----------------
-      (LoadImage "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> .walking-left-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> .walking-left-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> .walking-left-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> .walking-left-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> .walking-left-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> .walking-left-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> .walking-left-image-array
 
       ;; ----------- Walking Array (Facing Right) ---------------
-      (LoadImage "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> .walking-right-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> .walking-right-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> .walking-right-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> .walking-right-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> .walking-right-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> .walking-right-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> .walking-right-image-array
 
       (Count .walking-left-image-array) (Math.Subtract 1) >= .walking-image-index-max
       0 >= .walking-image-index
@@ -1537,7 +1537,7 @@ Remember to add this `UI.Area` before the `UI.Area` which houses your character 
             :Action (-> 0 > .walking-image-index))
       (Pause .walking-animation-speed))
 
-    (defshards LoadTexture [name]
+    (defshards load-texture [name]
       (LoadImage name)
       (GFX.Texture))
 
@@ -1628,13 +1628,13 @@ Remember to add this `UI.Area` before the `UI.Area` which houses your character 
 
     ;; -------------- Initialize Coin ----------
     (defshards initialize-coin []
-      (LoadImage "GlodImages/Coin/Coin_1.png") >> .coin-image-array
-      (LoadImage "GlodImages/Coin/Coin_2.png") >> .coin-image-array
-      (LoadImage "GlodImages/Coin/Coin_3.png") >> .coin-image-array
-      (LoadImage "GlodImages/Coin/Coin_4.png") >> .coin-image-array
-      (LoadImage "GlodImages/Coin/Coin_5.png") >> .coin-image-array
-      (LoadImage "GlodImages/Coin/Coin_6.png") >> .coin-image-array
-      (LoadImage "GlodImages/Coin/Coin_7.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_1.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_2.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_3.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_4.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_5.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_6.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_7.png") >> .coin-image-array
       (Count .coin-image-array) (Math.Subtract 1) >= .coin-image-index-max
       0 >= .coin-image-index
       0.1 >= .coin-animation-speed
@@ -1693,18 +1693,18 @@ Remember to add this `UI.Area` before the `UI.Area` which houses your character 
 
     ;; ------------ Initialize Spiked CanonBalls ---------------
     (defshards initialize-spiked-canonballs []
-      (LoadImage "GlodImages/SpikeBall/SpikeBall1.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall2.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall3.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall4.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall5.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall6.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall7.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall8.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall9.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall10.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall11.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall12.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall1.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall2.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall3.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall4.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall5.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall6.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall7.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall8.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall9.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall10.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall11.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall12.png") >> .spikeball-array
 
       (Count .spikeball-array) (Math.Subtract 1) >= .spikeball-array-index-max
       0 >= .spikeball-index
@@ -1882,14 +1882,14 @@ Remember to add this `UI.Area` before the `UI.Area` which houses your character 
     ;; ------------- innitialize effects -------------
     (defshards initialize-effects []
       ;; --------------- Animation Effects -----------------
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_1.png") >> .score-effect-array
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_2.png") >> .score-effect-array
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_3.png") >> .score-effect-array
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_4.png") >> .score-effect-array
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_5.png") >> .score-effect-array
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_6.png") >> .score-effect-array
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_7.png") >> .score-effect-array
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_8.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_1.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_2.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_3.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_4.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_5.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_6.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_7.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_8.png") >> .score-effect-array
       (Count .score-effect-array) (Math.Subtract 1) >= .score-effect-array-index-max
       0 >= .score-effect-array-index
       0.02 >=  .score-effect-animation-speed ;; Reduce number to increase animation speed
@@ -1900,20 +1900,20 @@ Remember to add this `UI.Area` before the `UI.Area` which houses your character 
       (float2 .score-effect-position-x .score-effect-position-y) >= .score-effect-position
 
       ;; --------------- Damaged Effect ----------------
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_1.png") >> .damage-effect-array
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_2.png") >> .damage-effect-array
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_3.png") >> .damage-effect-array
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_4.png") >> .damage-effect-array
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_5.png") >> .damage-effect-array
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_6.png") >> .damage-effect-array
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_7.png") >> .damage-effect-array
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_8.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_1.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_2.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_3.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_4.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_5.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_6.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_7.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_8.png") >> .damage-effect-array
       (Count .damage-effect-array) (Math.Subtract 1) >= .damage-effect-array-index-max
       0 >= .damage-effect-array-index
       0.02 >=  .damage-effect-animation-speed ;; Reduce number to increase animation speed
       false >= .damage-effect-play
       
-      (LoadImage "GlodImages/BG.png") = .bg-image)
+      (load-texture "GlodImages/BG.png") = .bg-image)
 
     ;; ------------ ScoreEffect Animation Position ------------
     (defshards scoreEffect-animation-position []
@@ -2027,14 +2027,14 @@ Remember to add this `UI.Area` before the `UI.Area` which houses your character 
                       :Contents (->
                                 .character-state
                                 (Match [0 (-> .character-direction
-                                              (Match [0 (-> LoadTexture .idle-left-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))
-                                                      1 (-> LoadTexture .idle-right-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))]
+                                              (Match [0 (-> load-texture .idle-left-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))
+                                                      1 (-> load-texture .idle-right-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))]
                                                       :Passthrough false))
-                                        1 (-> LoadTexture .walking-left-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-                                        2 (-> LoadTexture .walking-right-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
+                                        1 (-> load-texture .walking-left-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
+                                        2 (-> load-texture .walking-right-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
                                         3 (->  .character-direction
-                                                (Match [0 (-> LoadTexture .character-jumping-left (UI.Image :Scale (float2 0.2)))
-                                                        1 (-> LoadTexture .character-jumping-right (UI.Image :Scale (float2 0.2)))]
+                                                (Match [0 (-> load-texture .character-jumping-left (UI.Image :Scale (float2 0.2)))
+                                                        1 (-> load-texture .character-jumping-right (UI.Image :Scale (float2 0.2)))]
                                                       :Passthrough false))]
                                         :Passthrough false)))
 
@@ -2043,39 +2043,39 @@ Remember to add this `UI.Area` before the `UI.Area` which houses your character 
             (UI.Area :Position .coin-position-1
                       :Anchor Anchor.Top
                       :Contents (->
-                                LoadTexture .coin-image-array (Take .coin-image-index) (UI.Image :Scale (float2 0.2))))
+                                load-texture .coin-image-array (Take .coin-image-index) (UI.Image :Scale (float2 0.2))))
 
             (UI.Area :Position .coin-position-2
                       :Anchor Anchor.Top
                       :Contents (->
-                                LoadTexture .coin-image-array (Take .coin-image-index) (UI.Image :Scale (float2 0.2))))
+                                load-texture .coin-image-array (Take .coin-image-index) (UI.Image :Scale (float2 0.2))))
             ;; --------- spikeball ui area ----------
 
             (UI.Area :Position .spikeball-position-1
                       :Anchor Anchor.Top
                       :Contents (->
-                                LoadTexture .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
+                                load-texture .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
 
             (UI.Area :Position .spikeball-position-2
                       :Anchor Anchor.Top
                       :Contents (->
-                                LoadTexture .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
+                                load-texture .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
 
             (UI.Area :Position .spikeball-position-3
                       :Anchor Anchor.Top
                       :Contents (->
-                                LoadTexture .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
+                                load-texture .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
 
             ;; ----------------- Visual Effects  -------------------
             (UI.Area :Position .score-effect-position
                       :Anchor Anchor.Top
                       :Contents (->
-                                LoadTexture .score-effect-array (Take .score-effect-array-index) (UI.Image :Scale (float2 0.15))))
+                                load-texture .score-effect-array (Take .score-effect-array-index) (UI.Image :Scale (float2 0.15))))
 
             (UI.Area :Position (float2 0 0)
                       :Anchor Anchor.TopLeft
                       :Contents (->
-                                LoadTexture .damage-effect-array (Take .damage-effect-array-index) (UI.Image :Scale (float2 10))))
+                                load-texture .damage-effect-array (Take .damage-effect-array-index) (UI.Image :Scale (float2 10))))
 
             ;; ---------------- UI ------------------
 
@@ -2170,8 +2170,8 @@ Remember to call and `Step` them in the `main-wire`.
     
     ```{.clojure .annotate linenums="1"}
     (defshards initialize-character []
-      (LoadImage "GlodImages/Character1_Jumping_Left.png") = .character-jumping-left
-      (LoadImage "GlodImages/Character1_Jumping_Right.png") = .character-jumping-right
+      (load-texture "GlodImages/Character1_Jumping_Left.png") = .character-jumping-left
+      (load-texture "GlodImages/Character1_Jumping_Right.png") = .character-jumping-right
 
       0 >= .character-state
       0 >= .character-direction
@@ -2185,44 +2185,44 @@ Remember to call and `Step` them in the `main-wire`.
       0.0 >= .character-y-acceleration
 
       ;; ---------- Character Idle Array (Facing Left) ----------
-      (LoadImage "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> .idle-left-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> .idle-left-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> .idle-left-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_4.png") >> .idle-left-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> .idle-left-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> .idle-left-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_4.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> .idle-left-image-array
 
       ;; ---------- Character Idle Array (Facing Right) ----------------
-      (LoadImage "GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> .idle-right-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> .idle-right-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> .idle-right-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> .idle-right-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> .idle-right-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> .idle-right-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> .idle-right-image-array
 
       0 >= .idle-image-index
       (Count .idle-left-image-array) (Math.Subtract 1) >= .idle-image-index-max
       0.08 >= .idle-animation-speed
 
       ;; -------------- Walking Array (Facing Left) -----------------
-      (LoadImage "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> .walking-left-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> .walking-left-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> .walking-left-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> .walking-left-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> .walking-left-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> .walking-left-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> .walking-left-image-array
 
       ;; ----------- Walking Array (Facing Right) ---------------
-      (LoadImage "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> .walking-right-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> .walking-right-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> .walking-right-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> .walking-right-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> .walking-right-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> .walking-right-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> .walking-right-image-array
 
       (Count .walking-left-image-array) (Math.Subtract 1) >= .walking-image-index-max
       0 >= .walking-image-index
@@ -2244,7 +2244,7 @@ Remember to call and `Step` them in the `main-wire`.
             :Action (-> 0 > .walking-image-index))
       (Pause .walking-animation-speed))
 
-    (defshards LoadTexture [name]
+    (defshards load-texture [name]
       (LoadImage name)
       (GFX.Texture))
 
@@ -2335,13 +2335,13 @@ Remember to call and `Step` them in the `main-wire`.
 
     ;; -------------- Initialize Coin ----------
     (defshards initialize-coin []
-      (LoadImage "GlodImages/Coin/Coin_1.png") >> .coin-image-array
-      (LoadImage "GlodImages/Coin/Coin_2.png") >> .coin-image-array
-      (LoadImage "GlodImages/Coin/Coin_3.png") >> .coin-image-array
-      (LoadImage "GlodImages/Coin/Coin_4.png") >> .coin-image-array
-      (LoadImage "GlodImages/Coin/Coin_5.png") >> .coin-image-array
-      (LoadImage "GlodImages/Coin/Coin_6.png") >> .coin-image-array
-      (LoadImage "GlodImages/Coin/Coin_7.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_1.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_2.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_3.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_4.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_5.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_6.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_7.png") >> .coin-image-array
       (Count .coin-image-array) (Math.Subtract 1) >= .coin-image-index-max
       0 >= .coin-image-index
       0.1 >= .coin-animation-speed
@@ -2400,18 +2400,18 @@ Remember to call and `Step` them in the `main-wire`.
 
     ;; ------------ Initialize Spiked CanonBalls ---------------
     (defshards initialize-spiked-canonballs []
-      (LoadImage "GlodImages/SpikeBall/SpikeBall1.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall2.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall3.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall4.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall5.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall6.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall7.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall8.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall9.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall10.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall11.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall12.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall1.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall2.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall3.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall4.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall5.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall6.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall7.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall8.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall9.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall10.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall11.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall12.png") >> .spikeball-array
 
       (Count .spikeball-array) (Math.Subtract 1) >= .spikeball-array-index-max
       0 >= .spikeball-index
@@ -2592,14 +2592,14 @@ Remember to call and `Step` them in the `main-wire`.
     ;; ------------- innitialize effects -------------
     (defshards initialize-effects []
       ;; --------------- Animation Effects -----------------
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_1.png") >> .score-effect-array
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_2.png") >> .score-effect-array
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_3.png") >> .score-effect-array
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_4.png") >> .score-effect-array
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_5.png") >> .score-effect-array
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_6.png") >> .score-effect-array
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_7.png") >> .score-effect-array
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_8.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_1.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_2.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_3.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_4.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_5.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_6.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_7.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_8.png") >> .score-effect-array
       (Count .score-effect-array) (Math.Subtract 1) >= .score-effect-array-index-max
       0 >= .score-effect-array-index
       0.02 >=  .score-effect-animation-speed ;; Reduce number to increase animation speed
@@ -2610,20 +2610,20 @@ Remember to call and `Step` them in the `main-wire`.
       (float2 .score-effect-position-x .score-effect-position-y) >= .score-effect-position
 
       ;; --------------- Damaged Effect ----------------
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_1.png") >> .damage-effect-array
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_2.png") >> .damage-effect-array
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_3.png") >> .damage-effect-array
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_4.png") >> .damage-effect-array
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_5.png") >> .damage-effect-array
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_6.png") >> .damage-effect-array
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_7.png") >> .damage-effect-array
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_8.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_1.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_2.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_3.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_4.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_5.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_6.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_7.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_8.png") >> .damage-effect-array
       (Count .damage-effect-array) (Math.Subtract 1) >= .damage-effect-array-index-max
       0 >= .damage-effect-array-index
       0.02 >=  .damage-effect-animation-speed ;; Reduce number to increase animation speed
       false >= .damage-effect-play
       
-      (LoadImage "GlodImages/BG.png") = .bg-image)
+      (load-texture "GlodImages/BG.png") = .bg-image)
 
     ;; ------------ ScoreEffect Animation Position ------------
     (defshards scoreEffect-animation-position []
@@ -2760,14 +2760,14 @@ Remember to call and `Step` them in the `main-wire`.
                       :Contents (->
                                 .character-state
                                 (Match [0 (-> .character-direction
-                                              (Match [0 (-> LoadTexture .idle-left-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))
-                                                      1 (-> LoadTexture .idle-right-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))]
+                                              (Match [0 (-> load-texture .idle-left-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))
+                                                      1 (-> load-texture .idle-right-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))]
                                                       :Passthrough false))
-                                        1 (-> LoadTexture .walking-left-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-                                        2 (-> LoadTexture .walking-right-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
+                                        1 (-> load-texture .walking-left-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
+                                        2 (-> load-texture .walking-right-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
                                         3 (->  .character-direction
-                                                (Match [0 (-> LoadTexture .character-jumping-left (UI.Image :Scale (float2 0.2)))
-                                                        1 (-> LoadTexture .character-jumping-right (UI.Image :Scale (float2 0.2)))]
+                                                (Match [0 (-> load-texture .character-jumping-left (UI.Image :Scale (float2 0.2)))
+                                                        1 (-> load-texture .character-jumping-right (UI.Image :Scale (float2 0.2)))]
                                                       :Passthrough false))]
                                         :Passthrough false)))
 
@@ -2776,39 +2776,39 @@ Remember to call and `Step` them in the `main-wire`.
             (UI.Area :Position .coin-position-1
                       :Anchor Anchor.Top
                       :Contents (->
-                                LoadTexture .coin-image-array (Take .coin-image-index) (UI.Image :Scale (float2 0.2))))
+                                load-texture .coin-image-array (Take .coin-image-index) (UI.Image :Scale (float2 0.2))))
 
             (UI.Area :Position .coin-position-2
                       :Anchor Anchor.Top
                       :Contents (->
-                                LoadTexture .coin-image-array (Take .coin-image-index) (UI.Image :Scale (float2 0.2))))
+                                load-texture .coin-image-array (Take .coin-image-index) (UI.Image :Scale (float2 0.2))))
             ;; --------- spikeball ui area ----------
 
             (UI.Area :Position .spikeball-position-1
                       :Anchor Anchor.Top
                       :Contents (->
-                                LoadTexture .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
+                                load-texture .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
 
             (UI.Area :Position .spikeball-position-2
                       :Anchor Anchor.Top
                       :Contents (->
-                                LoadTexture .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
+                                load-texture .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
 
             (UI.Area :Position .spikeball-position-3
                       :Anchor Anchor.Top
                       :Contents (->
-                                LoadTexture .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
+                                load-texture .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
 
             ;; ----------------- Visual Effects  -------------------
             (UI.Area :Position .score-effect-position
                       :Anchor Anchor.Top
                       :Contents (->
-                                LoadTexture .score-effect-array (Take .score-effect-array-index) (UI.Image :Scale (float2 0.15))))
+                                load-texture .score-effect-array (Take .score-effect-array-index) (UI.Image :Scale (float2 0.15))))
 
             (UI.Area :Position (float2 0 0)
                       :Anchor Anchor.TopLeft
                       :Contents (->
-                                LoadTexture .damage-effect-array (Take .damage-effect-array-index) (UI.Image :Scale (float2 10))))
+                                load-texture .damage-effect-array (Take .damage-effect-array-index) (UI.Image :Scale (float2 10))))
 
             ;; ---------------- UI ------------------
 
@@ -2966,13 +2966,13 @@ Finally its time to code the final bit for our game. We need to add some finalit
 === "Full Code So Far"
     
     ```{.clojure .annotate linenums="1"}
-    (defshards LoadTexture [name]
+    (defshards load-texture [name]
       (LoadImage name)
       (GFX.Texture))
 
     (defshards initialize-character []
-      (LoadTexture "GlodImages/Character1_Jumping_Left.png") = .character-jumping-left
-      (LoadTexture "GlodImages/Character1_Jumping_Right.png") = .character-jumping-right
+      (load-texture "GlodImages/Character1_Jumping_Left.png") = .character-jumping-left
+      (load-texture "GlodImages/Character1_Jumping_Right.png") = .character-jumping-right
 
       0 >= .character-state
       0 >= .character-direction
@@ -2986,44 +2986,44 @@ Finally its time to code the final bit for our game. We need to add some finalit
       0.0 >= .character-y-acceleration
 
       ;; ---------- Character Idle Array (Facing Left) ----------
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_4.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_4.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> .idle-left-image-array
 
       ;; ---------- Character Idle Array (Facing Right) ----------------
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> .idle-right-image-array
 
       0 >= .idle-image-index
       (Count .idle-left-image-array) = .idle-image-index-max
       0.08 = .idle-animation-speed
 
       ;; -------------- Walking Array (Facing Left) -----------------
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> .walking-left-image-array
 
       ;; ----------- Walking Array (Facing Right) ---------------
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> .walking-right-image-array
 
       (Count .walking-left-image-array) = .walking-image-index-max
       0 >= .walking-image-index
@@ -3132,13 +3132,13 @@ Finally its time to code the final bit for our game. We need to add some finalit
 
     ;; -------------- Initialize Coin ----------
     (defshards initialize-coin []
-      (LoadTexture "GlodImages/Coin/Coin_1.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_2.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_3.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_4.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_5.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_6.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_7.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_1.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_2.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_3.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_4.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_5.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_6.png") >> .coin-image-array
+      (load-texture "GlodImages/Coin/Coin_7.png") >> .coin-image-array
       (Count .coin-image-array) = .coin-image-index-max
       0 >= .coin-image-index
       0.1 = .coin-animation-speed
@@ -3197,18 +3197,18 @@ Finally its time to code the final bit for our game. We need to add some finalit
 
     ;; ------------ Initialize Spiked CanonBalls ---------------
     (defshards initialize-spiked-canonballs []
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall1.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall2.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall3.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall4.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall5.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall6.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall7.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall8.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall9.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall10.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall11.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall12.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall1.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall2.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall3.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall4.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall5.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall6.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall7.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall8.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall9.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall10.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall11.png") >> .spikeball-array
+      (load-texture "GlodImages/SpikeBall/SpikeBall12.png") >> .spikeball-array
 
       (Count .spikeball-array) = .spikeball-array-index-max
       0 >= .spikeball-index
@@ -3388,14 +3388,14 @@ Finally its time to code the final bit for our game. We need to add some finalit
 
     ;; ------------- initialize effects -------------
     (defshards initialize-effects []
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_1.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_2.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_3.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_4.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_5.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_6.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_7.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_8.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_1.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_2.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_3.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_4.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_5.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_6.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_7.png") >> .score-effect-array
+      (load-texture "GlodImages/Coin/CoinEffect/Score_Effect_8.png") >> .score-effect-array
       (Count .score-effect-array) (Math.Subtract 1) >= .score-effect-array-index-max
       0 >= .score-effect-array-index
       0.05 >=  .score-effect-animation-speed ;; Reduce number to increase animation speed
@@ -3406,20 +3406,20 @@ Finally its time to code the final bit for our game. We need to add some finalit
       (float2 .score-effect-position-x .score-effect-position-y) >= .score-effect-position
 
       ;; --------------- Damaged Effect ----------------
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_1.png") >> .damage-effect-array
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_2.png") >> .damage-effect-array
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_3.png") >> .damage-effect-array
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_4.png") >> .damage-effect-array
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_5.png") >> .damage-effect-array
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_6.png") >> .damage-effect-array
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_7.png") >> .damage-effect-array
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_8.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_1.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_2.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_3.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_4.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_5.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_6.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_7.png") >> .damage-effect-array
+      (load-texture "GlodImages/Damage_Effect/Damaged_Effect_8.png") >> .damage-effect-array
       (Count .damage-effect-array) (Math.Subtract 1) >= .damage-effect-array-index-max
       0 >= .damage-effect-array-index
       0.02 >=  .damage-effect-animation-speed ;; Reduce number to increase animation speed
       false >= .damage-effect-play
       
-      (LoadTexture "GlodImages/BG.png") = .bg-image)
+      (load-texture "GlodImages/BG.png") = .bg-image)
 
     ;; ------------ DamageEffect Animation ------------
     (defloop damage-effect-animation-logic
