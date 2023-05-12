@@ -1321,7 +1321,7 @@ We first create a style shard and then call this shard before we draw our `UI.La
                                 :Anchor Anchor.TopRight
                                 :Contents (->
                                           style (UI.Style)
-                                          .Score (ToString)(UI.Label))) ;;(1)
+                                          .score (ToString)(UI.Label))) ;;(1)
     ```
 
 === "Full Code So Far"
