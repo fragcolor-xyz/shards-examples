@@ -25,7 +25,7 @@ Create the `.x` and `.y` variables which will be used to create the variable `.c
     
     ```{.clojure .annotate linenums="1"}
     0.0 >= .x ;; (1)
-    310.0 >= .y
+    620.0 >= .y
     (float2 .x .y) >= .character-position
     ```
 
@@ -62,7 +62,7 @@ Remember to change the `Anchor` to `Anchor.Top`!
       0 >= .character-direction ;; 0 = facing left, 1 = facing right
 
       0.0 >= .x
-      310.0 >= .y
+      620.0 >= .y
       (float2 .x .y) >= .character-position
 
       ;; ---------- Character Idle Array (Facing Left)----------
@@ -311,7 +311,7 @@ Create the `run-logic` shard. When `.character-x-velocity` is changed, it will b
       0 >= .character-direction ;; 0 = facing left, 1 = facing right
 
       0.0 >= .x
-      310.0 >= .y
+      620.0 >= .y
       (float2 .x .y) >= .character-position
       0.0 >= .character-x-velocity
 
@@ -521,7 +521,7 @@ Call our `clamp` function in `run-logic` and set the `var` parameter to be `.x`,
       0 >= .character-direction ;; 0 = facing left, 1 = facing right
 
       0.0 >= .x
-      310.0 >= .y
+      620.0 >= .y
       (float2 .x .y) >= .character-position
       0.0 >= .character-x-velocity
 
@@ -765,7 +765,7 @@ Lastly we modify the value of `.character-y-velocity` and `.character-y-accelera
       0 >= .character-direction ;; 0 = facing left, 1 = facing right
 
       0.0 >= .x
-      310.0 >= .y
+      620.0 >= .y
       (float2 .x .y) >= .character-position
       0.0 >= .character-x-velocity
       0.0 >= .character-y-velocity
@@ -1007,7 +1007,7 @@ Next, add a conditional statement to ensure that our y velocity and acceleration
       0 >= .character-direction ;; 0 = facing left, 1 = facing right
 
       0.0 >= .x
-      310.0 >= .y
+      620.0 >= .y
       (float2 .x .y) >= .character-position
       0.0 >= .character-x-velocity
       0.0 >= .character-y-velocity
@@ -1249,7 +1249,7 @@ In `gravity-logic`, revert `character-state` to 0 when the character is jumping.
       0 >= .character-direction ;; 0 = facing left, 1 = facing right
 
       0.0 >= .x
-      310.0 >= .y
+      620.0 >= .y
       (float2 .x .y) >= .character-position
       0.0 >= .character-x-velocity
       0.0 >= .character-y-velocity
@@ -1499,7 +1499,7 @@ The second problem is also an easy fix. We simply put a `When` conditional state
       0 >= .character-direction ;; 0 = facing left, 1 = facing right
 
       0.0 >= .x
-      310.0 >= .y
+      620.0 >= .y
       (float2 .x .y) >= .character-position
       0.0 >= .character-x-velocity
       0.0 >= .character-y-velocity
@@ -1774,7 +1774,7 @@ Lastly we reset `.can-jump` back to true when Glod touches the floor again.
       true >= .can-jump
 
       0.0 >= .x
-      310.0 >= .y
+      620.0 >= .y
       (float2 .x .y) >= .character-position
       0.0 >= .character-x-velocity
       0.0 >= .character-y-velocity

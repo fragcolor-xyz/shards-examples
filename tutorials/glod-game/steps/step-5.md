@@ -86,7 +86,7 @@ We then create a new `UI.Area` to draw the coin on the screen.
       true >= .can-jump
 
       0.0 >= .x
-      310.0 >= .y
+      620.0 >= .y
       (float2 .x .y) >= .character-position
       0.0 >= .character-x-velocity
       0.0 >= .character-y-velocity
@@ -396,7 +396,7 @@ Lastly, update your coin's `UI.Area` to draw the image located in an index of `.
       true >= .can-jump
 
       0.0 >= .x
-      310.0 >= .y
+      620.0 >= .y
       (float2 .x .y) >= .character-position
       0.0 >= .character-x-velocity
       0.0 >= .character-y-velocity
@@ -695,7 +695,7 @@ We then replace the value of the `Position` parameter in our coin's `UI.Area`.
       true >= .can-jump
 
       0.0 >= .x
-      310.0 >= .y
+      620.0 >= .y
       (float2 .x .y) >= .character-position
       0.0 >= .character-x-velocity
       0.0 >= .character-y-velocity
@@ -1002,7 +1002,7 @@ Remember to call the `coin-gravity-logic` shard in our `main-wire` loop.
       true >= .can-jump
 
       0.0 >= .x
-      310.0 >= .y
+      620.0 >= .y
       (float2 .x .y) >= .character-position
       0.0 >= .character-x-velocity
       0.0 >= .character-y-velocity
