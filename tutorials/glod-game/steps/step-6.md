@@ -1908,14 +1908,14 @@ Add this to the `initialize-game-elements` shard.
     
     ```{.clojure .annotate linenums="1"}
     ;; ---------- Damage Limits ------------
-    .x (Math.Add 50.0)
+    .x (Math.Add 120.0)
     >= .damageUpper-x-limit
-    .x (Math.Subtract 50.0)
+    .x (Math.Subtract 120.0)
     >= .damageLower-x-limit
 
-    .y (Math.Add 5.0)
+    .y (Math.Add 15.0)
     >= .damageUpper-y-limit
-    .y (Math.Subtract 5.0)
+    .y (Math.Subtract 15.0)
     >= .damageLower-y-limit
 
     false >= .damaged
@@ -2283,14 +2283,14 @@ Create the logic to dictate what happens when our spiked cannonball hits Glod. R
       >= .scoringLower-y-limit
 
       ;; ---------- Damage Limits ------------
-      .x (Math.Add 50.0)
+      .x (Math.Add 120.0)
       >= .damageUpper-x-limit
-      .x (Math.Subtract 50.0)
+      .x (Math.Subtract 120.0)
       >= .damageLower-x-limit
 
-      .y (Math.Add 5.0)
+      .y (Math.Add 15.0)
       >= .damageUpper-y-limit
-      .y (Math.Subtract 5.0)
+      .y (Math.Subtract 15.0)
       >= .damageLower-y-limit
 
       false >= .damaged)
@@ -2871,14 +2871,14 @@ All we have to do is to follow these easy steps:
       >= .scoringLower-y-limit
 
       ;; ---------- Damage Limits ------------
-      .x (Math.Add 50.0)
+      .x (Math.Add 120.0)
       >= .damageUpper-x-limit
-      .x (Math.Subtract 50.0)
+      .x (Math.Subtract 120.0)
       >= .damageLower-x-limit
 
-      .y (Math.Add 5.0)
+      .y (Math.Add 15.0)
       >= .damageUpper-y-limit
-      .y (Math.Subtract 5.0)
+      .y (Math.Subtract 15.0)
       >= .damageLower-y-limit
 
       false >= .damaged)

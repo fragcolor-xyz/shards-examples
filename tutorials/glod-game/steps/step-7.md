@@ -468,14 +468,14 @@ Lastly, remember to call your shard and loop in your `main-wire`.
       >= .scoringLower-y-limit
 
       ;; ---------- Damage Limits ------------
-      .x (Math.Add 50.0)
+      .x (Math.Add 120.0)
       >= .damageUpper-x-limit
-      .x (Math.Subtract 50.0)
+      .x (Math.Subtract 120.0)
       >= .damageLower-x-limit
 
-      .y (Math.Add 5.0)
+      .y (Math.Add 15.0)
       >= .damageUpper-y-limit
-      .y (Math.Subtract 5.0)
+      .y (Math.Subtract 15.0)
       >= .damageLower-y-limit
 
       false >= .damaged)
@@ -1126,14 +1126,14 @@ Create our logic to loop our damage effect animation which plays when `.damage-e
       >= .scoringLower-y-limit
 
       ;; ---------- Damage Limits ------------
-      .x (Math.Add 50.0)
+      .x (Math.Add 120.0)
       >= .damageUpper-x-limit
-      .x (Math.Subtract 50.0)
+      .x (Math.Subtract 120.0)
       >= .damageLower-x-limit
 
-      .y (Math.Add 5.0)
+      .y (Math.Add 15.0)
       >= .damageUpper-y-limit
-      .y (Math.Subtract 5.0)
+      .y (Math.Subtract 15.0)
       >= .damageLower-y-limit
 
       false >= .damaged)
@@ -1784,14 +1784,14 @@ Remember to add this `UI.Area` before the `UI.Area` which houses your character 
       >= .scoringLower-y-limit
 
       ;; ---------- Damage Limits ------------
-      .x (Math.Add 50.0)
+      .x (Math.Add 120.0)
       >= .damageUpper-x-limit
-      .x (Math.Subtract 50.0)
+      .x (Math.Subtract 120.0)
       >= .damageLower-x-limit
 
-      .y (Math.Add 5.0)
+      .y (Math.Add 15.0)
       >= .damageUpper-y-limit
-      .y (Math.Subtract 5.0)
+      .y (Math.Subtract 15.0)
       >= .damageLower-y-limit
 
       false >= .damaged)
@@ -2491,14 +2491,14 @@ Remember to call and `Step` them in the `main-wire`.
       >= .scoringLower-y-limit
 
       ;; ---------- Damage Limits ------------
-      .x (Math.Add 50.0)
+      .x (Math.Add 120.0)
       >= .damageUpper-x-limit
-      .x (Math.Subtract 50.0)
+      .x (Math.Subtract 120.0)
       >= .damageLower-x-limit
 
-      .y (Math.Add 5.0)
+      .y (Math.Add 15.0)
       >= .damageUpper-y-limit
-      .y (Math.Subtract 5.0)
+      .y (Math.Subtract 15.0)
       >= .damageLower-y-limit
 
       false >= .damaged
@@ -3289,14 +3289,14 @@ Finally its time to code the final bit for our game. We need to add some finalit
       >= .scoringLower-y-limit
 
       ;; ---------- Damage Limits ------------
-      .x (Math.Add 50.0)
+      .x (Math.Add 120.0)
       >= .damageUpper-x-limit
-      .x (Math.Subtract 50.0)
+      .x (Math.Subtract 120.0)
       >= .damageLower-x-limit
 
-      .y (Math.Add 5.0)
+      .y (Math.Add 15.0)
       >= .damageUpper-y-limit
-      .y (Math.Subtract 5.0)
+      .y (Math.Subtract 15.0)
       >= .damageLower-y-limit
 
       false >= .damaged
