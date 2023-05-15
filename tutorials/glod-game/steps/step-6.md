@@ -26,7 +26,7 @@ If you are wondering why the list above seems familiar, it is because the exact 
 
 Let's get to it. 🔥
 
-# Step 6.1
+## Step 6.1
 
 We start off nice and easy by downloading the required images and displaying one of them on the screen.
 
@@ -47,7 +47,7 @@ Remember to call your new shard in `main-wire`.
 === "Code Added"
 
     ```{.clojure .annotate linenums="1"}
-    (initialize-spiked-canonballs) ;; (1)
+    (initialize-spiked-canonballs)
     ```
 
 To draw our loaded image, create a `UI.Area`.
@@ -473,41 +473,45 @@ Follow these steps to create an animation once more:
 
       (Count .spikeball-array) (Math.Subtract 1) >= .spikeball-array-index-max
       0 >= .spikeball-index
-      0.06 >= .spikeball-animation-speed
+      0.06 >= .spikeball-animation-speed)
     ```
 
  Create an animation loop that uses the variables we created. This loop should add one to our index every iteration. It should also have a conditional statement that ensures that our index does not go above the `index-max`.
  
  Lastly, the loop should loop every x seconds, with x being the animation speed.
 
-    ```{.clojure .annotate linenums="1"}
-    ;;------------- Spiked CanonBall Animation -------------
-    (defloop spiked-canonball-animation
-      .spikeball-index (Math.Add 1)
-      > .spikeball-index
-      (When :Predicate (IsMore .spikeball-array-index-max)
-            :Action (-> 0 > .spikeball-index))
+=== "Code Added"
 
-      (Pause .spikeball-animation-speed))
-    ```
+  ```{.clojure .annotate linenums="1"}
+  ;;------------- Spiked CanonBall Animation -------------
+  (defloop spiked-canonball-animation
+    .spikeball-index (Math.Add 1)
+    > .spikeball-index
+    (When :Predicate (IsMore .spikeball-array-index-max)
+          :Action (-> 0 > .spikeball-index))
+
+    (Pause .spikeball-animation-speed))
+  ```
 
 As with all loops, remember to `Step` it in `main-wire`.
 
-    ```{.clojure .annotate linenums="1"}
-    (Step spiked-canonball-animation) ;; (1)
+=== "Code Added"
 
-    ```
+  ```{.clojure .annotate linenums="1"}
+  (Step spiked-canonball-animation)
+  ```
 
 Remember to update our spiked cannonball's `UI.Area` to display the correct image in the image array, as specified by `.spikeball-index`.
 
-    ```{.clojure .annotate linenums="1"}
-    ;; ------------ Character Run Logic ----------------
-    ;; -------- Spiked CanonBall UI.Area ----------
-    (UI.Area :Position (float2 0 0)
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
-    ```
+=== "Code Added"
+
+  ```{.clojure .annotate linenums="1"}
+  ;; -------- Spiked CanonBall UI.Area ----------
+  (UI.Area :Position (float2 0 0)
+                    :Anchor Anchor.Top
+                    :Contents (->
+                              .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
+  ```
 
 === "Full Code So Far"
     
@@ -1892,7 +1896,7 @@ Call your `spikeball-1` loop in the `main-wire`.
     (run main (/ 1.0 60))
     ```
 
-# Step 6.5
+## Step 6.5
 
 Now that we have our spiked cannonball looping and randomizing, the next step is to have it damage Glod.
 
@@ -2487,6 +2491,8 @@ All we have to do is to follow these easy steps:
 5. Ensure that Glod get's damaged whenever he gets hit.
 
 === "Code Added"
+
+  Step 1 ! Create the variables
     
     ```{.clojure .annotate linenums="1"}
     ;; ---------- spikeball-2 -------------
@@ -2502,7 +2508,7 @@ All we have to do is to follow these easy steps:
     (float2 .spikeball-x-3 .spikeball-y-3) >= .spikeball-position-3
     ```
 
-    >  Step 1 ! Create the variables
+  Step 2 ! Create the UI.Area
 
     ```{.clojure .annotate linenums="1"}
     (UI.Area :Position .spikeball-position-2
@@ -2516,14 +2522,14 @@ All we have to do is to follow these easy steps:
                                 .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
     ```
 
-    > Step 2 ! Create the UI.Area
+  Step 3 ! Add the Gravity logic
 
     ```{.clojure .annotate linenums="1"}
     (spikeball-gravity-logic .spikeball-y-2 .spikeball-velocity-2 .spikeball-position-2 .spikeball-x-2)
     (spikeball-gravity-logic .spikeball-y-3 .spikeball-velocity-3 .spikeball-position-3 .spikeball-x-3)
     ```
 
-    > Step 3 ! Add the Gravity logic
+  Step 4 ! Add the Randomise logic!
 
     ```{.clojure .annotate linenums="1"}
     (defloop spikeball-2
@@ -2537,13 +2543,12 @@ All we have to do is to follow these easy steps:
     (Step  spikeball-3)
     ```
 
-    > Step 4 ! Add the Randomise logic!
+  Step 5 ! Add the collision logic (remember this is in our damaging shard)
 
     ```{.clojure .annotate linenums="1"}
     (spikeBall-collision-logic .spikeball-x-2 .spikeball-y-2)
     (spikeBall-collision-logic .spikeball-x-3 .spikeball-y-3)
     ```
-    > Step 5 ! Add the collision logic (remember this is in our damaging shard)
 
 === "Full Code So Far"
     

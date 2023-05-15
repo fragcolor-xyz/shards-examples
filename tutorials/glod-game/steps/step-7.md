@@ -1,6 +1,6 @@
 # Step 7
 
-# Polishing up the Game
+## Polishing up the Game
 
 At this point in the tutorial, we already possess a fully functional game that we can have fun playing.
 
@@ -84,9 +84,9 @@ Next we create a `UI.Area` that will house our animation.
               .score-effect-array (Take .score-effect-array-index) (UI.Image :Scale (float2 0.15))))
   ```
 
-We adjust the value of `.character-x-velocity` whenever the left and right directional keys are pressed.
+Next we have some logic to loop and play our animation. This animation plays when `.score-effect-play` is true.
 
-Remember to return the value of `.character-x-velocity` to zero when the directional keys are released - otherwise Glod will move to the left or right forever!
+This variable will then go false at the end of the animation for it to stop. This is the technique to use when you want an animation to only play once.
 
 === "Code Added"
     
@@ -121,17 +121,15 @@ Remember to return the value of `.character-x-velocity` to zero when the directi
     (Pause .score-effect-animation-speed))
   ```
 
-Next we have some logic to loop and play our animation. This animation plays when `.score-effect-play` is true.
-
-This variable will then go false at the end of the animation for it to stop. This is the technique to use when you want an animation to only play once.
-
-=== "Code Added"
+Then remember to make `.score-effect-play` true whenever we collect a coin. We can add this line in our scoring code that we have written previously.
     
+=== "Code Added"
+
   ```{.clojure .annotate linenums="1"}
   true > .score-effect-play
   ```
 
-Then remember to make `.score-effect-play` true whenever we collect a coin. We can add this line in our scoring code that we have written previously.
+Lastly, remember to call your shard and loop in your `main-wire`.
 
 === "Code Added"
     
@@ -139,8 +137,6 @@ Then remember to make `.score-effect-play` true whenever we collect a coin. We c
   (scoreEffect-animation-position)
   (Step scoreEffect-animation-logic)
   ```
-
-Lastly, remember to call your shard and loop in your `main-wire`.
 
 === "Full Code So Far"
     
@@ -2838,6 +2834,8 @@ Remember to call and `Step` them in the `main-wire`.
 
 Finally its time to code the final bit for our game. We need to add some finality to our game by having it end when our Timer reaches 0. Then we also need to create a way to reset the game so that we can play it again. While this might seem daunting, don't worry! It's much easier than you might think.
 
+First, we create a defloop with a `UI.Area` that houses everything we want to show when the game is over. In this case, we want to show our player's score and then a reset button. In the reset Button's `:Action` tag, we change variables that have changed to revert the game back to it's initial state.
+
 === "Code Added"
     
     ```{.clojure .annotate linenums="1"}
@@ -2857,18 +2855,9 @@ Finally its time to code the final bit for our game. We need to add some finalit
                                               (float2 0 0) > .character-position)))))
     ```
 
-    1. First we create a defloop with a `UI.Area` that houses everything we want to show when the game is over. In this case, we want to show our player's score and then a reset button. In the reset Button's `:Action` tag, we change variables that have changed to revert the game back to it's initial state.
+Next, we shift all the UI.Area that we have created so far in main-wire to a new defloop called mainGame-ui. Now if yout ry to run your game now you will get an error as there in nothing in your main-wire to be drawn. Don't panic! All will be clear soon.
 
-    ```{.clojure .annotate linenums="1"}
-    ;; ------------ Character Run Logic ----------------
-    (defshards run-logic []
-      .x (Math.Add .character-x-velocity)
-      > .x
-
-      (float2 .x .y) > .character-position) ;; (1)
-    ```
-
-    1. Next we create the `run-logic`. When `.character-x-velocity` is changed, it will be added to `.x` and the `.character-position` will be updated accordingly Added on lines 77-82
+=== "Code Added"
 
     ```{.clojure .annotate linenums="1"}
     (defloop mainGame-ui
@@ -2949,7 +2938,9 @@ Finally its time to code the final bit for our game. We need to add some finalit
                           .timer (ToString) (UI.Label))))
     ```
 
-    > Next we shift all the UI.Area that we have created so far in main-wire to a new defloop called mainGame-ui. Now if yout ry to run your game now you will get an error as there in nothing in your main-wire to be drawn. Don't panic! All will be clear soon.
+Now inside our `main-wire` UI, we create a `Match` shard. If `.gameOver` is 0 (false), then draw the `mainGame-ui`. If `.gameOver` is 1(true) then draw the `gameOver-ui.`
+
+=== "Code Added"
 
     ```{.clojure .annotate linenums="1"}
     (UI
@@ -2960,8 +2951,6 @@ Finally its time to code the final bit for our game. We need to add some finalit
                     1 (-> (Step gameOver-ui))]
                     :Passthrough false)))
     ```
-
-    > Now inside our `main-wire` UI, we create a `Match` shard. If `.gameOver` is 0 (false), then draw the `mainGame-ui`. If `.gameOver` is 1(true) then draw the `gameOver-ui.`
 
 === "Full Code So Far"
     

@@ -481,11 +481,11 @@ Let's set up a boundary to ensure that Glod does not fall off the edge and into 
 
 === "Code Added"
     
-    ```{.clojure .annotate linenums="1"}
-    ;; ---------- Character Boundary ------------ ;; (1)
-    (defshards clamp [var min max]
-      var (Max min) (Min max) > var)
-    ```
+  ```{.clojure .annotate linenums="1"}
+  ;; ---------- Character Boundary ------------ ;; (1)
+  (defshards clamp [var min max]
+    var (Max min) (Min max) > var)
+  ```
 
   1. Added to line 82.
 
