@@ -677,12 +677,12 @@ Similar to how we created an image array for the idle animation when Glod is fac
 
 === "Code Added"
 
-```{.clojure .annotate linenums="1"}
-.walking-left-image-array (Take .walking-image-index) ;; (1)
-.walking-right-image-array (Take .walking-image-index)
-```
+  ```{.clojure .annotate linenums="1"}
+  .walking-left-image-array (Take .walking-image-index) ;; (1)
+  .walking-right-image-array (Take .walking-image-index)
+  ```
 
-1. Update lines 115 - 116.
+  1. Update lines 115 - 116.
 
 === "Full Code So Far"
     
