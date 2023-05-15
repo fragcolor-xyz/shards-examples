@@ -131,7 +131,7 @@ Set `.input-received` to true to prevent further user input, and end the round i
         true > .input-received ;; (5) 
         (When
          :Predicate (-> .game-over (IsNot true)) ;; (6)
-         :Action (-> (Step end-round)))))) ;; (7)(8)
+         :Action (-> nil (Step end-round)))))) ;; (7)(8)(9)
     ```
 
     1. Take in the user's input.
@@ -142,6 +142,7 @@ Set `.input-received` to true to prevent further user input, and end the round i
     6. If it is not Game Over yet...
     7. ... end the round.
     8. [`Step`](https://docs.fragcolor.xyz/docs/shards/General/Step/) runs a wire inline.
+    9. `nil` ensures that any previous input (e.g. Bool from `true > .input-received`) is not propagated into the wire. The first use of a wire defines its input type, and subsequent calls to the wire with different input types will be a violation.
 
 ??? "Step vs Do"
     Step behaves similarly to [`Do`](https://docs.fragcolor.xyz/docs/shards/General/Do/), except that it allows you to use a *Looped Wire* like a function. `Step` will run one iteration of the Loop before returning control back to the Wire that called it. If you try to use `Do` on a Loop, the Loop will run indefinitely.
@@ -256,7 +257,7 @@ Cheers! Your game can now receive user input, tabulate the score, and allows pla
         true > .input-received
         (When
          :Predicate (-> .game-over (IsNot true))
-         :Action (-> (Step end-round))))))
+         :Action (-> nil (Step end-round))))))
 
 
     (defshards main-game-ui []

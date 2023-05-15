@@ -91,7 +91,7 @@ Let us write a shard that decreases the `.time-remaining` every time it is calle
         (Math.Dec .time-remaining) ;; (2)
         (When
          :Predicate (-> .time-remaining (IsLess 0)) ;; (3)
-         :Action (Step end-round)))))
+         :Action (-> nil (Step end-round))))))
     ```
     
     1. When the game is still running...

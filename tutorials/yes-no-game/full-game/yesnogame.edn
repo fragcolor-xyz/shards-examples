@@ -2,9 +2,9 @@
 (def max-timer 5)
 
 (defshards load-resources []
-  (LoadImage "data/cat01.png") (Push :Name .images)
-  (LoadImage "data/cat02.png") (Push :Name .images)
-  (LoadImage "data/cat03.png") (Push :Name .images))
+  (LoadImage "data/cats/cat01.png") (Push :Name .images)
+  (LoadImage "data/cats/cat02.png") (Push :Name .images)
+  (LoadImage "data/cats/cat03.png") (Push :Name .images))
 
 (defshards initialize-variables []
   ;; Variables to reset each round 
@@ -73,7 +73,7 @@
     true > .input-received
     (When
      :Predicate (-> .game-over (IsNot true))
-     :Action (-> (Dispatch end-round))))))
+     :Action (-> nil (Step end-round))))))
 
 (defshards timer-tick []
   (When
@@ -83,7 +83,7 @@
     (Math.Dec .time-remaining)
     (When
      :Predicate (-> .time-remaining (IsLess 0))
-     :Action (Dispatch end-round)))))
+     :Action (-> nil (Step end-round))))))
 
 (defshards main-game-ui []
   (UI.BottomPanel
