@@ -227,8 +227,8 @@
 (defloop random-coin-2
   (random-coin .coinx-2 .coiny-2 .coin-velocity-2 .coin-position-2 2.5))
 
-;; ------------ Initialize Spiked CanonBalls ---------------
-(defshards initialize-spiked-canonballs []
+;; ------------ Initialize Spiked CannonBalls ---------------
+(defshards initialize-spiked-cannonballs []
   (load-texture "GlodImages/SpikeBall/SpikeBall1.png") >> .spikeball-array
   (load-texture "GlodImages/SpikeBall/SpikeBall2.png") >> .spikeball-array
   (load-texture "GlodImages/SpikeBall/SpikeBall3.png") >> .spikeball-array
@@ -266,8 +266,8 @@
 
   0.5 >= .spikeball-acceleration)
 
-;;------------- Spiked CanonBall Animation -------------
-(defloop spiked-canonball-animation
+;;------------- Spiked CannonBall Animation -------------
+(defloop spiked-cannonball-animation
   .spikeball-index (Math.Add 1)
   > .spikeball-index
   (When :Predicate (IsMoreEqual .spikeball-array-index-max)
@@ -623,7 +623,7 @@
    (initialize-character)
    (initialize-coin)
    (initialize-game-elements)
-   (initialize-spiked-canonballs)
+   (initialize-spiked-cannonballs)
    (initialize-effects))
 
   (coin-gravity-logic .coiny-1 .coinx-1 .coin-velocity-1 .coin-position-1)
@@ -641,7 +641,7 @@
   (Step random-coin-1)
   (Step random-coin-2)
 
-  (Step spiked-canonball-animation)
+  (Step spiked-cannonball-animation)
   (spikeball-gravity-logic .spikeball-y-1 .spikeball-velocity-1 .spikeball-position-1 .spikeball-x-1)
   (spikeball-gravity-logic .spikeball-y-2 .spikeball-velocity-2 .spikeball-position-2 .spikeball-x-2)
   (spikeball-gravity-logic .spikeball-y-3 .spikeball-velocity-3 .spikeball-position-3 .spikeball-x-3)

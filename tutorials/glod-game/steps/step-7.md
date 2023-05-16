@@ -370,8 +370,8 @@ Lastly, remember to call your shard and loop in your `main-wire`.
     (defloop random-coin-2
       (random-coin .coinx-2 .coiny-2 .coin-velocity-2 .coin-position-2 2.5))
 
-    ;; ------------ Initialize Spiked CanonBalls ---------------
-    (defshards initialize-spiked-canonballs []
+    ;; ------------ Initialize Spiked CannonBalls ---------------
+    (defshards initialize-spiked-cannonballs []
       (load-texture "GlodImages/SpikeBall/SpikeBall1.png") >> .spikeball-array
       (load-texture "GlodImages/SpikeBall/SpikeBall2.png") >> .spikeball-array
       (load-texture "GlodImages/SpikeBall/SpikeBall3.png") >> .spikeball-array
@@ -409,8 +409,8 @@ Lastly, remember to call your shard and loop in your `main-wire`.
 
       0.5 >= .spikeball-acceleration)
 
-    ;;------------- Spiked CanonBall Animation -------------
-    (defloop spiked-canonball-animation
+    ;;------------- Spiked CannonBall Animation -------------
+    (defloop spiked-cannonball-animation
       .spikeball-index (Math.Add 1)
       > .spikeball-index
       (When :Predicate (IsMoreEqual .spikeball-array-index-max)
@@ -619,7 +619,7 @@ Lastly, remember to call your shard and loop in your `main-wire`.
       (initialize-character)
       (initialize-coin)
       (initialize-game-elements)
-      (initialize-spiked-canonballs)
+      (initialize-spiked-cannonballs)
       (initialize-effects))
 
       (coin-gravity-logic .coiny-1 .coinx-1 .coin-velocity-1 .coin-position-1)
@@ -637,7 +637,7 @@ Lastly, remember to call your shard and loop in your `main-wire`.
       (Step random-coin-1)
       (Step random-coin-2)
 
-      (Step spiked-canonball-animation)
+      (Step spiked-cannonball-animation)
       (spikeball-gravity-logic .spikeball-y-1 .spikeball-velocity-1 .spikeball-position-1 .spikeball-x-1)
       (spikeball-gravity-logic .spikeball-y-2 .spikeball-velocity-2 .spikeball-position-2 .spikeball-x-2)
       (spikeball-gravity-logic .spikeball-y-3 .spikeball-velocity-3 .spikeball-position-3 .spikeball-x-3)
@@ -1028,8 +1028,8 @@ Create our logic to loop our damage effect animation which plays when `.damage-e
     (defloop random-coin-2
       (random-coin .coinx-2 .coiny-2 .coin-velocity-2 .coin-position-2 2.5))
 
-    ;; ------------ Initialize Spiked CanonBalls ---------------
-    (defshards initialize-spiked-canonballs []
+    ;; ------------ Initialize Spiked CannonBalls ---------------
+    (defshards initialize-spiked-cannonballs []
       (load-texture "GlodImages/SpikeBall/SpikeBall1.png") >> .spikeball-array
       (load-texture "GlodImages/SpikeBall/SpikeBall2.png") >> .spikeball-array
       (load-texture "GlodImages/SpikeBall/SpikeBall3.png") >> .spikeball-array
@@ -1067,8 +1067,8 @@ Create our logic to loop our damage effect animation which plays when `.damage-e
 
       0.5 >= .spikeball-acceleration)
 
-    ;;------------- Spiked CanonBall Animation -------------
-    (defloop spiked-canonball-animation
+    ;;------------- Spiked CannonBall Animation -------------
+    (defloop spiked-cannonball-animation
       .spikeball-index (Math.Add 1)
       > .spikeball-index
       (When :Predicate (IsMoreEqual .spikeball-array-index-max)
@@ -1307,7 +1307,7 @@ Create our logic to loop our damage effect animation which plays when `.damage-e
       (initialize-character)
       (initialize-coin)
       (initialize-game-elements)
-      (initialize-spiked-canonballs)
+      (initialize-spiked-cannonballs)
       (initialize-effects))
 
       (coin-gravity-logic .coiny-1 .coinx-1 .coin-velocity-1 .coin-position-1)
@@ -1325,7 +1325,7 @@ Create our logic to loop our damage effect animation which plays when `.damage-e
       (Step random-coin-1)
       (Step random-coin-2)
 
-      (Step spiked-canonball-animation)
+      (Step spiked-cannonball-animation)
       (spikeball-gravity-logic .spikeball-y-1 .spikeball-velocity-1 .spikeball-position-1 .spikeball-x-1)
       (spikeball-gravity-logic .spikeball-y-2 .spikeball-velocity-2 .spikeball-position-2 .spikeball-x-2)
       (spikeball-gravity-logic .spikeball-y-3 .spikeball-velocity-3 .spikeball-position-3 .spikeball-x-3)
@@ -1687,8 +1687,8 @@ Remember to add this `UI.Area` before the `UI.Area` which houses your character 
     (defloop random-coin-2
       (random-coin .coinx-2 .coiny-2 .coin-velocity-2 .coin-position-2 2.5))
 
-    ;; ------------ Initialize Spiked CanonBalls ---------------
-    (defshards initialize-spiked-canonballs []
+    ;; ------------ Initialize Spiked CannonBalls ---------------
+    (defshards initialize-spiked-cannonballs []
       (load-texture "GlodImages/SpikeBall/SpikeBall1.png") >> .spikeball-array
       (load-texture "GlodImages/SpikeBall/SpikeBall2.png") >> .spikeball-array
       (load-texture "GlodImages/SpikeBall/SpikeBall3.png") >> .spikeball-array
@@ -1726,8 +1726,8 @@ Remember to add this `UI.Area` before the `UI.Area` which houses your character 
 
       0.5 >= .spikeball-acceleration)
 
-    ;;------------- Spiked CanonBall Animation -------------
-    (defloop spiked-canonball-animation
+    ;;------------- Spiked CannonBall Animation -------------
+    (defloop spiked-cannonball-animation
       .spikeball-index (Math.Add 1)
       > .spikeball-index
       (When :Predicate (IsMore .spikeball-array-index-max)
@@ -1971,7 +1971,7 @@ Remember to add this `UI.Area` before the `UI.Area` which houses your character 
       (initialize-character)
       (initialize-coin)
       (initialize-game-elements)
-      (initialize-spiked-canonballs)
+      (initialize-spiked-cannonballs)
       (initialize-effects))
 
       (coin-gravity-logic .coiny-1 .coinx-1 .coin-velocity-1 .coin-position-1)
@@ -1989,7 +1989,7 @@ Remember to add this `UI.Area` before the `UI.Area` which houses your character 
       (Step random-coin-1)
       (Step random-coin-2)
 
-      (Step spiked-canonball-animation)
+      (Step spiked-cannonball-animation)
       (spikeball-gravity-logic .spikeball-y-1 .spikeball-velocity-1 .spikeball-position-1 .spikeball-x-1)
       (spikeball-gravity-logic .spikeball-y-2 .spikeball-velocity-2 .spikeball-position-2 .spikeball-x-2)
       (spikeball-gravity-logic .spikeball-y-3 .spikeball-velocity-3 .spikeball-position-3 .spikeball-x-3)
@@ -2394,8 +2394,8 @@ Remember to call and `Step` them in the `main-wire`.
     (defloop random-coin-2
       (random-coin .coinx-2 .coiny-2 .coin-velocity-2 .coin-position-2 2.5))
 
-    ;; ------------ Initialize Spiked CanonBalls ---------------
-    (defshards initialize-spiked-canonballs []
+    ;; ------------ Initialize Spiked CannonBalls ---------------
+    (defshards initialize-spiked-cannonballs []
       (load-texture "GlodImages/SpikeBall/SpikeBall1.png") >> .spikeball-array
       (load-texture "GlodImages/SpikeBall/SpikeBall2.png") >> .spikeball-array
       (load-texture "GlodImages/SpikeBall/SpikeBall3.png") >> .spikeball-array
@@ -2433,8 +2433,8 @@ Remember to call and `Step` them in the `main-wire`.
 
       0.5 >= .spikeball-acceleration)
 
-    ;;------------- Spiked CanonBall Animation -------------
-    (defloop spiked-canonball-animation
+    ;;------------- Spiked CannonBall Animation -------------
+    (defloop spiked-cannonball-animation
       .spikeball-index (Math.Add 1)
       > .spikeball-index
       (When :Predicate (IsMore .spikeball-array-index-max)
@@ -2701,7 +2701,7 @@ Remember to call and `Step` them in the `main-wire`.
       (initialize-character)
       (initialize-coin)
       (initialize-game-elements)
-      (initialize-spiked-canonballs)
+      (initialize-spiked-cannonballs)
       (initialize-effects))
 
       (coin-gravity-logic .coiny-1 .coinx-1 .coin-velocity-1 .coin-position-1)
@@ -2719,7 +2719,7 @@ Remember to call and `Step` them in the `main-wire`.
       (Step random-coin-1)
       (Step random-coin-2)
 
-      (Step spiked-canonball-animation)
+      (Step spiked-cannonball-animation)
       (spikeball-gravity-logic .spikeball-y-1 .spikeball-velocity-1 .spikeball-position-1 .spikeball-x-1)
       (spikeball-gravity-logic .spikeball-y-2 .spikeball-velocity-2 .spikeball-position-2 .spikeball-x-2)
       (spikeball-gravity-logic .spikeball-y-3 .spikeball-velocity-3 .spikeball-position-3 .spikeball-x-3)
@@ -3184,8 +3184,8 @@ Now inside our `main-wire` UI, we create a `Match` shard. If `.gameOver` is 0 (f
     (defloop random-coin-2
       (random-coin .coinx-2 .coiny-2 .coin-velocity-2 .coin-position-2 2.5))
 
-    ;; ------------ Initialize Spiked CanonBalls ---------------
-    (defshards initialize-spiked-canonballs []
+    ;; ------------ Initialize Spiked CannonBalls ---------------
+    (defshards initialize-spiked-cannonballs []
       (load-texture "GlodImages/SpikeBall/SpikeBall1.png") >> .spikeball-array
       (load-texture "GlodImages/SpikeBall/SpikeBall2.png") >> .spikeball-array
       (load-texture "GlodImages/SpikeBall/SpikeBall3.png") >> .spikeball-array
@@ -3223,8 +3223,8 @@ Now inside our `main-wire` UI, we create a `Match` shard. If `.gameOver` is 0 (f
 
       0.5 >= .spikeball-acceleration)
 
-    ;;------------- Spiked CanonBall Animation -------------
-    (defloop spiked-canonball-animation
+    ;;------------- Spiked CannonBall Animation -------------
+    (defloop spiked-cannonball-animation
       .spikeball-index (Math.Add 1)
       > .spikeball-index
       (When :Predicate (IsMoreEqual .spikeball-array-index-max)
@@ -3580,7 +3580,7 @@ Now inside our `main-wire` UI, we create a `Match` shard. If `.gameOver` is 0 (f
       (initialize-character)
       (initialize-coin)
       (initialize-game-elements)
-      (initialize-spiked-canonballs)
+      (initialize-spiked-cannonballs)
       (initialize-effects))
 
       (coin-gravity-logic .coiny-1 .coinx-1 .coin-velocity-1 .coin-position-1)
@@ -3598,7 +3598,7 @@ Now inside our `main-wire` UI, we create a `Match` shard. If `.gameOver` is 0 (f
       (Step random-coin-1)
       (Step random-coin-2)
 
-      (Step spiked-canonball-animation)
+      (Step spiked-cannonball-animation)
       (spikeball-gravity-logic .spikeball-y-1 .spikeball-velocity-1 .spikeball-position-1 .spikeball-x-1)
       (spikeball-gravity-logic .spikeball-y-2 .spikeball-velocity-2 .spikeball-position-2 .spikeball-x-2)
       (spikeball-gravity-logic .spikeball-y-3 .spikeball-velocity-3 .spikeball-position-3 .spikeball-x-3)
