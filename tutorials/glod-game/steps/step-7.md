@@ -133,10 +133,10 @@ Lastly, remember to call your shard and loop in your `main-wire`.
 
 === "Code Added"
     
-  ```{.clojure .annotate linenums="1"}
-  (scoreEffect-animation-position)
-  (Step scoreEffect-animation-logic)
-  ```
+    ```{.clojure .annotate linenums="1"}
+    (scoreEffect-animation-position)
+    (Step scoreEffect-animation-logic)
+    ```
 
 === "Full Code So Far"
     

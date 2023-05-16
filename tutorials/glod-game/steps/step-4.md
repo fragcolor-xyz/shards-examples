@@ -481,20 +481,20 @@ Let's set up a boundary to ensure that Glod does not fall off the edge and into 
 
 === "Code Added"
     
-  ```{.clojure .annotate linenums="1"}
-  ;; ---------- Character Boundary ------------ ;; (1)
-  (defshards clamp [var min max]
-    var (Max min) (Min max) > var)
-  ```
+    ```{.clojure .annotate linenums="1"}
+    ;; ---------- Character Boundary ------------ ;; (1)
+    (defshards clamp [var min max]
+      var (Max min) (Min max) > var)
+    ```
 
-  1. Added to line 82.
+     1. Added to line 82.
 
 This clamp function takes in a value and makes sure that it does not exceed the minimum and maximum values.
 
 Call our `clamp` function in `run-logic` and set the `var` parameter to be `.x`, the `min` parameter to be -600, and the `max` parameter to be 600. 
 
 !!! note
-  You can change the `min` and `max` parameters to fit your screen accordingly.
+    You can change the `min` and `max` parameters to fit your screen accordingly.
 
 === "Code Added"
     

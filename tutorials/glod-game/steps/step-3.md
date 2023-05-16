@@ -258,9 +258,6 @@ To have this image animated, we need to dynamically increase the value of `.idle
 
     1. Use `defloop` to create a looping Wire that will add 1 to `.idle-image-index` each time it is called. Added to lines 24 - 26.
 
-!!! note "Updating Variables"
-  Whenever you make changes to a variable, remember to reassign it to the variable again at the end if you plan on using it in another segment of the code.
-
 === "Full Code So Far"
     
     ```{.clojure .annotate linenums="1"}
@@ -350,6 +347,9 @@ To have this image animated, we need to dynamically increase the value of `.idle
     (schedule main main-wire)
     (run main (/ 1.0 60))
     ```
+
+!!! note "Updating Variables"
+    Whenever you make changes to a variable, remember to reassign it to the variable again at the end if you plan on using it in another segment of the code.
 
 Before we can call this Wire, we have to create some variables to help us loop it properly.
 
@@ -624,19 +624,19 @@ Similar to how we created an image array for the idle animation when Glod is fac
 
 === "Code Added"
     
-  ```{.clojure .annotate linenums="1"}
-    ;; ---------- Character Idle Array (Facing Right) ----------------
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> .idle-right-image-array ;; (1)
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> .idle-right-image-array
+    ```{.clojure .annotate linenums="1"}
+      ;; ---------- Character Idle Array (Facing Right) ----------------
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> .idle-right-image-array ;; (1)
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> .idle-right-image-array
 
-  ```
+    ```
     
-  1. Added to line 22.
+    1. Added to line 22.
   
   Create image arrays for when Glod is walking left and for when Glod is walking right. Since the walking animation is different from the idle animation, we will be making new variables for:
   
@@ -646,338 +646,341 @@ Similar to how we created an image array for the idle animation when Glod is fac
   
   - Max image index
 
-  ```{.clojure .annotate linenums="1"}
-    ;; -------------- Walking Array (Facing Left) -----------------
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> .walking-left-image-array ;; (1)
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> .walking-left-image-array
+=== "Code Added"
 
-    ;; ----------- Walking Array (Facing Right) ---------------
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> .walking-right-image-array
+    ```{.clojure .annotate linenums="1"}
+      ;; -------------- Walking Array (Facing Left) -----------------
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> .walking-left-image-array ;; (1)
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> .walking-left-image-array
 
-    (Count .walking-left-image-array) = .walking-image-index-max
-    0 >= .walking-image-index
-    0.08 = .walking-animation-speed ;; Reduce number to increase animation speed
+      ;; ----------- Walking Array (Facing Right) ---------------
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> .walking-right-image-array
 
-  ```
+      (Count .walking-left-image-array) = .walking-image-index-max
+      0 >= .walking-image-index
+      0.08 = .walking-animation-speed ;; Reduce number to increase animation speed
 
-  1. Added to line 35.
+    ```
+
+    1. Added to line 35.
 
 `.character-left`, `.character-right` are updated to display an image from their respective arrays.
 
 === "Code Added"
 
-  ```{.clojure .annotate linenums="1"}
-  .walking-left-image-array (Take .walking-image-index) ;; (1)
-  .walking-right-image-array (Take .walking-image-index)
-  ```
+    ```{.clojure .annotate linenums="1"}
 
-  1. Update lines 115 - 116.
+    .walking-left-image-array (Take .walking-image-index) ;; (1)
+    .walking-right-image-array (Take .walking-image-index)
+    ```
+
+    1. Update lines 115 - 116.
 
 === "Full Code So Far"
     
-  ```{.clojure .annotate linenums="1"}
-  (defshards load-texture [name]
-    (LoadImage name)
-    (GFX.Texture))
+    ```{.clojure .annotate linenums="1"}
+    (defshards load-texture [name]
+      (LoadImage name)
+      (GFX.Texture))
 
-  (defshards initialize-character []
-    (load-texture "GlodImages/Character1.png") = .idle-left-image-array
-    (load-texture "GlodImages/Character1_Left.png") = .character-left
-    (load-texture "GlodImages/Character1_Right.png") = .character-right
-    (load-texture "GlodImages/Character1_Jumping.png") = .character-jumping
+    (defshards initialize-character []
+      (load-texture "GlodImages/Character1.png") = .idle-left-image-array
+      (load-texture "GlodImages/Character1_Left.png") = .character-left
+      (load-texture "GlodImages/Character1_Right.png") = .character-right
+      (load-texture "GlodImages/Character1_Jumping.png") = .character-jumping
 
-    0 >= .character-state
+      0 >= .character-state
 
-    ;; ---------- Character Idle Array (Facing Left)----------
-    (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> .idle-left-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> .idle-left-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> .idle-left-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_4.png") >> .idle-left-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> .idle-left-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> .idle-left-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> .idle-left-image-array
+      ;; ---------- Character Idle Array (Facing Left)----------
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_4.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> .idle-left-image-array
 
-    ;; ---------- Character Idle Array (Facing Right) ----------------
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> .idle-right-image-array
+      ;; ---------- Character Idle Array (Facing Right) ----------------
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> .idle-right-image-array
 
-    0 >= .idle-image-index
-    (Count .idle-left-image-array) = .idle-image-index-max
-    0.08 = .idle-animation-speed
+      0 >= .idle-image-index
+      (Count .idle-left-image-array) = .idle-image-index-max
+      0.08 = .idle-animation-speed
 
-    ;; -------------- Walking Array (Facing Left) -----------------
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> .walking-left-image-array
+      ;; -------------- Walking Array (Facing Left) -----------------
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> .walking-left-image-array
 
-    ;; ----------- Walking Array (Facing Right) ---------------
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> .walking-right-image-array
+      ;; ----------- Walking Array (Facing Right) ---------------
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> .walking-right-image-array
 
-    (Count .walking-left-image-array) = .walking-image-index-max
-    0 >= .walking-image-index
-    0.08 = .walking-animation-speed ;; Reduce number to increase animation speed
-    )
-  
-  ;; --------- Idle Animation Loop ---------
-  (defloop idle-animation
-    .idle-image-index (Math.Add 1)
-    > .idle-image-index
-    (When
-      :Predicate (IsMoreEqual .idle-image-index-max)
-      :Action (-> 0 > .idle-image-index))
-    (Pause .idle-animation-speed))
-  
-  ;; ------- Button Inputs ----------
-  (defshards button-inputs []
-    (Inputs.KeyDown
-      :Key "left"
-      :Action
-      (->
-      (Msg "left")
-      1 > .character-state))
+      (Count .walking-left-image-array) = .walking-image-index-max
+      0 >= .walking-image-index
+      0.08 = .walking-animation-speed ;; Reduce number to increase animation speed
+      )
+    
+    ;; --------- Idle Animation Loop ---------
+    (defloop idle-animation
+      .idle-image-index (Math.Add 1)
+      > .idle-image-index
+      (When
+       :Predicate (IsMoreEqual .idle-image-index-max)
+       :Action (-> 0 > .idle-image-index))
+      (Pause .idle-animation-speed))
+    
+    ;; ------- Button Inputs ----------
+    (defshards button-inputs []
+      (Inputs.KeyDown
+       :Key "left"
+       :Action
+       (->
+        (Msg "left")
+        1 > .character-state))
 
-    (Inputs.KeyDown
-      :Key "right"
-      :Action
-      (->
-      (Msg "right")
-      2 > .character-state))
+      (Inputs.KeyDown
+       :Key "right"
+       :Action
+       (->
+        (Msg "right")
+        2 > .character-state))
 
-    (Inputs.KeyDown
-      :Key "up"
-      :Action
-      (->
-      (Msg "up")
-      3 > .character-state)))
+      (Inputs.KeyDown
+       :Key "up"
+       :Action
+       (->
+        (Msg "up")
+        3 > .character-state)))
 
-  (defloop main-wire
-    (Setup
-      (initialize-character))
-
-    (Step idle-animation)
-
-    (GFX.MainWindow
-      :Title "MainWindow" :Width 1920 :Height 1080
-      :Contents
-      (->
+    (defloop main-wire
       (Setup
-        (GFX.DrawQueue) >= .ui-draw-queue
-        (GFX.UIPass .ui-draw-queue) >> .render-steps)
-      .ui-draw-queue (GFX.ClearQueue)
+       (initialize-character))
 
-      (UI
-        .ui-draw-queue
-        (->
-        (UI.Area
-          :Position (float2 0 0)
-          :Anchor Anchor.Center
-          :Contents
-          (->
-          .character-state
-          (Match [0 (-> .idle-left-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))
-                  1 (-> .walking-left-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-                  2 (-> .walking-right-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-                  3 (-> .character-jumping (UI.Image :Scale (float2 0.2)))]
-                  :Passthrough false)))))
+      (Step idle-animation)
 
-      (GFX.Render :Steps .render-steps)
+      (GFX.MainWindow
+       :Title "MainWindow" :Width 1920 :Height 1080
+       :Contents
+       (->
+        (Setup
+         (GFX.DrawQueue) >= .ui-draw-queue
+         (GFX.UIPass .ui-draw-queue) >> .render-steps)
+        .ui-draw-queue (GFX.ClearQueue)
 
-      (button-inputs))))
+        (UI
+         .ui-draw-queue
+         (->
+          (UI.Area
+           :Position (float2 0 0)
+           :Anchor Anchor.Center
+           :Contents
+           (->
+            .character-state
+            (Match [0 (-> .idle-left-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))
+                    1 (-> .walking-left-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
+                    2 (-> .walking-right-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
+                    3 (-> .character-jumping (UI.Image :Scale (float2 0.2)))]
+                   :Passthrough false)))))
 
-  (defmesh main)
-  (schedule main main-wire)
-  (run main (/ 1.0 60))
-  ```
+        (GFX.Render :Steps .render-steps)
+
+        (button-inputs))))
+
+    (defmesh main)
+    (schedule main main-wire)
+    (run main (/ 1.0 60))
+    ```
 
 Create a Wire for the walking animation and `Step` it.
 
 === "Code Added"
     
-  ```{.clojure .annotate linenums="1"}
-    ;; -------- Walking Animation Loop --------
-  (defloop walking-animation ;; (1)
-    .walking-image-index (Math.Add 1)
-    > .walking-image-index
-    (When
-      :Predicate (IsMoreEqual .walking-image-index-max) 
-      :Action (-> 0 > .walking-image-index))
-    (Pause .walking-animation-speed))
-  ```
+    ```{.clojure .annotate linenums="1"}
+     ;; -------- Walking Animation Loop --------
+    (defloop walking-animation ;; (1)
+      .walking-image-index (Math.Add 1)
+      > .walking-image-index
+      (When
+       :Predicate (IsMoreEqual .walking-image-index-max) 
+       :Action (-> 0 > .walking-image-index))
+      (Pause .walking-animation-speed))
+    ```
 
-  1. Added to line 67.
+    1. Added to line 67.
 
-  ```{.clojure .annotate linenums="1"}
-    (Step walking-animation) ;; (1)
-  ```
+    ```{.clojure .annotate linenums="1"}
+      (Step walking-animation) ;; (1)
+    ```
 
-  1. Added to line 104.
+    1. Added to line 104.
 
 === "Full Code So Far"
     
-  ```{.clojure .annotate linenums="1"}
-  (defshards load-texture [name]
-    (LoadImage name)
-    (GFX.Texture))
+    ```{.clojure .annotate linenums="1"}
+    (defshards load-texture [name]
+      (LoadImage name)
+      (GFX.Texture))
 
-  (defshards initialize-character []
-    (load-texture "GlodImages/Character1.png") = .idle-left-image-array
-    (load-texture "GlodImages/Character1_Left.png") = .character-left
-    (load-texture "GlodImages/Character1_Right.png") = .character-right
-    (load-texture "GlodImages/Character1_Jumping.png") = .character-jumping
+    (defshards initialize-character []
+      (load-texture "GlodImages/Character1.png") = .idle-left-image-array
+      (load-texture "GlodImages/Character1_Left.png") = .character-left
+      (load-texture "GlodImages/Character1_Right.png") = .character-right
+      (load-texture "GlodImages/Character1_Jumping.png") = .character-jumping
 
-    0 >= .character-state
+      0 >= .character-state
 
-    ;; ---------- Character Idle Array (Facing Left)----------
-    (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> .idle-left-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> .idle-left-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> .idle-left-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_4.png") >> .idle-left-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> .idle-left-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> .idle-left-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> .idle-left-image-array
+      ;; ---------- Character Idle Array (Facing Left)----------
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_4.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> .idle-left-image-array
 
-    ;; ---------- Character Idle Array (Facing Right) ----------------
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> .idle-right-image-array
+      ;; ---------- Character Idle Array (Facing Right) ----------------
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> .idle-right-image-array
 
-    0 >= .idle-image-index
-    (Count .idle-left-image-array) = .idle-image-index-max
-    0.08 = .idle-animation-speed
+      0 >= .idle-image-index
+      (Count .idle-left-image-array) = .idle-image-index-max
+      0.08 = .idle-animation-speed
 
-    ;; -------------- Walking Array (Facing Left) -----------------
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> .walking-left-image-array
+      ;; -------------- Walking Array (Facing Left) -----------------
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> .walking-left-image-array
 
-    ;; ----------- Walking Array (Facing Right) ---------------
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> .walking-right-image-array
+      ;; ----------- Walking Array (Facing Right) ---------------
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> .walking-right-image-array
 
-    (Count .walking-left-image-array) = .walking-image-index-max
-    0 >= .walking-image-index
-    0.08 = .walking-animation-speed ;; Reduce number to increase animation speed
-    )
-  
-  ;; --------- Idle Animation Loop ---------
-  (defloop idle-animation
-    .idle-image-index (Math.Add 1)
-    > .idle-image-index
-    (When
-      :Predicate (IsMoreEqual .idle-image-index-max)
-      :Action (-> 0 > .idle-image-index))
-    (Pause .idle-animation-speed))
+      (Count .walking-left-image-array) = .walking-image-index-max
+      0 >= .walking-image-index
+      0.08 = .walking-animation-speed ;; Reduce number to increase animation speed
+      )
+    
+    ;; --------- Idle Animation Loop ---------
+    (defloop idle-animation
+      .idle-image-index (Math.Add 1)
+      > .idle-image-index
+      (When
+       :Predicate (IsMoreEqual .idle-image-index-max)
+       :Action (-> 0 > .idle-image-index))
+      (Pause .idle-animation-speed))
 
-  ;; -------- Walking Animation Loop --------
-  (defloop walking-animation
-    .walking-image-index (Math.Add 1)
-    > .walking-image-index
-    (When
-      :Predicate (IsMoreEqual .walking-image-index-max) 
-      :Action (-> 0 > .walking-image-index))
-    (Pause .walking-animation-speed))
+    ;; -------- Walking Animation Loop --------
+    (defloop walking-animation
+      .walking-image-index (Math.Add 1)
+      > .walking-image-index
+      (When
+       :Predicate (IsMoreEqual .walking-image-index-max) 
+       :Action (-> 0 > .walking-image-index))
+      (Pause .walking-animation-speed))
 
-  ;; ------- Button Inputs ----------
-  (defshards button-inputs []
-    (Inputs.KeyDown
-      :Key "left"
-      :Action
-      (->
-      (Msg "left")
-      1 > .character-state))
+    ;; ------- Button Inputs ----------
+    (defshards button-inputs []
+      (Inputs.KeyDown
+       :Key "left"
+       :Action
+       (->
+        (Msg "left")
+        1 > .character-state))
 
-    (Inputs.KeyDown
-      :Key "right"
-      :Action
-      (->
-      (Msg "right")
-      2 > .character-state))
+      (Inputs.KeyDown
+       :Key "right"
+       :Action
+       (->
+        (Msg "right")
+        2 > .character-state))
 
-    (Inputs.KeyDown
-      :Key "up"
-      :Action
-      (->
-      (Msg "up")
-      3 > .character-state)))
+      (Inputs.KeyDown
+       :Key "up"
+       :Action
+       (->
+        (Msg "up")
+        3 > .character-state)))
 
-  (defloop main-wire
-    (Setup
-      (initialize-character))
-
-    (Step idle-animation)
-    (Step walking-animation)
-
-    (GFX.MainWindow
-      :Title "MainWindow" :Width 1920 :Height 1080
-      :Contents
-      (->
+    (defloop main-wire
       (Setup
-        (GFX.DrawQueue) >= .ui-draw-queue
-        (GFX.UIPass .ui-draw-queue) >> .render-steps)
-      .ui-draw-queue (GFX.ClearQueue)
+       (initialize-character))
 
-      (UI
-        .ui-draw-queue
-        (->
-        (UI.Area
-          :Position (float2 0 0)
-          :Anchor Anchor.Center
-          :Contents
-          (->
-          .character-state
-          (Match [0 (-> .idle-left-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))
-                  1 (-> .walking-left-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-                  2 (-> .walking-right-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-                  3 (-> .character-jumping (UI.Image :Scale (float2 0.2)))]
-                  :Passthrough false)))))
+      (Step idle-animation)
+      (Step walking-animation)
 
-      (GFX.Render :Steps .render-steps)
+      (GFX.MainWindow
+       :Title "MainWindow" :Width 1920 :Height 1080
+       :Contents
+       (->
+        (Setup
+         (GFX.DrawQueue) >= .ui-draw-queue
+         (GFX.UIPass .ui-draw-queue) >> .render-steps)
+        .ui-draw-queue (GFX.ClearQueue)
 
-      (button-inputs))))
+        (UI
+         .ui-draw-queue
+         (->
+          (UI.Area
+           :Position (float2 0 0)
+           :Anchor Anchor.Center
+           :Contents
+           (->
+            .character-state
+            (Match [0 (-> .idle-left-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))
+                    1 (-> .walking-left-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
+                    2 (-> .walking-right-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
+                    3 (-> .character-jumping (UI.Image :Scale (float2 0.2)))]
+                   :Passthrough false)))))
 
-  (defmesh main)
-  (schedule main main-wire)
-  (run main (/ 1.0 60))
-  ```
+        (GFX.Render :Steps .render-steps)
+
+        (button-inputs))))
+
+    (defmesh main)
+    (schedule main main-wire)
+    (run main (/ 1.0 60))
+    ```
 
 ## Step 3.6
 
@@ -1000,409 +1003,413 @@ To do this we will:
 
 === "Code Added"
     
-  ```{.clojure .annotate linenums="1"}
-  0 >= .character-direction ;; 0 = facing left, 1 = facing right ;; (1)
+    ```{.clojure .annotate linenums="1"}
+    0 >= .character-direction ;; 0 = facing left, 1 = facing right ;; (1)
+    ```
 
-  1. Added to line 12 under `initialize-character`.
+    1. Added to line 12 under `initialize-character`.
 
-  ;; ------- Button Inputs ----------
-  (defshards button-inputs [] ;; (1)
-    (Inputs.KeyDown
-      :Key "left"
-      :Action
-      (->
-      (Msg "left")
-      1 > .character-state
-      0 > .character-direction))
+    ```{.clojure .annotate linenums="1"}
+    ;; ------- Button Inputs ----------
+    (defshards button-inputs [] ;; (1)
+      (Inputs.KeyDown
+       :Key "left"
+       :Action
+       (->
+        (Msg "left")
+        1 > .character-state
+        0 > .character-direction))
 
-    (Inputs.KeyDown ;; (3)
-      :Key "right"
-      :Action
-      (->
-      (Msg "right")
-      2 > .character-state
-      1 > .character-direction))
+      (Inputs.KeyDown ;; (2)
+       :Key "right"
+       :Action
+       (->
+        (Msg "right")
+        2 > .character-state
+        1 > .character-direction))
 
-    (Inputs.KeyDown
-      :Key "up"
-      :Action
-      (-> 
-      (Msg "up") 
-      3 > .character-state))
+      (Inputs.KeyDown
+       :Key "up"
+       :Action
+       (-> 
+        (Msg "up") 
+        3 > .character-state))
 
-    (Inputs.KeyUp ;; (2)
-      :Key "left"
-      :Action 
-      (->
-      0 > .character-state))
+      (Inputs.KeyUp ;; (3)
+       :Key "left"
+       :Action 
+       (->
+        0 > .character-state))
 
-    (Inputs.KeyUp
-      :Key "right"
-      :Action
-      (->
-      0 > .character-state)))
-  ```
+      (Inputs.KeyUp
+       :Key "right"
+       :Action
+       (->
+        0 > .character-state)))
+    ```
 
-  1. Added to line 78.
-  
-  2. When the left and right buttons are released, `.character-state` will revert back to 0.
-  
-  3. When the left and right buttons are pressed `.character-direction` will be 0 and 1 respectively.
+    1. Added to line 78.
+    
+    2. When the left and right buttons are pressed `.character-direction` will be 0 and 1 respectively.
+    
+    3. When the left and right buttons are released, `.character-state` will revert back to 0.
 
 Lastly, we will add another `Match` nested within `Match [0(->)]` so that Glod displays the correct image based on his direction.
 
 === "Code Added"
 
-  ```{.clojure .annotate linenums="1"}
-  (Match [0 (-> .character-direction
-                (Match [0 (-> .idle-left-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))
-                        1 (-> .idle-right-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))]
-                        :Passthrough false))
-          1 (-> .walking-left-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-          2 (-> .walking-right-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-          3 (-> .character-jumping (UI.Image :Scale (float2 0.2)))]
-          :Passthrough false)
-  ```
+    ```{.clojure .annotate linenums="1"}
+      (Match [0 (-> .character-direction
+                    (Match [0 (-> .idle-left-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))
+                            1 (-> .idle-right-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))]
+                            :Passthrough false))
+              1 (-> .walking-left-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
+              2 (-> .walking-right-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
+              3 (-> .character-jumping (UI.Image :Scale (float2 0.2)))]
+              :Passthrough false)
+    ```
 
 === "Full Code So Far"
     
-  ```{.clojure .annotate linenums="1"}
-  (defshards load-texture [name]
-    (LoadImage name)
-    (GFX.Texture))
+    ```{.clojure .annotate linenums="1"}
+    (defshards load-texture [name]
+      (LoadImage name)
+      (GFX.Texture))
 
-  (defshards initialize-character []
-    (load-texture "GlodImages/Character1.png") = .character-image
-    (load-texture "GlodImages/Character1_Left.png") = .character-left
-    (load-texture "GlodImages/Character1_Right.png") = .character-right
-    (load-texture "GlodImages/Character1_Jumping.png") = .character-jumping
+    (defshards initialize-character []
+      (load-texture "GlodImages/Character1.png") = .character-image
+      (load-texture "GlodImages/Character1_Left.png") = .character-left
+      (load-texture "GlodImages/Character1_Right.png") = .character-right
+      (load-texture "GlodImages/Character1_Jumping.png") = .character-jumping
 
-    0 >= .character-state
-    0 >= .character-direction
+      0 >= .character-state
+      0 >= .character-direction
 
-    ;; ---------- Character Idle Array (Facing Left) ----------
-    (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> .idle-left-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> .idle-left-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> .idle-left-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_4.png") >> .idle-left-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> .idle-left-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> .idle-left-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> .idle-left-image-array
+      ;; ---------- Character Idle Array (Facing Left) ----------
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_4.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> .idle-left-image-array
 
-    ;; ---------- Character Idle Array (Facing Right) ----------------
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> .idle-right-image-array
+      ;; ---------- Character Idle Array (Facing Right) ----------------
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> .idle-right-image-array
 
-    0 >= .idle-image-index
-    (Count .idle-left-image-array) = .idle-image-index-max
-    0.08 = .idle-animation-speed
+      0 >= .idle-image-index
+      (Count .idle-left-image-array) = .idle-image-index-max
+      0.08 = .idle-animation-speed
 
-    ;; -------------- Walking Array (Facing Left) -----------------
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> .walking-left-image-array
+      ;; -------------- Walking Array (Facing Left) -----------------
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> .walking-left-image-array
 
-    ;; ----------- Walking Array (Facing Right) ---------------
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> .walking-right-image-array
+      ;; ----------- Walking Array (Facing Right) ---------------
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> .walking-right-image-array
 
-    (Count .walking-left-image-array) = .walking-image-index-max
-    0 >= .walking-image-index
-    0.08 = .walking-animation-speed) ;; Reduce number to increase animation speed
+      (Count .walking-left-image-array) = .walking-image-index-max
+      0 >= .walking-image-index
+      0.08 = .walking-animation-speed) ;; Reduce number to increase animation speed
 
-  ;; --------- Idle Animation Loop ---------
-  (defloop idle-animation
-    .idle-image-index (Math.Add 1)
-    > .idle-image-index
-    (When :Predicate (IsMoreEqual .idle-image-index-max)
-          :Action (-> 0 > .idle-image-index))
-    (Pause .idle-animation-speed))
+    ;; --------- Idle Animation Loop ---------
+    (defloop idle-animation
+      .idle-image-index (Math.Add 1)
+      > .idle-image-index
+      (When :Predicate (IsMoreEqual .idle-image-index-max)
+            :Action (-> 0 > .idle-image-index))
+      (Pause .idle-animation-speed))
 
-  ;; -------- Walking Animation Loop --------
-  (defloop walking-animation
-    .walking-image-index (Math.Add 1)
-    > .walking-image-index
-    (When :Predicate (IsMoreEqual .walking-image-index-max)
-          :Action (-> 0 > .walking-image-index))
-    (Pause .walking-animation-speed))
+    ;; -------- Walking Animation Loop --------
+    (defloop walking-animation
+      .walking-image-index (Math.Add 1)
+      > .walking-image-index
+      (When :Predicate (IsMoreEqual .walking-image-index-max)
+            :Action (-> 0 > .walking-image-index))
+      (Pause .walking-animation-speed))
 
-  ;; ------- Button Inputs ----------
-  (defshards button-inputs []
-    (Inputs.KeyDown
-    :Key "left"
-    :Action (->
-              (Msg "left")
-              1 > .character-state
-              0 > .character-direction))
+    ;; ------- Button Inputs ----------
+    (defshards button-inputs []
+      (Inputs.KeyDown
+      :Key "left"
+      :Action (->
+                (Msg "left")
+                1 > .character-state
+                0 > .character-direction))
 
-    (Inputs.KeyDown
-    :Key "right"
-    :Action (->
-              (Msg "right")
-              2 > .character-state
-              1 > .character-direction))
+      (Inputs.KeyDown
+      :Key "right"
+      :Action (->
+                (Msg "right")
+                2 > .character-state
+                1 > .character-direction))
 
-    (Inputs.KeyDown
-    :Key "up"
-    :Action (->
-              (Msg "up")
-              3 > .character-state))
+      (Inputs.KeyDown
+      :Key "up"
+      :Action (->
+                (Msg "up")
+                3 > .character-state))
 
-    (Inputs.KeyUp
-    :Key "left"
-    :Action (->
-              0 > .character-state))
+      (Inputs.KeyUp
+      :Key "left"
+      :Action (->
+                0 > .character-state))
 
-    (Inputs.KeyUp
-    :Key "right"
-    :Action (->
-              0 > .character-state)))
+      (Inputs.KeyUp
+      :Key "right"
+      :Action (->
+                0 > .character-state)))
 
-  ;;---------- main-wire ------------
-  (defloop main-wire
-    (Setup
-    (initialize-character))
+    ;;---------- main-wire ------------
+    (defloop main-wire
+      (Setup
+      (initialize-character))
 
-    (Step idle-animation)
-    (Step walking-animation)
+      (Step idle-animation)
+      (Step walking-animation)
 
-    (GFX.MainWindow
-    :Title "MainWindow" :Width 1920 :Height 1080
-    :Contents
-    (-> (Setup
-          (GFX.DrawQueue) >= .ui-draw-queue
-          (GFX.UIPass .ui-draw-queue) >> .render-steps)
-        .ui-draw-queue (GFX.ClearQueue)
+      (GFX.MainWindow
+      :Title "MainWindow" :Width 1920 :Height 1080
+      :Contents
+      (-> (Setup
+            (GFX.DrawQueue) >= .ui-draw-queue
+            (GFX.UIPass .ui-draw-queue) >> .render-steps)
+          .ui-draw-queue (GFX.ClearQueue)
 
-        (UI
-          .ui-draw-queue
-          (->
-          (UI.Area :Position (float2 0 0)
-                    :Anchor Anchor.Center
-                    :Contents
-                    (->
-                    .character-state
-                    (Match [0 (-> .character-direction
-                                  (Match [0 (-> load-texture .idle-left-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))
-                                          1 (-> load-texture .idle-right-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))]
-                                          :Passthrough false))
-                            1 (-> load-texture .walking-left-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-                            2 (-> load-texture .walking-right-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-                            3 (-> load-texture .character-jumping (UI.Image :Scale (float2 0.2)))]
-                            :Passthrough false)))))
+          (UI
+            .ui-draw-queue
+            (->
+            (UI.Area :Position (float2 0 0)
+                      :Anchor Anchor.Center
+                      :Contents
+                      (->
+                      .character-state
+                      (Match [0 (-> .character-direction
+                                    (Match [0 (-> load-texture .idle-left-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))
+                                            1 (-> load-texture .idle-right-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))]
+                                            :Passthrough false))
+                              1 (-> load-texture .walking-left-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
+                              2 (-> load-texture .walking-right-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
+                              3 (-> load-texture .character-jumping (UI.Image :Scale (float2 0.2)))]
+                              :Passthrough false)))))
 
-        (button-inputs)
+          (button-inputs)
 
-        (GFX.Render :Steps .render-steps))))
+          (GFX.Render :Steps .render-steps))))
 
 
-  (defmesh main)
-  (schedule main main-wire)
-  (run main (/ 1.0 60))
-  ```
+    (defmesh main)
+    (schedule main main-wire)
+    (run main (/ 1.0 60))
+    ```
 
 When you run the programme, Glod will  return to his idle animation whenever you stop pressing the left, right or up buttons and he should be facing the correct direction. Now we have to do the same thing for our jump animation
 
 - Download Jumping Image [here](https://drive.google.com/drive/folders/1l5y2PoZARAukfsNz_qeQXQblrrpnwy6i?usp=share_link).
 
+We add in the jumping right image and rename our original **.character-jumping** to **.character-jumping-left** added to line 5 - 7.
+
 === "Code Added"
     
-  ```{.clojure .annotate linenums="1"}
-  ;; -------------- Character Jumping  ----------
-  (load-texture "GlodImages/Character1_Jumping_Left.png") = .character-jumping-left
-  (load-texture "GlodImages/Character1_Jumping_Right.png") = .character-jumping-right
-  ```
+    ```{.clojure .annotate linenums="1"}
+    ;; -------------- Character Jumping  ----------
+    (load-texture "GlodImages/Character1_Jumping_Left.png") = .character-jumping-left
+    (load-texture "GlodImages/Character1_Jumping_Right.png") = .character-jumping-right
+    ```
 
-  > Add in a jumping right image and rename our original **.character-jumping** to **.character-jumping-left** added to line 5 - 7.
+Then add another **Match** to our original **Match** to show the corresponding jump image depending on Glod's direction.Code added to lines 127-137.
 
-  ```{.clojure .annotate linenums="1"}
-  (Match [0 (-> .character-direction
-                (Match [0 (-> .idle-left-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))
-                        1 (-> .idle-right-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))]
-                        :Passthrough false))
-          1 (-> .walking-left-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-          2 (-> .walking-right-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-          3 (->  .character-direction
-                (Match [0 (-> .character-jumping-left (UI.Image :Scale (float2 0.2)))
-                        1 (-> .character-jumping-right (UI.Image :Scale (float2 0.2)))]
-                        :Passthrough false))]
-          :Passthrough false)
-  ```
+=== "Code Added"
 
-  > Then add another **Match** to our original **Match** to show the corresponding jump image depending on Glod's direction.Code added to lines 127-137.
+    ```{.clojure .annotate linenums="1"}
+    (Match [0 (-> .character-direction
+                  (Match [0 (-> .idle-left-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))
+                          1 (-> .idle-right-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))]
+                          :Passthrough false))
+            1 (-> .walking-left-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
+            2 (-> .walking-right-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
+            3 (->  .character-direction
+                  (Match [0 (-> .character-jumping-left (UI.Image :Scale (float2 0.2)))
+                          1 (-> .character-jumping-right (UI.Image :Scale (float2 0.2)))]
+                          :Passthrough false))]
+            :Passthrough false)
+    ```
 
 === "Full Code So Far"
     
-  ```{.clojure .annotate linenums="1"}
-  (defshards load-texture [name]
-    (LoadImage name)
-    (GFX.Texture))
+    ```{.clojure .annotate linenums="1"}
+    (defshards load-texture [name]
+      (LoadImage name)
+      (GFX.Texture))
 
-  (defshards initialize-character []
-    (load-texture "GlodImages/Character1.png") = .idle-left-image-array
-    (load-texture "GlodImages/Character1_Left.png") = .character-left
-    (load-texture "GlodImages/Character1_Right.png") = .character-right
-    (load-texture "GlodImages/Character1_Jumping.png") = .character-jumping
+    (defshards initialize-character []
+      (load-texture "GlodImages/Character1.png") = .idle-left-image-array
+      (load-texture "GlodImages/Character1_Left.png") = .character-left
+      (load-texture "GlodImages/Character1_Right.png") = .character-right
+      (load-texture "GlodImages/Character1_Jumping.png") = .character-jumping
 
-    0 >= .character-state
-    0 >= .character-direction ;; 0 = facing left, 1 = facing right
+      0 >= .character-state
+      0 >= .character-direction ;; 0 = facing left, 1 = facing right
 
-    ;; ---------- Character Idle Array (Facing Left)----------
-    (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> .idle-left-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> .idle-left-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> .idle-left-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_4.png") >> .idle-left-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> .idle-left-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> .idle-left-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> .idle-left-image-array
+      ;; ---------- Character Idle Array (Facing Left)----------
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_4.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> .idle-left-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> .idle-left-image-array
 
-    ;; ---------- Character Idle Array (Facing Right) ----------------
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> .idle-right-image-array
-    (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> .idle-right-image-array
+      ;; ---------- Character Idle Array (Facing Right) ----------------
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> .idle-right-image-array
+      (load-texture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> .idle-right-image-array
 
-    0 >= .idle-image-index
-    (Count .idle-left-image-array) = .idle-image-index-max
-    0.08 = .idle-animation-speed
+      0 >= .idle-image-index
+      (Count .idle-left-image-array) = .idle-image-index-max
+      0.08 = .idle-animation-speed
 
-    ;; -------------- Walking Array (Facing Left) -----------------
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> .walking-left-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> .walking-left-image-array
+      ;; -------------- Walking Array (Facing Left) -----------------
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> .walking-left-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> .walking-left-image-array
 
-    ;; ----------- Walking Array (Facing Right) ---------------
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> .walking-right-image-array
-    (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> .walking-right-image-array
+      ;; ----------- Walking Array (Facing Right) ---------------
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> .walking-right-image-array
+      (load-texture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> .walking-right-image-array
 
-    (Count .walking-left-image-array) = .walking-image-index-max
-    0 >= .walking-image-index
-    0.08 = .walking-animation-speed ;; Reduce number to increase animation speed
-    )
-  
-  ;; --------- Idle Animation Loop ---------
-  (defloop idle-animation
-    .idle-image-index (Math.Add 1)
-    > .idle-image-index
-    (When
-      :Predicate (IsMoreEqual .idle-image-index-max)
-      :Action (-> 0 > .idle-image-index))
-    (Pause .idle-animation-speed))
+      (Count .walking-left-image-array) = .walking-image-index-max
+      0 >= .walking-image-index
+      0.08 = .walking-animation-speed ;; Reduce number to increase animation speed
+      )
+    
+    ;; --------- Idle Animation Loop ---------
+    (defloop idle-animation
+      .idle-image-index (Math.Add 1)
+      > .idle-image-index
+      (When
+       :Predicate (IsMoreEqual .idle-image-index-max)
+       :Action (-> 0 > .idle-image-index))
+      (Pause .idle-animation-speed))
 
-  ;; -------- Walking Animation Loop --------
-  (defloop walking-animation
-    .walking-image-index (Math.Add 1)
-    > .walking-image-index
-    (When
-      :Predicate (IsMoreEqual .walking-image-index-max) 
-      :Action (-> 0 > .walking-image-index))
-    (Pause .walking-animation-speed))
+    ;; -------- Walking Animation Loop --------
+    (defloop walking-animation
+      .walking-image-index (Math.Add 1)
+      > .walking-image-index
+      (When
+       :Predicate (IsMoreEqual .walking-image-index-max) 
+       :Action (-> 0 > .walking-image-index))
+      (Pause .walking-animation-speed))
 
-  ;; ------- Button Inputs ----------
-  (defshards button-inputs []
-    (Inputs.KeyDown
-      :Key "left"
-      :Action
-      (->
-      (Msg "left")
-      1 > .character-state
-      0 > .character-direction))
+    ;; ------- Button Inputs ----------
+    (defshards button-inputs []
+      (Inputs.KeyDown
+       :Key "left"
+       :Action
+       (->
+        (Msg "left")
+        1 > .character-state
+        0 > .character-direction))
 
-    (Inputs.KeyDown
-      :Key "right"
-      :Action
-      (->
-      (Msg "right")
-      2 > .character-state
-      1 > .character-direction))
+      (Inputs.KeyDown
+       :Key "right"
+       :Action
+       (->
+        (Msg "right")
+        2 > .character-state
+        1 > .character-direction))
 
-    (Inputs.KeyDown
-      :Key "up"
-      :Action
-      (-> 
-      (Msg "up") 
-      3 > .character-state))
+      (Inputs.KeyDown
+       :Key "up"
+       :Action
+       (-> 
+        (Msg "up") 
+        3 > .character-state))
 
-    (Inputs.KeyUp
-      :Key "left"
-      :Action 
-      (->
-      0 > .character-state))
+      (Inputs.KeyUp
+       :Key "left"
+       :Action 
+       (->
+        0 > .character-state))
 
-    (Inputs.KeyUp
-      :Key "right"
-      :Action
-      (->
-      0 > .character-state)))
+      (Inputs.KeyUp
+       :Key "right"
+       :Action
+       (->
+        0 > .character-state)))
 
-  (defloop main-wire
-    (Setup
-      (initialize-character))
-
-    (Step idle-animation)
-    (Step walking-animation)
-
-    (GFX.MainWindow
-      :Title "MainWindow" :Width 1920 :Height 1080
-      :Contents
-      (->
+    (defloop main-wire
       (Setup
-        (GFX.DrawQueue) >= .ui-draw-queue
-        (GFX.UIPass .ui-draw-queue) >> .render-steps)
-      .ui-draw-queue (GFX.ClearQueue)
+       (initialize-character))
 
-      (UI
-        .ui-draw-queue
-        (->
-        (UI.Area
-          :Position (float2 0 0)
-          :Anchor Anchor.Center
-          :Contents
-          (->
-          .character-state
-          (Match [0 (-> .character-direction
-                        (Match [0 (-> .idle-left-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))
-                                1 (-> .idle-right-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))]
-                                :Passthrough false))
-                  1 (-> .walking-left-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-                  2 (-> .walking-right-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-                  3 (-> .character-jumping (UI.Image :Scale (float2 0.2)))]
-                  :Passthrough false)))))
+      (Step idle-animation)
+      (Step walking-animation)
 
-      (GFX.Render :Steps .render-steps)
+      (GFX.MainWindow
+       :Title "MainWindow" :Width 1920 :Height 1080
+       :Contents
+       (->
+        (Setup
+         (GFX.DrawQueue) >= .ui-draw-queue
+         (GFX.UIPass .ui-draw-queue) >> .render-steps)
+        .ui-draw-queue (GFX.ClearQueue)
 
-      (button-inputs))))
+        (UI
+         .ui-draw-queue
+         (->
+          (UI.Area
+           :Position (float2 0 0)
+           :Anchor Anchor.Center
+           :Contents
+           (->
+            .character-state
+            (Match [0 (-> .character-direction
+                          (Match [0 (-> .idle-left-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))
+                                  1 (-> .idle-right-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))]
+                                 :Passthrough false))
+                    1 (-> .walking-left-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
+                    2 (-> .walking-right-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
+                    3 (-> .character-jumping (UI.Image :Scale (float2 0.2)))]
+                   :Passthrough false)))))
 
-  (defmesh main)
-  (schedule main main-wire)
-  (run main (/ 1.0 60))
-  ```
+        (GFX.Render :Steps .render-steps)
+
+        (button-inputs))))
+
+    (defmesh main)
+    (schedule main main-wire)
+    (run main (/ 1.0 60))
+    ```
 
 ## Recap
 Try running the code now! Your adorable Glod should be fully animated and will now face the correct directions.
