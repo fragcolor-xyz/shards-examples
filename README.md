@@ -18,8 +18,6 @@ These tutorials are designed to help you learn practical Shards programming step
 
 Though there are no hard pre-requisites for these tutorials, if you're new to programming you should read the [Shards primer](https://docs.fragcolor.xyz/learn/shards/) first.
 
-It's also recommended to go through the [Shards architecture](https://docs.fragcolor.xyz/architecture-guides/shards) guide to understand what's going on under the hood.
-
 ### Tutorials
 
 * [Snake](https://learn.fragcolor.xyz/snake/)
