@@ -42,7 +42,7 @@ jobs:
           pip install mkdocs-awesome-pages-plugin
           pip install mkdocs-macros-plugin
       - name: Step to start local HTTP server with Fragnova docs
-        run: cd shards/docs && nohup mkdocs serve > nohup.out 2> nohup.err < /dev/null &
+        run: nohup mkdocs serve > nohup.out 2> nohup.err < /dev/null &
       - name: Step to sleep for 5 seconds
         run: sleep 5s
       - name: Step to check for broken links
