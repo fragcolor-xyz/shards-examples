@@ -33,7 +33,7 @@ We will be using a `UI.Button` to help us handle the user input for restarting t
 
     ```
 
-    1. [`UI.Button`](https://docs.fragcolor.xyz/docs/shards/UI/Button/) is a UI element that appears as a clickable button with the text passed into its `Label` parameter displayed on it.
+    1. [`UI.Button`](https://docs.fragnova.com/reference/shards/shards/UI/Button/) is a UI element that appears as a clickable button with the text passed into its `Label` parameter displayed on it.
 
 When the button is pressed, we reset the game's variables, including `.game-over` which will be used to decide what is drawn in our game's window.
 
@@ -120,7 +120,7 @@ Place it within the `logic-loop` where we are checking if a new round should be 
     ```
 
     1. Runs the timer-tick shard every 1 second.
-    2. [`Once`](https://docs.fragcolor.xyz/docs/shards/General/Once/) will run the code in its `Action` parameter every time the duration specified in its `Every` parameter has passed.
+    2. [`Once`](https://docs.fragnova.com/reference/shards/shards/General/Once/) will run the code in its `Action` parameter every time the duration specified in its `Every` parameter has passed.
 
 !!! note
     You can adjust the difficulty by changing the value of the `max-timer` constant we defined at the start.

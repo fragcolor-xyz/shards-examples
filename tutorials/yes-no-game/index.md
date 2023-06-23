@@ -6,11 +6,11 @@ This tutorial assumes that you have a basic understanding of Shards. In order to
 
 For more information, check out the following links on:
 
-1. [The Basics of Shards](https://docs.fragcolor.xyz/learn/shards/)
+1. [The Basics of Shards](https://docs.fragnova.com/learn/shards/)
 
-2. [Building Shards](https://docs.fragcolor.xyz/contribute/code/build-shards/)
+2. [Building Shards](https://docs.fragnova.com/contribute/code/build-shards/)
 
-3. [Running Shards](https://docs.fragcolor.xyz/contribute/code/run-shards/)
+3. [Running Shards](https://docs.fragnova.com/contribute/code/run-shards/)
 
 <!-- TODO: reorganize this in order once completed -->
 Here are the key concepts that we will be covering in this tutorial:

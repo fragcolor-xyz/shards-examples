@@ -69,7 +69,7 @@ Count the number of images in the `.images` sequence and store the value in a va
       max-timer >= .time-remaining)
     ```
 
-    1. [`Count`](https://docs.fragcolor.xyz/docs/shards/General/Count/) will count the number of elements in a sequence. It can also count the number of characters in a string, or key-value pairs in a table.
+    1. [`Count`](https://docs.fragnova.com/reference/shards/shards/General/Count/) will count the number of elements in a sequence. It can also count the number of characters in a string, or key-value pairs in a table.
 
 With `.total-images` as the upper limit for our random index range, we can now use `RandomInt` to determine our image indices. As the images chosen will change each round, we will select the images in the `initialize-round` shard.
 
@@ -83,7 +83,7 @@ With `.total-images` as the upper limit for our random index range, we can now u
     ```
 
     1. Randomly selects an index in the .image sequence.
-    2. [`RandomInt`](https://docs.fragcolor.xyz/docs/shards/General/RandomInt/) will randomly output a number from 0 to the number before the maximum value specified.
+    2. [`RandomInt`](https://docs.fragnova.com/reference/shards/shards/General/RandomInt/) will randomly output a number from 0 to the number before the maximum value specified.
 
 Previously we used a placeholder to always show the first two images stored in `.images`. With the new logic implemented, we can update our UI code to display randomly selected images instead.
 

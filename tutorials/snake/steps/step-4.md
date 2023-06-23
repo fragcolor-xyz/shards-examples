@@ -24,12 +24,12 @@ Let's first compute the list of locations that are unoccupied.
     ```
 
     1. `[]` is an empty sequence.
-    2. [`(ForRange)`](https://docs.fragcolor.xyz/docs/shards/General/ForRange/) iterates a range of values (including both `:From` and `:To` ends).
-    3. `(- a b)` is a built-in function that can act on constant values (as opposed to [`(Math.Subtract)`](https://docs.fragcolor.xyz/docs/shards/Math/Subtract/) that can act on constants and variables).
-    4. [`(When)`](https://docs.fragcolor.xyz/docs/shards/General/When/) is similar to [`(If)`](https://docs.fragcolor.xyz/docs/shards/General/If/), except it is "passthrough" by default (don't worry about that concept for now).
-    5. [`(Is)`](https://docs.fragcolor.xyz/docs/shards/General/Is/) and [`(IsNot)`](https://docs.fragcolor.xyz/docs/shards/General/IsNot/) compare two values.
-    6. [`(And)`](https://docs.fragcolor.xyz/docs/shards/General/And/) is a logic operator.
-    7. [`(Push)`](https://docs.fragcolor.xyz/docs/shards/General/Push/) adds a value to a sequence.
+    2. [`(ForRange)`](https://docs.fragnova.com/reference/shards/shards/General/ForRange/) iterates a range of values (including both `:From` and `:To` ends).
+    3. `(- a b)` is a built-in function that can act on constant values (as opposed to [`(Math.Subtract)`](https://docs.fragnova.com/reference/shards/shards/Math/Subtract/) that can act on constants and variables).
+    4. [`(When)`](https://docs.fragnova.com/reference/shards/shards/General/When/) is similar to [`(If)`](https://docs.fragnova.com/reference/shards/shards/General/If/), except it is "passthrough" by default (don't worry about that concept for now).
+    5. [`(Is)`](https://docs.fragnova.com/reference/shards/shards/General/Is/) and [`(IsNot)`](https://docs.fragnova.com/reference/shards/shards/General/IsNot/) compare two values.
+    6. [`(And)`](https://docs.fragnova.com/reference/shards/shards/General/And/) is a logic operator.
+    7. [`(Push)`](https://docs.fragnova.com/reference/shards/shards/General/Push/) adds a value to a sequence.
 
 The function takes the positions of the snake body (incl. head and tail) and the current fruit position. It then iterates through all possible coordinates skipping the ones that are either occupied by the snake or the current fruit. The sequence of potential locations is then returned as the function's output.
 
@@ -45,10 +45,10 @@ Now all we need to do is select a random position from this sequence and that wi
       .free-loc (Take .next-fruit-loc) (ToInt2)) ;; (3) (4)
     ```
 
-    1. [`(Count)`](https://docs.fragcolor.xyz/docs/shards/General/Count/) returns the number of elements in a sequence.
-    2. [`(RandomInt)`](https://docs.fragcolor.xyz/docs/shards/General/RandomInt/) returns a random value between 0 and the given maximum (exclusive).
+    1. [`(Count)`](https://docs.fragnova.com/reference/shards/shards/General/Count/) returns the number of elements in a sequence.
+    2. [`(RandomInt)`](https://docs.fragnova.com/reference/shards/shards/General/RandomInt/) returns a random value between 0 and the given maximum (exclusive).
     3. We have already seen `(Take)` in [step 2](./step-2.md).
-    4. [`(ToInt2)`](https://docs.fragcolor.xyz/docs/shards/General/ToInt2/) ensures that we return an `int2` value.
+    4. [`(ToInt2)`](https://docs.fragnova.com/reference/shards/shards/General/ToInt2/) ensures that we return an `int2` value.
 
 ## Moving the snake
 
@@ -65,13 +65,13 @@ When the snake is growing (after eating a fruit) we only add the new head (in pl
     ```
 
     1. We have already seen `(RTake)` in [step 3](./step-3.md).
-    2. [`(WhenNot)`](https://docs.fragcolor.xyz/docs/shards/General/WhenNot/) is similar to [`(When)`](https://docs.fragcolor.xyz/docs/shards/General/When/) but with the opposite logic.
-    3. [`(DropFront)`](https://docs.fragcolor.xyz/docs/shards/General/DropFront/) removes the first element of a sequence.
+    2. [`(WhenNot)`](https://docs.fragnova.com/reference/shards/shards/General/WhenNot/) is similar to [`(When)`](https://docs.fragnova.com/reference/shards/shards/General/When/) but with the opposite logic.
+    3. [`(DropFront)`](https://docs.fragnova.com/reference/shards/shards/General/DropFront/) removes the first element of a sequence.
 
 
-Now we need the snake to move at a regular interval in the direction chosen by the player.
+Now we need the snake to move at regular intervals in the direction chosen by the player.
 
-Let's first listen to the player input. We will use the keyboard's arrow keys (up, down, left, right) for this.
+Let's first listen to the player's input. We will use the keyboard's arrow keys (up, down, left, right) for this.
 
 === "EDN"
 
@@ -82,9 +82,9 @@ Let's first listen to the player input. We will use the keyboard's arrow keys (u
     (Inputs.KeyDown "left" (-> "left" > .direction))
     ```
 
-    1. [`(Inputs.KeyDown)`](https://docs.fragcolor.xyz/docs/shards/Inputs/KeyDown/) executes an action when a key is down. It has a sibling event: [`(Inputs.KeyUp)`](https://docs.fragcolor.xyz/docs/shards/Inputs/KeyUp/). `(>)` is an alias for [`Push`](https://docs.fragcolor.xyz/docs/shards/General/Push/).
+    1. [`(Inputs.KeyDown)`](https://docs.fragnova.com/reference/shards/shards/Inputs/KeyDown/) executes an action when a key is down. It has a sibling event: [`(Inputs.KeyUp)`](https://docs.fragnova.com/reference/shards/shards/Inputs/KeyUp/). `(>)` is an alias for [`Push`](https://docs.fragnova.com/reference/shards/shards/General/Push/).
 
-We also want to prevent the player from accidentally selecting the opposite direction (e.g. down while the snake is going up) since that would immediately end the game (as the snake would immediately turn backwards to eat its own body starting with its neck). One easy way to do this is to compare the newly chosen direction with the previous one.
+We also want to prevent the player from accidentally selecting the opposite direction (e.g. down while the snake is going up) since that would immediately end the game (as the snake would immediately turn backward to eat its own body starting with its neck). One easy way to do this is to compare the newly chosen direction with the previous one.
 
 === "EDN"
 
@@ -107,7 +107,7 @@ We also want to prevent the player from accidentally selecting the opposite dire
            (-> "left" > .direction)))
     ```
 
-Finally, the snake will move at a regular interval. We can do that by comparing the current time and the time since the last update.
+Finally, the snake will move at regular intervals. We can do that by comparing the current time and the time since the last update.
 
 === "EDN"
 
@@ -121,13 +121,13 @@ Finally, the snake will move at a regular interval. We can do that by comparing 
                                   "left" (move-snake .snake (int2 -1 0) .grow)])))
     ```
 
-    1. [`(Time.Now)`](https://docs.fragcolor.xyz/docs/shards/Time/Now/) returns the time elapsed since the start of the game.
+    1. [`(Time.Now)`](https://docs.fragnova.com/reference/shards/shards/Time/Now/) returns the time elapsed since the start of the game.
 
 Now the snake will move every half a second. We could change this value to vary the difficulty of the game.
 
 ## Let's try it out!
 
-Putting together all that we have seen so far, and adding a bit of initialization (that we conveniently put in its own function to allow us to reinitialize the game if the player hits the space bar), we have the following code.
+Putting together all that we have seen so far, and adding a bit of initialization (that we conveniently put in its function to allow us to reinitialize the game if the player hits the space bar), we have the following code.
 
 === "EDN"
 
@@ -140,6 +140,6 @@ Putting together all that we have seen so far, and adding a bit of initializatio
     ![](step-4.gif)
 
 ??? note
-    [`(Once)`](https://docs.fragcolor.xyz/docs/shards/General/Once/) is executed only once and thus is not repeated every frame.
+    [`(Once)`](https://docs.fragnova.com/reference/shards/shards/General/Once/) is executed only once and thus is not repeated every frame.
 
 --8<-- "includes/license.md"
