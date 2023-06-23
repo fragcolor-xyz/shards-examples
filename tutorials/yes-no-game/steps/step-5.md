@@ -149,7 +149,7 @@ Set `.input-received` to true to prevent further user input, and end the round i
 
     Use a stepped Loop when you want a variable within the Loop to persist. When a Wire finishes, any changes made to the variables within it will be lost. A Looped Wire lives on, thereby retaining any changes within it. 
     
-    Check out the primer [here](../../../shards/the-flow/#step--branch--stepmany) for more information.
+    Check out the primer [here](https://docs.fragnova.com/learn/shards/primer/the-flow/#step) for more information.
 
 We can now employ the `check-answer` shard in our `Inputs.KeyDown` logic.
 
