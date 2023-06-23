@@ -50,7 +50,7 @@ jobs:
         uses: roc/link-checker@master
         with:
           url: "http://127.0.0.1:8000"
-          blc_args: --recursive --verbose --follow true
+          blc_args: --recursive --verbose --follow true --exclude twitter.com --exclude linkedin.com
           allow_failures: false
       - name: Build website
         if: ${{ steps.setup.outputs.publish != 'true' }}
