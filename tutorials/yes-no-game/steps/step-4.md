@@ -137,7 +137,7 @@ The Loop will first check if the current round is final. If it is, it sets the `
 
     For example, in `end-round`, we use `Setup` to initialize the variable `.new-round-number` once. With a Looped Wire, the variable continues to exist as long as the Looped Wire remains running. If we use a Wire, every time `.end-round` is called, `.new-round-number` will have to be initialized again.
 
-    You might wonder - how do we exit the Loop after calling it then? Won't the program be stuck in the Loop indefinitely? The solution to this is in the shard called `Step` which we will introduce in the following chapter. If you wish to read more about `Step` and Looped Wires first, do check out our primer [here](../../../shards/the-flow/#step--branch--stepmany).
+    You might wonder - how do we exit the Loop after calling it then? Won't the program be stuck in the Loop indefinitely? The solution to this is in the shard called `Step` which we will introduce in the following chapter. If you wish to read more about `Step` and Looped Wires first, do check out our primer [here](https://docs.fragnova.com/learn/shards/primer/the-flow).
 
 === "Code"
   

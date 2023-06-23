@@ -22,7 +22,7 @@ The trick is to visualize the 1D sequence as a 2D matrix with defined grid row a
        0 0 0 0 0]) ;; (2)
     ```
 
-    1. The [`def`](../../../docs/functions/macros/#def) keyword associates a value with a name.
+    1. The [`def`](https://docs.fragnova.com/reference/shards/lisp/macros/#def) keyword associates a value with a name.
     2. `[]` is the syntax to define a sequence of values.
 
 Now, to compute the index of a grid element in that sequence from its 2D coordinates, we can define the following function.
@@ -39,7 +39,7 @@ Now, to compute the index of a grid element in that sequence from its 2D coordin
     1. The [`defn`](https://docs.fragnova.com/reference/shards/lisp/macros/#defn) keyword associates a function with a name. Note the `[]` after the `get-index` name. This indicates that this function has 0 parameters. We will later see functions that do have parameters.
     2. [`(->)`](https://docs.fragnova.com/reference/shards/lisp/misc/#-) is a shard container that will group and execute its inner shard(s) in order.
     3. `(|)` is an alias for [`(Sub)`](https://docs.fragnova.com/reference/shards/shards/General/Sub/). It allows reusing the same input across a sequence of shards.
-    4. [`(Take)`](https://docs.fragnova.com/docs/shards/shards/General/Take/) returns the value from a sequence at a given index (starting at `0`).
+    4. [`(Take)`](https://docs.fragnova.com/reference/shards/shards/General/Take/) returns the value from a sequence at a given index (starting at `0`).
     5. `>=` is an alias for the shard [`(Set)`](https://docs.fragnova.com/reference/shards/shards/General/Set/) which saves the output of a shard into a context variable.
     6. [`(Math.Multiply)`](https://docs.fragnova.com/reference/shards/shards/Math/Multiply/) multiplies its input (written to the left of the shard) with a given value (written to the right of the shard and enclosed within its brackets) and outputs the result.
     7. [`(Math.Add)`](https://docs.fragnova.com/reference/shards/shards/Math/Add/) adds a value to its input and outputs the result.
