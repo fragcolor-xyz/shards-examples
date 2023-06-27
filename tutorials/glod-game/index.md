@@ -1,12 +1,12 @@
 # Glod Game Tutorial
 
-Hello there! In this tutorial we will be making a 2D point collection game using [Shards](https://github.com/fragcolor-xyz/shards).
+Hello there! In this tutorial, we will be making a 2D point collection game using [Shards](https://github.com/fragcolor-xyz/shards).
 
 This tutorial assumes that you have a basic understanding of Shards. In order to run the code examples used here, you are required to have Shards installed. 
 
-For more information, check out the following links on:
+For more information, check out the following links:
 
-1. [The Basics of Shards](https://docs.fragcolor.xyz/learn/shards/)
+1. [The Basics of Shards](https://docs.fragnova.com/learn/shards/)
 
 2. [Install Shards](https://github.com/fragcolor-xyz/shards/releases)
 
@@ -23,7 +23,7 @@ Here are the key concepts that we will be covering in this tutorial:
 
 5. Setting up a scoring system
 
-You can either follow the step-by-step guide, or jump directly to the full game.
+You can either follow the step-by-step guide or jump directly to the full game.
 
 * [Introduction](./introduction.md)
 

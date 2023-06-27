@@ -26,7 +26,7 @@ To start drawing the UI in shards, we will have to ready the GFX window which se
     ```
 
 ??? "What does the GFX code mean?"
-    How the GFX window works is beyond the scope of this tutorial. The rough idea is that we are giving instructions to the computer on what to draw to the screen. For more information, check out the documentation on the [UI](https://docs.fragcolor.xyz/docs/shards/UI/) class.
+    How the GFX window works is beyond the scope of this tutorial. The rough idea is that we are giving instructions to the computer on what to draw to the screen. For more information, check out the documentation on the [UI](https://docs.fragnova.com/reference/shards/shards/UI/) class.
 
 ## Planning the UI
 
@@ -42,7 +42,7 @@ With a design plan, it will be easier to identify the elements that will make up
 
 Let us start with the simplest panel, the Bottom Panel with a single Label. 
 
-We will pass a string of instructions into the [`UI.Label`](https://docs.fragcolor.xyz/docs/shards/UI/Label/) shard, which we then pass into the Bottom Panel shard as its content.
+We will pass a string of instructions into the [`UI.Label`](https://docs.fragnova.com/reference/shards/shards/UI/Label/) shard, which we then pass into the Bottom Panel shard as its content.
 
 === "Code"
     
@@ -54,8 +54,8 @@ We will pass a string of instructions into the [`UI.Label`](https://docs.fragcol
      ))
     ```
 
-    1. [`UI.BottomPanel`](https://docs.fragcolor.xyz/docs/shards/UI/BottomPanel/) is a UI element to hold other UI elements within it. It starts from the bottom of the Window.
-    2. [`UI.Label`](https://docs.fragcolor.xyz/docs/shards/UI/Label/) is a UI element to hold text.
+    1. [`UI.BottomPanel`](https://docs.fragnova.com/reference/shards/shards/UI/BottomPanel/) is a UI element to hold other UI elements within it. It starts from the bottom of the Window.
+    2. [`UI.Label`](https://docs.fragnova.com/reference/shards/shards/UI/Label/) is a UI element to hold text.
 
 ## The Top Panel
 
@@ -77,11 +77,11 @@ The Top Panel consists of a sequence of Labels and Separators in a Horizontal Gr
          "Time Left: 5" (UI.Label)))))
     ```
 
-    1. [`UI.TopPanel`](https://docs.fragcolor.xyz/docs/shards/UI/TopPanel/) is a UI element to hold other UI elements within it. It starts from the top of the Window.
-    2. [`UI.Horizontal`](https://docs.fragcolor.xyz/docs/shards/UI/Horizontal/) is a UI element to hold other UI elements within it. It aligns its elements horizontally, from left to right.
-    3. [`UI.Separator`](https://docs.fragcolor.xyz/docs/shards/UI/Separator/) is a UI element that appears as a horizontal line within a vertical layout, and appears as a vertical line within a horizontal layout.
+    1. [`UI.TopPanel`](https://docs.fragnova.com/reference/shards/shards/UI/TopPanel/) is a UI element to hold other UI elements within it. It starts from the top of the Window.
+    2. [`UI.Horizontal`](https://docs.fragnova.com/reference/shards/shards/UI/Horizontal/) is a UI element to hold other UI elements within it. It aligns its elements horizontally, from left to right.
+    3. [`UI.Separator`](https://docs.fragnova.com/reference/shards/shards/UI/Separator/) is a UI element that appears as a horizontal line within a vertical layout, and appears as a vertical line within a horizontal layout.
 
-We want to be able to change the values used for Score, the Round Number and Time Left (they can't remain static after all!).
+We want to be able to change the values used for Score, the Round Number, and Time Left (they can't remain static after all!).
 
 This is where variables come in. We will be defining our variables in the `initialize-variables` shard created [earlier](../step-1/#the-setup-zone).
 
@@ -104,7 +104,7 @@ Define the following constants:
 ??? "Declaring Constants"
     Constants are values that cannot be changed. 
     
-    In Shards, you can declare named constants by using the macro [`def`](https://docs.fragcolor.xyz/docs/functions/macros/#def), which is used to give an alias to a value. Unnamed constants can be declared with [`Const`](https://docs.fragcolor.xyz/docs/shards/General/Const/).
+    In Shards, you can declare named constants by using the macro [`def`](https://docs.fragnova.com/reference/shards/lisp/macros/#def), which is used to give an alias to a value. Unnamed constants can be declared with [`Const`](https://docs.fragnova.com/reference/shards/shards/General/Const/).
 
 === "Code"
     
@@ -140,7 +140,7 @@ We can now replace the fixed string numbers in our UI code with variables that w
          .time-remaining (ToString) (UI.Label)))))
     ```
 
-    1. [`ToString`](https://docs.fragcolor.xyz/docs/shards/General/ToString/) converts values into strings. In the code above, `UI.Label` expects a string input, which is why we have to convert the integer variables into strings.
+    1. [`ToString`](https://docs.fragnova.com/reference/shards/shards/General/ToString/) converts values into strings. In the code above, `UI.Label` expects a string input, which is why we have to convert the integer variables into strings.
 
 ## The Central Panel
 
@@ -164,8 +164,8 @@ Use the `Push` shard to push the images into a sequence.
       (LoadImage "data/cats/cat03.png") (Push :Name .images))
     ```
 
-    1. [`LoadImage`](https://docs.fragcolor.xyz/docs/shards/General/LoadImage/) is used to load images into your game's resources.
-    2. [`Push`](https://docs.fragcolor.xyz/docs/shards/General/Push/) adds elements to the back of a sequence. It will create the sequence if it does not exist.
+    1. [`LoadImage`](https://docs.fragnova.com/reference/shards/shards/General/LoadImage/) is used to load images into your game's resources.
+    2. [`Push`](https://docs.fragnova.com/reference/shards/shards/General/Push/) adds elements to the back of a sequence. It will create the sequence if it does not exist.
 
 We will randomize the images shown when tackling the logic of the game later. For now, let us display the first two images in the sequence as a placeholder.
 
@@ -192,9 +192,9 @@ To better control where the images are drawn, we place each image in a `UI.Area`
              (-> .images (Take 1) (UI.Image)))))))
     ```
 
-    1. [`UI.Area`](https://docs.fragcolor.xyz/docs/shards/UI/Area/) is a UI element that is used to place its contents at a specific position.
+    1. [`UI.Area`](https://docs.fragnova.com/reference/shards/shards/UI/Area/) is a UI element that is used to place its contents at a specific position.
     2. Minus 250 pixels from the center on the x-axis
-    3. [`Take`](https://docs.fragcolor.xyz/docs/shards/General/Take/) is used to retrieve the element stored at a specified index of a sequence.
+    3. [`Take`](https://docs.fragnova.com/reference/shards/shards/General/Take/) is used to retrieve the element stored at a specified index of a sequence.
     4. Add 250 pixels from the center on the x-axis
 
 !!! caution

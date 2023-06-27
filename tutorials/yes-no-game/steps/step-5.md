@@ -30,7 +30,7 @@ We can use `Inputs.KeyDown` to execute code whenever the user presses down on a 
 
     1. This code is executed when the user presses the ↑ directional key.
     2. This code is executed when the user presses the ↓ directional key.
-    3. [`Inputs.KeyDown`](https://docs.fragcolor.xyz/docs/shards/Inputs/KeyDown/) will run the code in its `Action` parameter when the `Key` specified is pressed down by the user.
+    3. [`Inputs.KeyDown`](https://docs.fragnova.com/reference/shards/shards/Inputs/KeyDown/) will run the code in its `Action` parameter when the `Key` specified is pressed down by the user.
 
 
 In order to prevent code within the `Inputs.Keydown` shards from executing whenever the user presses the specified key, we define a variable `.input-received` to track if we have already received the user's input.
@@ -101,7 +101,7 @@ Check if the chosen images are the same, and assign `true` or `false` to `.same-
   
     ```
 
-    1. [`If`](https://docs.fragcolor.xyz/docs/shards/General/If/) checks the `Predicate` given and runs the code within `Then` if it is true. If false, the code within `Else` is run instead.
+    1. [`If`](https://docs.fragnova.com/reference/shards/shards/General/If/) checks the `Predicate` given and runs the code within `Then` if it is true. If false, the code within `Else` is run instead.
     2. Check if the images on the left and right are the same or different.
 
 Create a shard named `check-answer` which will take in the user's input and check it against `.same-image`.
@@ -141,15 +141,15 @@ Set `.input-received` to true to prevent further user input, and end the round i
     5. Prevents this segment of code from running again until it is reset.
     6. If it is not Game Over yet...
     7. ... end the round.
-    8. [`Step`](https://docs.fragcolor.xyz/docs/shards/General/Step/) runs a wire inline.
+    8. [`Step`](https://docs.fragnova.com/reference/shards/shards/General/Step/) runs a wire inline.
     9. `nil` ensures that any previous input (e.g. Bool from `true > .input-received`) is not propagated into the wire. The first use of a wire defines its input type, and subsequent calls to the wire with different input types will be a violation.
 
 ??? "Step vs Do"
-    Step behaves similarly to [`Do`](https://docs.fragcolor.xyz/docs/shards/General/Do/), except that it allows you to use a *Looped Wire* like a function. `Step` will run one iteration of the Loop before returning control back to the Wire that called it. If you try to use `Do` on a Loop, the Loop will run indefinitely.
+    Step behaves similarly to [`Do`](https://docs.fragnova.com/reference/shards/shards/General/Do/), except that it allows you to use a *Looped Wire* like a function. `Step` will run one iteration of the Loop before returning control back to the Wire that called it. If you try to use `Do` on a Loop, the Loop will run indefinitely.
 
     Use a stepped Loop when you want a variable within the Loop to persist. When a Wire finishes, any changes made to the variables within it will be lost. A Looped Wire lives on, thereby retaining any changes within it. 
     
-    Check out the primer [here](../../../shards/the-flow/#step--branch--stepmany) for more information.
+    Check out the primer [here](https://docs.fragnova.com/learn/shards/primer/the-flow/#step) for more information.
 
 We can now employ the `check-answer` shard in our `Inputs.KeyDown` logic.
 

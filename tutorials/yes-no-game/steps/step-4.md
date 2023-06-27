@@ -49,7 +49,7 @@ Next, add code in the `logic-loop` to check if there should be a new round befor
 Remove the `Setup` shard that was used to prevent the initialization code from running every Loop's iteration. We will be using conditionals instead.
 
 ??? "Conditionals"
-    Conditionals check if a given statement is true or false, and executes different code depending on the result. In the following code, the conditionals used are [`WhenNot`](https://docs.fragcolor.xyz/docs/shards/General/WhenNot/) and [`When`](https://docs.fragcolor.xyz/docs/shards/General/When/).
+    Conditionals check if a given statement is true or false, and executes different code depending on the result. In the following code, the conditionals used are [`WhenNot`](https://docs.fragnova.com/reference/shards/shards/General/WhenNot/) and [`When`](https://docs.fragnova.com/reference/shards/shards/General/When/).
 
 === "Before"
   
@@ -74,8 +74,8 @@ Remove the `Setup` shard that was used to prevent the initialization code from r
     1. If the game is not in a Game Over state...
     2. ... and it is a new round,
     3. ... initialize a new round.
-    4. [`WhenNot`](https://docs.fragcolor.xyz/docs/shards/General/WhenNot/) will only execute the `Action` specified when the `Predicate` is false. 
-    5. [`When`](https://docs.fragcolor.xyz/docs/shards/General/When/) will only execute the `Action` specified when the `Predicate` is true. Unlike `If`, it does not have an `Else` parameter.    
+    4. [`WhenNot`](https://docs.fragnova.com/reference/shards/shards/General/WhenNot/) will only execute the `Action` specified when the `Predicate` is false. 
+    5. [`When`](https://docs.fragnova.com/reference/shards/shards/General/When/) will only execute the `Action` specified when the `Predicate` is true. Unlike `If`, it does not have an `Else` parameter.    
 
 ## Handling Game States
 
@@ -137,7 +137,7 @@ The Loop will first check if the current round is final. If it is, it sets the `
 
     For example, in `end-round`, we use `Setup` to initialize the variable `.new-round-number` once. With a Looped Wire, the variable continues to exist as long as the Looped Wire remains running. If we use a Wire, every time `.end-round` is called, `.new-round-number` will have to be initialized again.
 
-    You might wonder - how do we exit the Loop after calling it then? Won't the program be stuck in the Loop indefinitely? The solution to this is in the shard called `Step` which we will introduce in the following chapter. If you wish to read more about `Step` and Looped Wires first, do check out our primer [here](../../../shards/the-flow/#step--branch--stepmany).
+    You might wonder - how do we exit the Loop after calling it then? Won't the program be stuck in the Loop indefinitely? The solution to this is in the shard called `Step` which we will introduce in the following chapter. If you wish to read more about `Step` and Looped Wires first, do check out our primer [here](https://docs.fragnova.com/learn/shards/primer/the-flow).
 
 === "Code"
   
