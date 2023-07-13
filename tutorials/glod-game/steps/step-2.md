@@ -44,12 +44,12 @@ We will use the shards `Inputs.KeyDown` and `Msg` to have our program show a mes
 === "Full Code So Far"
     
     ```{.clojure .annotate linenums="1"}
-    (defshards LoadTexture [name]
+    (defshards load-texture [name]
       (LoadImage name)
       (GFX.Texture))
 
     (defshards initialize-character []
-      (LoadTexture "GlodImages/Character1.png") = .character-image)
+      (load-texture "GlodImages/Character1.png") = .character-image)
 
     (defshards button-inputs []
       (Inputs.KeyDown
@@ -85,7 +85,7 @@ We will use the shards `Inputs.KeyDown` and `Msg` to have our program show a mes
            :Anchor Anchor.Center
            :Contents
            (->
-            LoadTexture .character-image (UI.Image :Scale (float2 0.2))))))
+            load-texture .character-image (UI.Image :Scale (float2 0.2))))))
 
         (GFX.Render :Steps .render-steps)
 
@@ -112,10 +112,10 @@ Next, instead of just having messages appear on the terminal, let's start trying
     
     ```{.clojure .annotate linenums="1"}
     (defshards initialize-character []
-        (LoadTexture "GlodImages/Character1.png") = .character-image
-        (LoadTexture "GlodImages/Character1_Left.png") = .character-left
-        (LoadTexture "GlodImages/Character1_Right.png") = .character-right
-        (LoadTexture "GlodImages/Character1_Jumping.png") = .character-jumping) ;; (1)      
+        (load-texture "GlodImages/Character1.png") = .character-image
+        (load-texture "GlodImages/Character1_Left.png") = .character-left
+        (load-texture "GlodImages/Character1_Right.png") = .character-right
+        (load-texture "GlodImages/Character1_Jumping.png") = .character-jumping) ;; (1)      
     ```
 
     1. `.character-left`, `.character-right`, and `.character-jumping` are added to lines 5 - 9.
@@ -128,10 +128,10 @@ Next, instead of just having messages appear on the terminal, let's start trying
       (GFX.Texture))
 
     (defshards initialize-character []
-      (LoadTexture "GlodImages/Character1.png") = .character-image
-      (LoadTexture "GlodImages/Character1_Left.png") = .character-left
-      (LoadTexture "GlodImages/Character1_Right.png") = .character-right
-      (LoadTexture "GlodImages/Character1_Jumping.png") = .character-jumping)
+      (load-texture "GlodImages/Character1.png") = .character-image
+      (load-texture "GlodImages/Character1_Left.png") = .character-left
+      (load-texture "GlodImages/Character1_Right.png") = .character-right
+      (load-texture "GlodImages/Character1_Jumping.png") = .character-jumping)
 
     (defshards button-inputs []
       (Inputs.KeyDown
@@ -199,10 +199,10 @@ Now, let's draw the new images onto the screen. Place them under the same `UI.Ar
       (GFX.Texture))
 
     (defshards initialize-character []
-      (LoadTexture "GlodImages/Character1.png") = .character-image
-      (LoadTexture "GlodImages/Character1_Left.png") = .character-left
-      (LoadTexture "GlodImages/Character1_Right.png") = .character-right
-      (LoadTexture "GlodImages/Character1_Jumping.png") = .character-jumping)
+      (load-texture "GlodImages/Character1.png") = .character-image
+      (load-texture "GlodImages/Character1_Left.png") = .character-left
+      (load-texture "GlodImages/Character1_Right.png") = .character-right
+      (load-texture "GlodImages/Character1_Jumping.png") = .character-jumping)
 
     (defshards button-inputs []
       (Inputs.KeyDown
@@ -307,10 +307,10 @@ First, create the `.character-state` variable.
       (GFX.Texture))
 
     (defshards initialize-character []
-      (LoadTexture "GlodImages/Character1.png") = .character-image
-      (LoadTexture "GlodImages/Character1_Left.png") = .character-left
-      (LoadTexture "GlodImages/Character1_Right.png") = .character-right
-      (LoadTexture "GlodImages/Character1_Jumping.png") = .character-jumping
+      (load-texture "GlodImages/Character1.png") = .character-image
+      (load-texture "GlodImages/Character1_Left.png") = .character-left
+      (load-texture "GlodImages/Character1_Right.png") = .character-right
+      (load-texture "GlodImages/Character1_Jumping.png") = .character-jumping
       
       0 >= .character-state)
 
@@ -409,10 +409,10 @@ Update the `button-inputs` shard to let it modify the value of `.character-state
       (GFX.Texture))
 
     (defshards initialize-character []
-      (LoadTexture "GlodImages/Character1.png") = .character-image
-      (LoadTexture "GlodImages/Character1_Left.png") = .character-left
-      (LoadTexture "GlodImages/Character1_Right.png") = .character-right
-      (LoadTexture "GlodImages/Character1_Jumping.png") = .character-jumping
+      (load-texture "GlodImages/Character1.png") = .character-image
+      (load-texture "GlodImages/Character1_Left.png") = .character-left
+      (load-texture "GlodImages/Character1_Right.png") = .character-right
+      (load-texture "GlodImages/Character1_Jumping.png") = .character-jumping
 
       0 >= .character-state)
 
