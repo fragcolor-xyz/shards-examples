@@ -4,9 +4,9 @@
 
 Let's start things off nice and easy. In this step, we will simply be:
 
-1. Creating the `GFX.Window`.
+1. Creating the `GFX.MainWindow`.
 
-2. Drawing our Character Image in the `GFX.Window`.
+2. Drawing our Character Image in the `GFX.MainWindow`.
 
 3. Scheduling our Wire on the Mesh and running it.
 
@@ -24,45 +24,48 @@ With our image file readied, we can start!
 
 ## Step 1.2: Initializing our Variables
 
-First, create the variable `.character-image` to assign our Image file to. Use the shard [`LoadImage`](https://docs.fragnova.com/reference/shards/shards/General/LoadImage/) to load the image into the variable. Set your image's location as its parameter.
+First, create the variable `character-image` to assign our Image file to. Use the shard [`LoadImage`](https://docs.fragnova.com/reference/shards/shards/General/LoadImage/) to load the image into the variable. Set your image's location as its parameter.
 
- We will wrap this line of code in a `defshards` shard. This shard will be called at the start of our code, where we will be initializing all our variables. 
+ We will wrap this line of code in a `@define` built-in function. This definition will be called at the start of our code, where we will be initializing all our variables. 
 
 ??? "What is Initializing?"
     Initializing is the assigning of an initial value to a variable when it is declared.
 
 === "Initialization Code"
 
-    ```clojure linenums="1"
-    (defshards initialize-character []
-        (LoadImage "GlodImages/Character1.png") = .character-image)
+    ```shards
+    @define(initialize-images {
+      LoadImage("GlodImages/Character1.png") = character-image
+    })
     ```
 
 ## Step 1.3: Creating the main Looped Wire
 
-Following that, we will create the main Looped Wire which will be scheduled on the Mesh. The `initialize-character` shard that we have just created will be called at the start of this Looped Wire. It will be wrapped in a `Setup` shard.
+Following that, we will create the main Looped Wire which will be scheduled on the Mesh. The `initialize-images` definition that we have just created will be called at the start of this Looped Wire. It will be wrapped in a `Once` shard.
 
-??? "The Setup shard"
-    The `Setup` shard ensures that every line of code called within it will only happen once. By placing the `initialize-character` shard within a `Setup` shard, we ensure that it is only called once despite being placed in a `defloop`.
+??? "The Once shard"
+    The `Once` shard ensures that every line of code called within it will only happen once. By placing the `initialize-images` shard within a `Once` shard, we ensure that it is only called once despite being placed in a wire that has its `Looped` parameter set to true.
     
     We want to initialize variables once only as we do not want our program to continuously create a new instance of the same variable every time the Wire loops. We only need one instance of our variables which will be reused.
 
 === "Main Looped Wire"
 
-    ```{.clojure .annotate linenums="1"}
-    (defshards initialize-character []
-      (LoadImage "GlodImages/Character1.png") = .character-image) ;; (1)
+    ```shards
+    @define(initialize-images {
+      LoadImage("GlodImages/Character1.png") = character-image ;; (1)
+    })
 
-    (defloop main-wire
-      (Setup
-       (initialize-character)))
+    @wire(main-wire {
+      Once({
+        @initialize-images})
+    } Looped: true)
 
-    (defmesh main)
-    (schedule main main-wire)
-    (run main (/ 1.0 60))
+    @mesh(main)
+    @schedule(main main-wire)
+    @run(main FPS: 60)
     ```
 
-    1. `.character-image` is the variable that contains our image.
+    1. `character-image` is the variable that contains our image.
 
 ## Step 1.4: Creating the Window
 
@@ -70,103 +73,98 @@ Trying to run our program right now would result in... nothing. This is because 
 
 === "Initialize Code"
 
-    ```clojure linenums="1"
-    (defshards initialize-character []
-      (LoadImage "GlodImages/Character1.png") = .character-image)
+    ```shards
+    @define(initialize-images {
+      LoadImage("GlodImages/Character1.png") = character-image
+    })
 
-    (defloop main-wire
-      (Setup
-       (initialize-character))
+    @wire(main-wire {
+      Once({
+        @initialize-images
+      })
 
-      (GFX.MainWindow
-       :Title "MainWindow" :Width 1920 :Height 1080
-       :Contents
-       (-> (Setup
-            (GFX.DrawQueue) >= .ui-draw-queue
-            (GFX.UIPass .ui-draw-queue) >> .render-steps)
-           .ui-draw-queue (GFX.ClearQueue)
+      GFX.MainWindow(
+        Contents: {
+          Once({
+            GFX.DrawQueue >= ui-draw-queue
+            GFX.UIPass(ui-draw-queue) >> render-steps
+          })
+          UI(
+            UI.Area(
+              Position: @f2(0.0 0.0)
+              Anchor: Anchor::Center
+              Contents: {
+                "Hello!" | UI.Label ;; UI.Label is a shard that renders strings in a UI context
+              }
+            )
+          ) | UI.Render(ui-draw-queue)
+          
+          GFX.Render(Steps: render-steps)
+        }
+      )
+    } Looped: true)
 
-           (UI
-            .ui-draw-queue)
-
-           (GFX.Render :Steps .render-steps))))
-
-    (defmesh main)
-    (schedule main main-wire)
-    (run main (/ 1.0 60))
+    @mesh(main)
+    @schedule(main main-wire)
+    @run(main FPS: 60)
     ```
 
-Try running the program now. Something happens! The window that you see was created with the code above. Changing the values in the `:Width` and `:Height` parameters will change the size of this window accordingly.
+Try running the program now. Something happens! The window that you see was created with the code above.
 
 ## Step 1.5: Drawing the Image on the Screen
 
-The last step is to draw the image on screen. To do this, we use the `UI.Area`, the `UI.Image`, and `GFX.Texture` shards.
-
-Create a `load-texture` shard to load our images as textures. This would make it easier for our computer to load the images and ensure that our program runs smoothly even if we use large images.
+The last step is to draw the image on screen. To do this, we use the `UI.Area` and `UI.Image`.
 
 === "Code Added"
-    
-    ```{.clojure .annotate linenums="1"}
-    (defshards load-texture [name] ;; (1)
-        (LoadImage name)
-        (GFX.Texture))
-    ```
 
-    1. The `load-texture` shard will allow our images to be loaded as textures.
-
-    ```{.clojure .annotate linenums="1"}
-      (UI.Area ;; (1)
-       :Position (float2 0 0)
-       :Anchor Anchor.Center
-       :Contents
-       (->
-        .character-image (UI.Image :Scale (float2 0.2))))
+    ```shards
+      UI.Area(  ;; (1)
+       Position: @f2(0.0 0.0)
+       Anchor: Anchor::Center
+       Contents: {
+        character-image | UI.Image(Scale: @f2(0.2))
+      })
     ```
 
     1.  `UI.Area` allows our image to be drawn on screen in the specified area.
 
 === "Full Code So Far"
     
-    ```{.clojure .annotate linenums="1"}
-    (defshards load-texture [name] ;; (1)
-      (LoadImage name)
-      (GFX.Texture))
+    ```shards
+    @define(initialize-images {
+      LoadImage("GlodImages/Character1.png") = character-image
+    })
 
-    (defshards initialize-character []
-      (load-texture "GlodImages/Character1.png") = .character-image)
+    @wire(main-wire {
+      Once({
+        @initialize-images
+      })
 
-    (defloop main-wire
-      (Setup
-       (initialize-character))
+      GFX.MainWindow(
+        Contents: {
+          Once({
+            GFX.DrawQueue >= ui-draw-queue
+            GFX.UIPass(ui-draw-queue) >> render-steps
+          })
+          UI(
+            UI.Area(
+              Position: @f2(0.0 0.0)
+              Anchor: Anchor::Center
+              Contents: {
+                character-image | UI.Image
+              }
+            )
+          ) | UI.Render(ui-draw-queue)
+          
+          GFX.Render(Steps: render-steps)
+        }
+      )
+    } Looped: true)
 
-      (GFX.MainWindow
-       :Title "MainWindow" :Width 1920 :Height 1080
-       :Contents
-       (->
-        (Setup
-         (GFX.DrawQueue) >= .ui-draw-queue
-         (GFX.UIPass .ui-draw-queue) >> .render-steps)
-        .ui-draw-queue (GFX.ClearQueue)
-
-        (UI
-         .ui-draw-queue
-         (->
-          (UI.Area
-           :Position (float2 0 0)
-           :Anchor Anchor.Center
-           :Contents
-           (->
-            .character-image (UI.Image :Scale (float2 0.2))))))
-
-        (GFX.Render :Steps .render-steps))))
-
-    (defmesh main)
-    (schedule main main-wire)
-    (run main (/ 1.0 60))
-
+    @mesh(main)
+    @schedule(main main-wire)
+    @run(main FPS: 60)
     ```
-    
-    1. Adding `[name]` when creating a shard allows that shard to take in an input variable. Here `[name]` will be used as the input for `load-texture`.
 
 Try running the program now. You should see adorable little Glod in the center of your screen.
 

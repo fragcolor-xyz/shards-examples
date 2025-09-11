@@ -43,691 +43,570 @@ This will use the same logic and principles as when creating an animation.
 
 You should be familiar with creating animations by now!
 
-As per before, let us create a new shard `initialize-effects` that will house all the variables that we need. Remember to call `initialize-effects` under `Setup` in `main-wire`.
+1. create our sequence which holds each frame in our animation
+
+2. create an index that will increase every frame
+
+3. Use `UI.Area` and `UI.Image` to render our animation
+
+4. Reset our index back to 0 whenever it goes beyond the index max
+
+5. house our logic in a loopable wire.
 
 === "Code Added"
     
-    ```{.clojure .annotate linenums="1"}
-    ;; ------------- initialize effects -------------
-    (defshards initialize-effects []
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_1.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_2.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_3.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_4.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_5.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_6.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_7.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_8.png") >> .score-effect-array
-      (Count .score-effect-array) (Math.Subtract 1) >= .score-effect-array-index-max
-      0 >= .score-effect-array-index
-      0.05 >=  .score-effect-animation-speed ;; Reduce number to increase animation speed
-      false >= .score-effect-play
+    ```shards
+    LoadImage("GlodImages/FX/Score_Effect_1.png") >> score-fx-sequence ;; creating our animation sequence, added to our initialize-images
+    LoadImage("GlodImages/FX/Score_Effect_2.png") >> score-fx-sequence
+    LoadImage("GlodImages/FX/Score_Effect_3.png") >> score-fx-sequence
+    LoadImage("GlodImages/FX/Score_Effect_4.png") >> score-fx-sequence
+    LoadImage("GlodImages/FX/Score_Effect_5.png") >> score-fx-sequence
+    LoadImage("GlodImages/FX/Score_Effect_6.png") >> score-fx-sequence
+    LoadImage("GlodImages/FX/Score_Effect_7.png") >> score-fx-sequence
+    LoadImage("GlodImages/FX/Score_Effect_8.png") >> score-fx-sequence
 
-      0.0 >= .score-effect-position-x
-      0.0 >= .score-effect-position-y
-      (float2 .score-effect-position-x .score-effect-position-y) >= .score-effect-position)
+    @wire(animate-score-fx { ;; we will not be looping our animation because we only want it to run once
+      Once({
+        0.08 = idle-animation-speed
+      })
+      score-fx-idx | Math.Add(1) > score-fx-idx
+      Pause(idle-animation-speed)
+      ;; we do not loop our animation this time because we only want it to happen once
+    } Looped: true)
     ```
 
-    ```{.clojure .annotate linenums="1"}
-    (initialize-effects)
+This time, because we only want our score effect to happen only when we score, we will house our `UI.Area` in a separate looping wire and use `Spawn` to schedule the wire only when we need it to.
+
+=== "Code Added"
+    
+  ```shards
+  @wire(score-fx {
+    Once({
+      0 >= score-fx-idx ;; this variable can be initialized here as we are only using it in animate-score-fx and not main-wire
+    })
+
+    Step(animate-score-fx)
+
+    UI.Area(
+      Position: @f2(pos-x pos-y) ;; we want the effect to spawn at our Glod's position
+      Anchor: Anchor::Bottom
+      Contents: {
+        score-fx-sequence | Take(score-fx-idx) | UI.Image(@f2(0.2 0.2))
+      }
+    )
+  } Looped: true)
+  ```
+
+Then we `Spawn` `score-fx`, whenever our coin scoring logic happens.
+
+=== "Code Added"
+    
+  ```shards
+  ;; coin-scoring logic
+  When(
+    Predicate: {
+      coin-pos-x | IsMoreEqual(collision-x-lower-limit)
+      And
+      coin-pos-x | IsLessEqual(collision-x-upper-limit)
+      And
+      coin-pos-y | IsMoreEqual(collision-y-lower-limit)
+      And
+      coin-pos-y | IsLessEqual(collision-y-upper-limit)
+      And
+      scored | Is(false)
+    }
+    Action: {
+      score | Math.Add(1) > score
+      true > scored
+      Spawn(score-fx)
+    }
+  )
+  ```
+
+Lastly, because we don't want our `score-fx` to loop forever, so we `Stop` it after it does the animation once, which is when `score-fx-idx` reaches `index-max`.
+
+=== "Code Added"
+    ```shards
+    @wire(score-fx {
+      Once({
+        0 >= score-fx-idx
+      })
+
+      Step(animate-score-fx)
+
+      score-fx-idx
+      When(
+        Predicate: IsMoreEqual((Count(score-fx-sequence)))
+        Action: {
+          none ;; we need to ensure that in either scenarios, the output of the wire is the same. The none here ensures that
+          Stop
+        }
+      )
+
+      UI.Area(
+        Position: @f2(pos-x pos-y) ;; we want the effect to spawn at our Glod's position
+        Anchor: Anchor::Bottom
+        Contents: {
+          score-fx-sequence | Take(score-fx-idx) | UI.Image(@f2(0.2 0.2))
+        }
+      )
+
+      none ;; we need to ensure that in either scenarios, the output of the wire is the same. The none here ensures that
+    } Looped: true)
     ```
 
-Next we create a `UI.Area` that will house our animation.
-
-=== "Code Added"
-    
-  ```{.clojure .annotate linenums="1"}
-  ;; ----------------- Visual Effects  -------------------
-    (UI.Area :Position .score-effect-position
-        :Anchor Anchor.Top
-        :Contents (->
-              .score-effect-array (Take .score-effect-array-index) (UI.Image :Scale (float2 0.15))))
-  ```
-
-We adjust the value of `.character-x-velocity` whenever the left and right directional keys are pressed.
-
-Remember to return the value of `.character-x-velocity` to zero when the directional keys are released - otherwise Glod will move to the left or right forever!
-
-=== "Code Added"
-    
-  ```{.clojure .annotate linenums="1"}
-  ;; ------------ ScoreEffect Animation Position ------------
-  (defshards scoreEffect-animation-position []
-    .Y (Math.Add -15.0)
-    > .score-effect-position-y
-    .X
-    > .score-effect-position-x
-
-    (float2 .score-effect-position-x .score-effect-position-y)
-    > .score-effect-position)
-  ```
-
-  ```{.clojure .annotate linenums="1"}
-  ;; ------------ ScoreEffect Animation ------------
-  (defloop scoreEffect-animation-logic
-    .score-effect-play
-    (When
-     :Predicate (Is true)
-     :Action
-     (->
-      .score-effect-array-index (Math.Add 1)
-      > .score-effect-array-index
-      (When
-       :Predicate (IsMore .score-effect-array-index-max)
-       :Action
-       (->
-        0 > .score-effect-array-index
-        false > .score-effect-play))))
-    (Pause .score-effect-animation-speed))
-  ```
-
-Next we have some logic to loop and play our animation. This animation plays when `.score-effect-play` is true.
-
-This variable will then go false at the end of the animation for it to stop. This is the technique to use when you want an animation to only play once.
-
-=== "Code Added"
-    
-  ```{.clojure .annotate linenums="1"}
-  true > .score-effect-play
-  ```
-
-Then remember to make `.score-effect-play` true whenever we collect a coin. We can add this line in our scoring code that we have written previously.
-
-=== "Code Added"
-    
-  ```{.clojure .annotate linenums="1"}
-  (scoreEffect-animation-position)
-  (Step scoreEffect-animation-logic)
-  ```
-
-Lastly, remember to call your shard and loop in your `main-wire`.
+Now let's put it all together.
 
 === "Full Code So Far"
     
-    ```{.clojure .annotate linenums="1"}
-    (defshards LoadTexture [name]
-      (LoadImage name)
-      (GFX.Texture))
-
-    (defshards initialize-character []
-      (LoadTexture "GlodImages/Character1_Jumping_Left.png") = .character-jumping-left
-      (LoadTexture "GlodImages/Character1_Jumping_Right.png") = .character-jumping-right
-
-      0 >= .character-state
-      0 >= .character-direction
-      true >= .can-jump
-
-      0.0 >= .X
-      620.0 >= .Y
-      (float2 .X .Y) >= .character-position
-      0.0 >= .character-x-velocity
-      0.0 >= .character-y-velocity
-      0.0 >= .character-y-acceleration
-
-      ;; ---------- Character Idle Array (Facing Left) ----------
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_4.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> .idle-left-image-array
-
-      ;; ---------- Character Idle Array (Facing Right) ----------------
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> .idle-right-image-array
-
-      0 >= .idle-image-index
-      (Count .idle-left-image-array) = .idle-image-index-max
-      0.08 = .idle-animation-speed
-
-      ;; -------------- Walking Array (Facing Left) -----------------
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> .walking-left-image-array
-
-      ;; ----------- Walking Array (Facing Right) ---------------
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> .walking-right-image-array
-
-      (Count .walking-left-image-array) = .walking-image-index-max
-      0 >= .walking-image-index
-      0.08 = .walking-animation-speed) ;; Reduce number to increase animation speed
-
-    ;; --------- Idle Animation Loop ---------
-    (defloop idle-animation
-      .idle-image-index (Math.Add 1)
-      > .idle-image-index
-      (When :Predicate (IsMoreEqual .idle-image-index-max)
-            :Action (-> 0 > .idle-image-index))
-      (Pause .idle-animation-speed))
-
-    ;; -------- Walking Animation Loop --------
-    (defloop walking-animation
-      .walking-image-index (Math.Add 1)
-      > .walking-image-index
-      (When :Predicate (IsMoreEqual .walking-image-index-max)
-            :Action (-> 0 > .walking-image-index))
-      (Pause .walking-animation-speed))
-
-    ;; ---------- character-boundary ------------
-
-    (defshards clamp [var min max]
-      var (Max min) (Min max) > var)
-
-    ;; ------------ Character Run Logic ----------------
-    (defshards run-logic []
-      .X (Math.Add .character-x-velocity)
-      > .X
-
-      (float2 .X .Y) > .character-position
-
-      (clamp .X -600.0 600.0))
-
-    ;; ------------ Character gravity-logic ---------------
-    (defshards gravity-logic []
-      .Y (Math.Add .character-y-velocity)
-      > .Y
-
-      .character-y-velocity (Math.Add .character-y-acceleration)
-      > .character-y-velocity
-
-      (float2 .X .Y) > .character-position
-
-      (clamp .Y -620.0 620.0)
-      .Y
-      (When :Predicate (IsMoreEqual 620.0)
-            :Action (->
-                    0.0 > .character-y-velocity
-                    0.0 > .character-y-acceleration
-                    true > .can-jump
-                    .character-state
-                    (When :Predicate (Is 3)
-                          :Action (->
-                                    0 > .character-state)))))
-
-    ;; ------- Button Inputs ----------
-    (defshards button-inputs []
-      (Inputs.KeyDown
-      :Key "left"
-      :Action (->
-                (Msg "left")
-
-                .character-state
-                (When :Predicate (Is 0)
-                      :Action (-> 1 > .character-state))
-
-                0 > .character-direction
-                -5.0 > .character-x-velocity))
-
-      (Inputs.KeyDown
-      :Key "right"
-      :Action (->
-                (Msg "right")
-
-                .character-state
-                (When :Predicate (Is 0)
-                      :Action (-> 2 > .character-state))
-                1 > .character-direction
-                5.0 > .character-x-velocity))
-
-      (Inputs.KeyDown
-      :Key "up"
-      :Action (->
-                (Msg "up")
-                3 > .character-state
-                .can-jump
-                (When :Predicate (Is true)
-                      :Action (->
-                              -20.0 > .character-y-velocity
-                              1.0 >  .character-y-acceleration
-                              false >= .can-jump))))
-
-      (Inputs.KeyUp
-      :Key "left"
-      :Action (->
-                0 > .character-state
-                0.0 > .character-x-velocity))
-
-      (Inputs.KeyUp
-      :Key "right"
-      :Action (->
-                0 > .character-state
-                0.0 > .character-x-velocity)))
-
-    ;; -------------- Initialize Coin ----------
-    (defshards initialize-coin []
-      (LoadTexture "GlodImages/Coin/Coin_1.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_2.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_3.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_4.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_5.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_6.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_7.png") >> .coin-image-array
-      (Count .coin-image-array) = .coin-image-index-max
-      0 >= .coin-image-index
-      0.1 = .coin-animation-speed
-
-      ;; ----- Coin 1 ------
-      0.0 >= .coinx-1
-      0.0 >= .coiny-1
-      (float2 .coinx-1 .coiny-1) >= .coin-position-1
-      0.0 >= .coin-velocity-1
-      0.5 >= .coin-acceleration
-
-      ;; ----- Coin 2 ----
-      0.0 >= .coinx-2
-      0.0 >= .coiny-2
-      (float2 .coinx-2 .coiny-2) >= .coin-position-2
-      0.0 >= .coin-velocity-2)
-
-    ;; -------------- Coin Animation ------------------
-    (defloop coin-animation
-      .coin-image-index (Math.Add 1)
-      > .coin-image-index
-      (When :Predicate (IsMoreEqual .coin-image-index-max)
-            :Action (-> 0 > .coin-image-index))
-
-      (Pause .coin-animation-speed))
-
-    ;; ------------- Coin Gravity ------------------
-    (defshards coin-gravity-logic [coiny coinx coin-velocity coin-position]
-
-      coiny (Math.Add coin-velocity)
-      > coiny
-
-      coin-velocity (Math.Add .coin-acceleration)
-      > coin-velocity
-
-      (float2 coinx coiny) > coin-position)
-
-    ;; ------------- Random Coin ------------------
-    (defshards random-coin [coinx coiny coin-velocity coin-position pause-length]
-      coinx
-      (RandomFloat :Max 1200.0)
-      > coinx
-      (Math.Subtract 600.0)
-      > coinx
-
-      0.0 > coiny
-      0.0 > coin-velocity
-      (float2 coinx coiny) > coin-position
-      (Pause pause-length))
-
-    (defloop random-coin-1
-      (random-coin .coinx-1 .coiny-1 .coin-velocity-1 .coin-position-1 1.5))
-
-    (defloop random-coin-2
-      (random-coin .coinx-2 .coiny-2 .coin-velocity-2 .coin-position-2 2.5))
-
-    ;; ------------ Initialize Spiked CanonBalls ---------------
-    (defshards initialize-spiked-canonballs []
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall1.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall2.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall3.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall4.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall5.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall6.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall7.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall8.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall9.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall10.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall11.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall12.png") >> .spikeball-array
-
-      (Count .spikeball-array) = .spikeball-array-index-max
-      0 >= .spikeball-index
-      0.06 = .spikeball-animation-speed
-
-      ;; ---------- spikball-1 -------------
-      1.0 >= .spikeball-velocity-1
-      0.0 >= .spikeball-y-1
-      0.0 >= .spikeball-x-1
-      (float2 .spikeball-x-1 .spikeball-y-1) >= .spikeball-position-1
-
-      ;; ---------- spikeball-2 -------------
-      1.0 >= .spikeball-velocity-2
-      0.0 >= .spikeball-y-2
-      0.0 >= .spikeball-x-2
-      (float2 .spikeball-x-2 .spikeball-y-2) >= .spikeball-position-2
-
-    ;; ---------- SpikeBall_3 -------------
-      1.0 >= .spikeball-velocity-3
-      0.0 >= .spikeball-y-3
-      0.0 >= .spikeball-x-3
-      (float2 .spikeball-x-3 .spikeball-y-3) >= .spikeball-position-3
-
-      0.5 >= .spikeball-acceleration)
-
-    ;;------------- Spiked CanonBall Animation -------------
-    (defloop spiked-canonball-animation
-      .spikeball-index (Math.Add 1)
-      > .spikeball-index
-      (When :Predicate (IsMoreEqual .spikeball-array-index-max)
-            :Action (-> 0 > .spikeball-index))
-
-      (Pause .spikeball-animation-speed))
-
-    ;; ------------- SpikeBall_Gravity_Logic -------------
-    (defshards spikeball-gravity-logic [spikeball-y spikeball-velocity spikeball-position spikeball-x]
-      spikeball-y (Math.Add spikeball-velocity)
-      > spikeball-y
-      spikeball-velocity (Math.Add .spikeball-acceleration)
-      > spikeball-velocity
-      (float2 spikeball-x spikeball-y) > spikeball-position)
-
-    ;; ------------- Randomise Spikeball ----------------
-    (defshards randomise-spikeball [spikeball-x spikeball-y spikeball-velocity spikeball-position pausefloat]
-      spikeball-x
-      (RandomFloat :Max 1200.0)
-      > spikeball-x
-      (Math.Subtract 600.0)
-      > spikeball-x
-
-      0.0 > spikeball-y
-      0.0 > spikeball-velocity
-      (float2 spikeball-x spikeball-y) > spikeball-position
-      .spikeball-x-1
-      (Pause pausefloat))
-
-    (defloop spikeball-1
-      (randomise-spikeball .spikeball-x-1 .spikeball-y-1 .spikeball-velocity-1 .spikeball-position-1 2))
-    (defloop spikeball-2
-      (randomise-spikeball .spikeball-x-2 .spikeball-y-2 .spikeball-velocity-2 .spikeball-position-2 3))
-    (defloop spikeball-3
-      (randomise-spikeball .spikeball-x-3 .spikeball-y-3 .spikeball-velocity-3 .spikeball-position-3 4))
-
-    ;; --------- Game Elements ------------
-    (defshards initialize-game-elements []
-      ;;------------ Scoring Limits ----------
-      0 >= .score
-      false >= .scored
-
-      .X (Math.Add 50.0)
-      >= .scoringUpper-x-limit
-      .X (Math.Subtract 50.0)
-      >= .scoringLower-x-limit
-
-      .Y (Math.Add 10.0)
-      >= .scoringUpper-y-limit
-      .Y (Math.Subtract 10.0)
-      >= .scoringLower-y-limit
-
-      ;; ---------- Damage Limits ------------
-      .X (Math.Add 50.0)
-      >= .damageUpper-x-limit
-      .X (Math.Subtract 50.0)
-      >= .damageLower-x-limit
-
-      .Y (Math.Add 5.0)
-      >= .damageUpper-y-limit
-      .Y (Math.Subtract 5.0)
-      >= .damageLower-y-limit
-
-      false >= .damaged)
-
-    ;; --------- Scoring ----------
-    (defshards score-collision [coinx coiny]
-      coinx
-      (When :Predicate (->
-                        (IsLess .scoringUpper-x-limit)
-                        (And)
-                        coinx (IsMore .scoringLower-x-limit)
-                        (And)
-                        coiny (IsLess .scoringUpper-y-limit)
-                        (And)
-                        coiny (IsMore .scoringLower-y-limit)
-                        (And)
-                        .scored (Is false))
-            :Action (->
-                    true > .scored
-                    (Log "Score: "))))
-
-    (defshards scoring []
-      .X (Math.Add 50.0)
-      > .scoringUpper-x-limit
-      .X (Math.Subtract 50.0)
-      > .scoringLower-x-limit
-
-      .Y (Math.Add 10.0)
-      > .scoringUpper-y-limit
-      .Y (Math.Subtract 10.0)
-      > .scoringLower-y-limit
-
-      (score-collision .coinx-1 .coiny-1)
-      (score-collision .coinx-2 .coiny-2)
-
-      .scored
-      (When :Predicate (Is true)
-            :Action (->
-                    .score (Math.Add 1)
-                    > .score
-                    true > .score-effect-play
-                    false > .scored)))
-
-    ;; ------------- spikeBall-collision-logic --------------
-    (defshards spikeBall-collision-logic [spikeBall-x spikeBall-y]
-
-      spikeBall-x
-      (If :Predicate (-> (IsLess .damageUpper-x-limit)
-                        (And)
-                        spikeBall-x (IsMore .damageLower-x-limit)
-                        (And)
-                        spikeBall-y (IsLess .damageUpper-y-limit)
-                        (And)
-                        spikeBall-y (IsMore .damageLower-y-limit))
-
-          :Then (-> .damaged
-                    (When :Predicate (Is false)
-                          :Action (->
-                                  true > .damaged
-                                  (Log "damaged: "))))))
-
-    ;; -------------- Damaging --------------
-    (defshards damaging []
-
-      .X (Math.Add 120.0)
-      > .damageUpper-x-limit
-      .X (Math.Subtract 120.0)
-      > .damageLower-x-limit
-
-      .Y (Math.Add 15.0)
-      > .damageUpper-y-limit
-      .Y (Math.Subtract 15.0)
-      > .damageLower-y-limit
-
-      (spikeBall-collision-logic .spikeball-x-1 .spikeball-y-1)
-      (spikeBall-collision-logic .spikeball-x-2 .spikeball-y-2)
-      (spikeBall-collision-logic .spikeball-x-3 .spikeball-y-3)
-
-      .damaged
-      (When :Predicate (Is true)
-            :Action (->
-                    .score (Math.Subtract 1)
-                    > .score
-                    false > .damaged)))
-
-    ;; ------------- initialize effects -------------
-    (defshards initialize-effects []
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_1.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_2.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_3.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_4.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_5.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_6.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_7.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_8.png") >> .score-effect-array
-      (Count .score-effect-array) (Math.Subtract 1) >= .score-effect-array-index-max
-      0 >= .score-effect-array-index
-      0.05 >=  .score-effect-animation-speed ;; Reduce number to increase animation speed
-      false >= .score-effect-play
-
-      0.0 >= .score-effect-position-x
-      0.0 >= .score-effect-position-y
-      (float2 .score-effect-position-x .score-effect-position-y) >= .score-effect-position)
-
-    ;; ------------ ScoreEffect_Animation_Position ------------
-    (defshards scoreEffect-animation-position []
-      .Y (Math.Add -15.0)
-      > .score-effect-position-y
-
-      .X
-      > .score-effect-position-x
-
-      (float2 .score-effect-position-x .score-effect-position-y)
-      > .score-effect-position)
-
-    ;; ------------ ScoreEffect Animation ------------
-    (defloop scoreEffect-animation-logic
-
-      .score-effect-play
-      (When :Predicate (Is true)
-            :Action (->
-                    .score-effect-array-index (Math.Add 1)
-                    > .score-effect-array-index
-                    (When :Predicate (IsMore .score-effect-array-index-max)
-                          :Action (->
-                                    0 > .score-effect-array-index
-                                    false > .score-effect-play))))
-
-
-      (Pause .score-effect-animation-speed))
-
-    ;; ------ UI Style --------
-    (def style
-      {:override_text_style "MyStyle"
-      :text_styles
-      [{:name "MyStyle"
-        :size (float 46)
-        :family "Monospace"}]
-      :visuals
-      {:override_text_color (color 250 250 250)}})
-
-    ;;---------- main-wire ------------
-    (defloop main-wire
-      (Setup
-      (initialize-character)
-      (initialize-coin)
-      (initialize-game-elements)
-      (initialize-spiked-canonballs)
-      (initialize-effects))
-
-      (coin-gravity-logic .coiny-1 .coinx-1 .coin-velocity-1 .coin-position-1)
-      (coin-gravity-logic .coiny-2 .coinx-2 .coin-velocity-2 .coin-position-2)
-
-      (run-logic)
-      (gravity-logic)
-      (scoring)
-      (damaging)
-
-      (Step idle-animation)
-      (Step walking-animation)
-
-      (Step coin-animation)
-      (Step random-coin-1)
-      (Step random-coin-2)
-
-      (Step spiked-canonball-animation)
-      (spikeball-gravity-logic .spikeball-y-1 .spikeball-velocity-1 .spikeball-position-1 .spikeball-x-1)
-      (spikeball-gravity-logic .spikeball-y-2 .spikeball-velocity-2 .spikeball-position-2 .spikeball-x-2)
-      (spikeball-gravity-logic .spikeball-y-3 .spikeball-velocity-3 .spikeball-position-3 .spikeball-x-3)
-      (Step  spikeball-1)
-      (Step  spikeball-2)
-      (Step  spikeball-3)
-
-      (scoreEffect-animation-position)
-      (Step scoreEffect-animation-logic)
-
-      (GFX.MainWindow
-      :Title "MainWindow" :Width 1920 :Height 1080
-      :Contents
-      (-> (Setup
-            (GFX.DrawQueue) >= .ui-draw-queue
-            (GFX.UIPass .ui-draw-queue) >> .render-steps)
-          .ui-draw-queue (GFX.ClearQueue)
-
-          (UI
-            .ui-draw-queue
-            (->
-            (UI.Area :Position .character-position
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                .character-state
-                                (Match [0 (-> .character-direction
-                                              (Match [0 (-> .idle-left-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))
-                                                      1 (-> .idle-right-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))]
-                                                      :Passthrough false))
-                                        1 (-> .walking-left-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-                                        2 (-> .walking-right-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-                                        3 (->  .character-direction
-                                                (Match [0 (-> .character-jumping-left (UI.Image :Scale (float2 0.2)))
-                                                        1 (-> .character-jumping-right (UI.Image :Scale (float2 0.2)))]
-                                                      :Passthrough false))]
-                                        :Passthrough false)))
-
-            ;; ---------- Coins -----------
-
-            (UI.Area :Position .coin-position-1
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                .coin-image-array (Take .coin-image-index) (UI.Image :Scale (float2 0.2))))
-
-            (UI.Area :Position .coin-position-2
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                .coin-image-array (Take .coin-image-index) (UI.Image :Scale (float2 0.2))))
-
-            ;; ------------SpikeBalls ------------
-
-            (UI.Area :Position .spikeball-position-1
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
-
-            (UI.Area :Position .spikeball-position-2
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
-
-            (UI.Area :Position .spikeball-position-3
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
-
-            ;; ----------------- Visual Effects  -------------------
-            (UI.Area :Position .score-effect-position
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                .score-effect-array (Take .score-effect-array-index) (UI.Image :Scale (float2 0.15))))
-
-            (UI.Area :Position (float2 -40 20)
-                      :Anchor Anchor.TopRight
-                      :Contents (->
-                                style (UI.Style)
-                                .score (ToString) (UI.Label)))))
-
-          (button-inputs)
-
-          (GFX.Render :Steps .render-steps))))
-
-
-    (defmesh main)
-    (schedule main main-wire)
-    (run main (/ 1.0 60))
+    ```shards
+    @define( initialize-images {
+      LoadImage("GlodImages/Character1_Left.png") = character-image
+      LoadImage("GlodImages/Character1_Left.png") = character-left
+      LoadImage("GlodImages/Character1_Right.png") = character-right
+      LoadImage("GlodImages/Character1_Jumping_Left.png") = character-jumping-left
+      LoadImage("GlodImages/Character1_Jumping_Right.png") = character-jumping-right
+      LoadImage("GlodImages/Character1_Jumping.png") = character-jumping
+
+      ;; ---------- Character Idle sequence (Facing Left) ----------------
+
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_4.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> idle-left-image-sequence
+
+      ;; ---------- Character Idle sequence (Facing Right) ----------------
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> idle-right-image-sequence
+
+      ;; -------------- Walking sequence (Facing Left) -----------------
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> walking-left-image-sequence
+
+      ;; ----------- Walking sequence (Facing Right) ---------------
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> walking-right-image-sequence
+
+      ;; ------------- Coin ---------------
+      LoadImage("GlodImages/Coin/Coin_1.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_2.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_3.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_4.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_5.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_6.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_7.png") >> coin-img-sequence
+
+      ;; ------------- Spiked Cannonball -------------
+      LoadImage("GlodImages/SpikeBall/SpikeBall1.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall2.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall3.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall4.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall5.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall6.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall7.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall8.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall9.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall10.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall11.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall12.png") >> spikeball-sequence
+
+      ;; -------------- score fx ----------------
+      LoadImage("GlodImages/FX/Score_Effect_1.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_2.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_3.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_4.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_5.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_6.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_7.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_8.png") >> score-fx-sequence
+    })
+
+    @define( ui-style {
+      UI.Style(OverrideTextStyle: "base-ui" TextStyles: {base-ui: {Size: 16.0
+                                                                Family: FontFamily::Proportional}} OverrideTextColor: @color(255 255 255))
+    })
+
+    @wire(coin {
+      Once({
+        ;; ------------ coin variables ------------- ;; all variables that we want to be unique to each coin, we initialize in the new wire instead
+        0 >= coin-image-index
+        RandomFloat(Max: 1000.0) | Math.Subtract(500.0) >= coin-pos-x 
+        -600.0 >= coin-pos-y
+        0.0 >= coin-velocity
+        0.3 >= coin-acceleration
+        
+        false >= scored
+      })
+
+      pos-x | Math.Add(60.0) = collision-x-upper-limit ;; tweak the values added or subtracted accordingly
+      pos-x | Math.Subtract(60.0) = collision-x-lower-limit
+
+      pos-y | Math.Add(70.0) = collision-y-upper-limit
+      pos-y | Math.Subtract(70.0) = collision-y-lower-limit
+
+      ;; coin-falling-logic
+      coin-pos-y | Math.Add(coin-velocity) > coin-pos-y
+      coin-velocity | Math.Add(coin-acceleration) > coin-velocity
+
+      ;; coin-scoring logic
+      When(
+        Predicate: {
+          coin-pos-x | IsMoreEqual(collision-x-lower-limit)
+          And
+          coin-pos-x | IsLessEqual(collision-x-upper-limit)
+          And
+          coin-pos-y | IsMoreEqual(collision-y-lower-limit)
+          And
+          coin-pos-y | IsLessEqual(collision-y-upper-limit)
+          And
+          scored | Is(false)
+        }
+        Action: {
+          score | Math.Add(1) > score
+          Spawn(score-fx)
+          true > scored
+          
+        }
+      )
+
+      When(
+        Predicate: {
+          scored | Is(true)
+          Or ;; or allows the code in Action to happen when either of these conditions return true
+          coin-pos-y | IsMore(0.0)
+        }
+        Action: {
+          -600.0 > coin-pos-y ;; reset our coin's y position
+          RandomFloat(Max: 1000.0) | Math.Subtract(500.0) > coin-pos-x
+          0.0 > coin-velocity
+          false > scored ;; reset scored so that we can score again
+        }
+      )
+
+      Step(animate-coin)
+
+      UI.Area(
+        Position: @f2(coin-pos-x  coin-pos-y)
+        Anchor: Anchor::Bottom
+        Contents: {
+          coin-img-sequence | Take(coin-image-index) | UI.Image(@f2(0.2 0.2))
+      })
+    } Looped: true)
+
+    @wire(spike-cannonball {
+      Once({
+        1.0 >= spikeball-velocity
+        -600.0 >= spikeball-y
+        0.0 >= spikeball-x
+
+        0.5 >= spikeball-acceleration
+
+        0 >= spikeball-index
+        
+        false >= score-subtracted
+      })
+
+      pos-x | Math.Add(50.0) = collision-x-upper-limit ;; tweak the values added or subtracted accordingly
+      pos-x | Math.Subtract(50.0) = collision-x-lower-limit
+
+      pos-y | Math.Add(50.0) = collision-y-upper-limit
+      pos-y | Math.Subtract(50.0) = collision-y-lower-limit
+
+      spikeball-y | Math.Add(spikeball-velocity) > spikeball-y
+      spikeball-velocity | Math.Add(spikeball-acceleration) > spikeball-velocity
+
+      When(
+        Predicate: {
+          spikeball-x | IsMoreEqual(collision-x-lower-limit)
+          And
+          spikeball-x | IsLessEqual(collision-x-upper-limit)
+          And
+          spikeball-y | IsMoreEqual(collision-y-lower-limit)
+          And
+          spikeball-y | IsLessEqual(collision-y-upper-limit)
+          And
+          score-subtracted | Is(false)
+        }
+        Action: {
+          score | Math.Subtract(1) > score
+          true > score-subtracted
+        }
+      )
+
+      When(
+        Predicate: {
+          score-subtracted | Is(true)
+          Or
+          spikeball-y | IsMore(0.0)
+        }
+        Action: {
+          -600.0 > spikeball-y ;; reset our spikeball's y position
+          RandomFloat(Max: 1000.0) | Math.Subtract(500.0) > spikeball-x ;; randomize our spikeball-x position
+          0.0 > spikeball-velocity
+          false > score-subtracted ;; reset scored so that we can score again
+        }
+      )
+
+      Step(animate-spikeball)
+
+      UI.Area(
+        Position: @f2(spikeball-x spikeball-y)
+        Anchor: Anchor::Bottom ;; this makes the origin of our UI.Area the bottom right of the screen
+        Contents: {
+          spikeball-sequence | Take(spikeball-index) | UI.Image( Scale: @f2(0.10 0.10))
+        }
+      )
+    } Looped: false)
+
+    @wire(score-fx {
+      Once({
+        0 >= score-fx-idx
+      })
+
+      Step(animate-score-fx)
+
+      score-fx-idx
+      When(
+        Predicate: IsMoreEqual((Count(score-fx-sequence)))
+        Action: {
+          none
+          Stop
+        }
+      )
+
+      UI.Area(
+        Position: @f2(pos-x pos-y) ;; we want the effect to spawn at our Glod's position
+        Anchor: Anchor::Bottom
+        Contents: {
+          score-fx-sequence | Take(score-fx-idx) | UI.Image(@f2(0.2 0.2))
+        }
+      )
+
+      none
+    } Looped: true)
+
+    @wire( animate {
+      Once({
+        0.08 = idle-animation-speed
+      })
+      image-index | Math.Add(1) > image-index
+      Count(active-animation) = index-max
+      image-index
+      When(Predicate: IsMoreEqual(index-max) Action: {
+        0 > image-index
+      })
+      Pause(idle-animation-speed)
+    } Looped: true)
+
+    @wire( animate-coin { ;; create a new animate wire to handle our coin animation.
+      Once({
+        0.08 = coin-animation-speed
+      })
+      coin-image-index | Math.Add(1) > coin-image-index
+      Count(coin-img-sequence) = index-max
+      coin-image-index
+      When(Predicate: IsMoreEqual(index-max) Action: {
+        0 > coin-image-index
+      })
+      Pause(coin-animation-speed)
+    } Looped: true)
+
+    @wire(animate-spikeball {
+      Once({
+        0.06 >= spikeball-animation-speed
+      })
+
+      spikeball-index | Math.Add(1) > spikeball-index
+      Count(spikeball-sequence) = spikeball-max
+      spikeball-index
+      When(Predicate: IsMoreEqual(spikeball-max) Action: {
+        0 > spikeball-index
+      })
+      Pause(spikeball-animation-speed)
+    } Looped: true)
+
+    @wire(animate-score-fx {
+      Once({
+        0.08 = idle-animation-speed
+      })
+      score-fx-idx | Math.Add(1) > score-fx-idx
+      Pause(idle-animation-speed)
+    } Looped: true)
+
+    @define( button-inputs {
+
+      Inputs.IsKeyDown(
+        Key: "left"
+      )
+      When(Predicate: Is(true) Action: {
+        -1 > x-direction
+      })
+
+      Inputs.KeyUp(
+        Key: "left"
+        Action: {
+          0 > x-direction
+        }
+        Consume: false
+        SkipConsumed: true
+      )
+
+      Inputs.IsKeyDown(
+        Key: "right"
+      )
+      When(Predicate: Is(true) Action: {
+        1 > x-direction
+      })
+
+      Inputs.KeyUp(
+        Key: "right"
+        Action: {
+          0 > x-direction
+        }
+        Consume: false
+        SkipConsumed: true
+      )
+
+      Inputs.KeyDown(
+        Key: "up"
+        Action: {
+          Msg("up")
+          1 > y-direction
+          grounded
+          When(Predicate: Is(true) Action:{
+            30.0 > character-y-velocity
+            false > grounded ;; make grounded false when up key is pressed
+          })
+        }
+      )
+
+      Inputs.KeyUp(
+        Key: "up"
+        Action: {
+          0 > y-direction
+        }
+        Consume: false
+        SkipConsumed: true
+      )
+    })
+
+    @wire(main-wire {
+      Once({
+        @initialize-images
+        @i2(0 0) >= character-direction
+        0 >= x-direction
+        0 >= y-direction
+        0 >= image-index
+        idle-left-image-sequence >= idle-animation
+        character-jumping-left >= jumping-image
+        idle-left-image-sequence >= active-animation
+        0.0 >= pos-x
+        0.0 >= pos-y
+
+        3.0 >= character-x-velocity
+        0.0 >= character-y-velocity
+        2.0 >= character-y-acceleration
+
+        true >= grounded
+        0 >= score
+
+        0 >= spikeball-index
+      })
+
+      pos-x | Math.Add((character-x-velocity | Math.Multiply((x-direction | ToFloat)))) > pos-x
+      Clamp(Min: -600.0 Max: 600.0) > pos-x
+
+      grounded
+      If(Predicate: Is(false) Then: {
+        pos-y | Math.Subtract(character-y-velocity) > pos-y
+        character-y-velocity | Math.Subtract(character-y-acceleration) > character-y-velocity
+      })
+
+      pos-y
+      When(Predicate: IsMoreEqual(0.0) Action: {
+        true > grounded
+        0.0 > pos-y
+        0 > y-direction
+      })
+
+      GFX.MainWindow(
+        Contents: {
+          Once({
+            GFX.DrawQueue >= ui-draw-queue
+            GFX.UIPass(ui-draw-queue) >> render-steps
+          })
+          UI(
+            Contents: {
+            UI.Area(
+              Position: @f2(pos-x pos-y)
+              Anchor: Anchor::Bottom
+              Contents: {
+                character-direction
+                Match([
+                  @i2(0 0) {idle-animation > active-animation | Take(image-index)} ;;Take from the idle animation when in idle
+                  @i2(-1 0) {
+                    idle-left-image-sequence > idle-animation ;; Store the left idle animation into idle-animation when facing left
+                    character-jumping-left > jumping-image
+                    walking-left-image-sequence > active-animation | Take(image-index)
+                  }
+                  @i2(1 0) {
+                    idle-right-image-sequence > idle-animation ;; Store the right idle animation into idle-animation when facing right
+                    character-jumping-right > jumping-image
+                    walking-right-image-sequence > active-animation | Take(image-index)
+                  }
+                  none {jumping-image} ;; we can just use none to handle the jumping state as all other cases at this moment, the character is jumping
+                ] Passthrough: false)
+                UI.Image(@f2(0.2))
+              }
+            )
+
+            UI.Area(
+              Position: @f2(-40 -40)
+              Anchor: Anchor::BottomRight ;; this makes the origin of our UI.Area the bottom right of the screen
+              Contents: {
+                @ui-style
+                "Score: " | ToString | UI.Label
+                score | ToString | UI.Label ;; UI.Label only accepts a string, so we have to convert our score value which is an int, into a string first.
+              }
+            )
+
+            Do(spike-cannonball)
+
+            [1 2 3]
+            DoMany(coin ComposeSync: true)
+
+          }) | UI.Render(ui-draw-queue)
+
+          @button-inputs
+          @i2(x-direction y-direction) > character-direction
+          Step(animate)
+          
+          GFX.Render(Steps: render-steps)
+        }
+      )
+    } Looped: true)
+
+    @mesh(main)
+    @schedule(main main-wire)
+    @run(main FPS: 60)
     ```
 
 Now, it should be more fun for you to collect coins! 💰
@@ -738,697 +617,620 @@ Now following the same logic, we will create feedback for when we are damaged.
 
 - Download Damage Effect images [here](https://drive.google.com/drive/folders/1NYoURr7sryqWfbC0OMSf52CsbkHPPk25?usp=share_link).
 
-Create all the variables that we need for creating animations. Add it under `initialize-effects`.
+1. create our sequence which holds each frame in our animation
+
+2. create an index that will increase every frame
+
+3. Use `UI.Area` and `UI.Image` to render our animation
+
+4. Reset our index back to 0 whenever it goes beyond the index max
+
+5. house our logic in a loopable wire.
+
+6. `Detach` our wire and `Stop` it accordingly.
 
 === "Code Added"
     
-    ```{.clojure .annotate linenums="1"}
+    ```shards
     ;; --------------- Damaged Effect ----------------
-    (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_1.png") >> .damage-effect-array
-    (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_2.png") >> .damage-effect-array
-    (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_3.png") >> .damage-effect-array
-    (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_4.png") >> .damage-effect-array
-    (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_5.png") >> .damage-effect-array
-    (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_6.png") >> .damage-effect-array
-    (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_7.png") >> .damage-effect-array
-    (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_8.png") >> .damage-effect-array
-    (Count .damage-effect-array) (Math.Subtract 1) >= .damage-effect-array-index-max
-    0 >= .damage-effect-array-index
-    0.02 >=  .damage-effect-animation-speed ;; Reduce number to increase animation speed
-    false >= .damage-effect-play
+    LoadImage("GlodImages/Damage_Effect/Damaged_Effect_1.png") >> damage-fx-sequence ;; initialize in initialize-images
+    LoadImage("GlodImages/Damage_Effect/Damaged_Effect_2.png") >> damage-fx-sequence
+    LoadImage("GlodImages/Damage_Effect/Damaged_Effect_3.png") >> damage-fx-sequence
+    LoadImage("GlodImages/Damage_Effect/Damaged_Effect_4.png") >> damage-fx-sequence
+    LoadImage("GlodImages/Damage_Effect/Damaged_Effect_5.png") >> damage-fx-sequence
+    LoadImage("GlodImages/Damage_Effect/Damaged_Effect_6.png") >> damage-fx-sequence
+    LoadImage("GlodImages/Damage_Effect/Damaged_Effect_7.png") >> damage-fx-sequence
+    LoadImage("GlodImages/Damage_Effect/Damaged_Effect_8.png") >> damage-fx-sequence
+
+    @wire(animate-damage-fx { ;; we will not be looping our animation because we only want it to run once
+      Once({
+        0.08 = idle-animation-speed
+      })
+      damage-fx-idx | Math.Add(1) > damage-fx-idx
+      Pause(idle-animation-speed)
+      ;; we do not loop our animation this time because we only want it to happen once
+    } Looped: true)
     ```
 
-Create a `UI.Area` which will house our animation.
+This time, because we only want our damage effect to happen only when we are damaged, we will house our `UI.Area` in a separate looping wire and use `Detach` to schedule the wire only when we need it to. This time instead of using `Spawn`, we are using `Detach` instead. `Detach` only allows a single wire to be scheduled because it uses the original wire unlike `Spawn` which creates and schedules multiple copies of the specified wire. We don't want multiple flashes of the screen when we are damaged in quick succession and this only want a singular wire to be scheduled.
 
 === "Code Added"
-   
-    ```{.clojure .annotate linenums="1"}
-    (UI.Area :Position (float2 0 0)
-            :Anchor Anchor.TopLeft
-            :Contents (->
-                          .damage-effect-array (Take .damage-effect-array-index) (UI.Image :Scale (float2 10))))
-    ```
-
-Create our logic to loop our damage effect animation which plays when `.damage-effect-play` is true.
-
-=== "Code Added"
-   
-    ```{.clojure .annotate linenums="1"}
-    ;; ------------ DamageEffect Animation ------------
-    (defloop damage-effect-animation-logic
-
-      .damage-effect-play
-      (When :Predicate (Is true)
-            :Action (->
-                    .damage-effect-array-index (Math.Add 1)
-                    > .damage-effect-array-index
-                    (When :Predicate (IsMore .damage-effect-array-index-max)
-                          :Action (->
-                                    0 > .damage-effect-array-index
-                                    false > .damage-effect-play))))
-
-
-      (Pause .damage-effect-animation-speed))
-      
-    ```
-
- Make `.damage-effect-play` `true` whenever we collide with our spiked cannonballs. This will be added to our `spikeball-damage-logic`, which we have created earlier.
-
-=== "Code Added"
-   
-    ```{.clojure .annotate linenums="1"}
-    true > .damage-effect-play
-    ```
-
-=== "Full Code So Far"
     
-    ```{.clojure .annotate linenums="1"}
-    (defshards LoadTexture [name]
-      (LoadImage name)
-      (GFX.Texture))
-
-    (defshards initialize-character []
-      (LoadTexture "GlodImages/Character1_Jumping_Left.png") = .character-jumping-left
-      (LoadTexture "GlodImages/Character1_Jumping_Right.png") = .character-jumping-right
-
-      0 >= .character-state
-      0 >= .character-direction
-      true >= .can-jump
-
-      0.0 >= .X
-      620.0 >= .Y
-      (float2 .X .Y) >= .character-position
-      0.0 >= .character-x-velocity
-      0.0 >= .character-y-velocity
-      0.0 >= .character-y-acceleration
-
-      ;; ---------- Character Idle Array (Facing Left) ----------
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_4.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> .idle-left-image-array
-
-      ;; ---------- Character Idle Array (Facing Right) ----------------
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> .idle-right-image-array
-
-      0 >= .idle-image-index
-      (Count .idle-left-image-array) = .idle-image-index-max
-      0.08 = .idle-animation-speed
-
-      ;; -------------- Walking Array (Facing Left) -----------------
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> .walking-left-image-array
-
-      ;; ----------- Walking Array (Facing Right) ---------------
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> .walking-right-image-array
-
-      (Count .walking-left-image-array) = .walking-image-index-max
-      0 >= .walking-image-index
-      0.08 = .walking-animation-speed) ;; Reduce number to increase animation speed
-
-    ;; --------- Idle Animation Loop ---------
-    (defloop idle-animation
-      .idle-image-index (Math.Add 1)
-      > .idle-image-index
-      (When :Predicate (IsMoreEqual .idle-image-index-max)
-            :Action (-> 0 > .idle-image-index))
-      (Pause .idle-animation-speed))
-
-    ;; -------- Walking Animation Loop --------
-    (defloop walking-animation
-      .walking-image-index (Math.Add 1)
-      > .walking-image-index
-      (When :Predicate (IsMoreEqual .walking-image-index-max)
-            :Action (-> 0 > .walking-image-index))
-      (Pause .walking-animation-speed))
-
-    ;; ---------- character-boundary ------------
-
-    (defshards clamp [var min max]
-      var (Max min) (Min max) > var)
-
-    ;; ------------ Character Run Logic ----------------
-    (defshards run-logic []
-      .X (Math.Add .character-x-velocity)
-      > .X
-
-      (float2 .X .Y) > .character-position
-
-      (clamp .X -600.0 600.0))
-
-    ;; ------------ Character gravity-logic ---------------
-    (defshards gravity-logic []
-      .Y (Math.Add .character-y-velocity)
-      > .Y
-
-      .character-y-velocity (Math.Add .character-y-acceleration)
-      > .character-y-velocity
-
-      (float2 .X .Y) > .character-position
-
-      (clamp .Y -620.0 620.0)
-      .Y
-      (When :Predicate (IsMoreEqual 620.0)
-            :Action (->
-                    0.0 > .character-y-velocity
-                    0.0 > .character-y-acceleration
-                    true > .can-jump
-                    .character-state
-                    (When :Predicate (Is 3)
-                          :Action (->
-                                    0 > .character-state)))))
-
-    ;; ------- Button Inputs ----------
-    (defshards button-inputs []
-      (Inputs.KeyDown
-      :Key "left"
-      :Action (->
-                (Msg "left")
-
-                .character-state
-                (When :Predicate (Is 0)
-                      :Action (-> 1 > .character-state))
-
-                0 > .character-direction
-                -5.0 > .character-x-velocity))
-
-      (Inputs.KeyDown
-      :Key "right"
-      :Action (->
-                (Msg "right")
-
-                .character-state
-                (When :Predicate (Is 0)
-                      :Action (-> 2 > .character-state))
-                1 > .character-direction
-                5.0 > .character-x-velocity))
-
-      (Inputs.KeyDown
-      :Key "up"
-      :Action (->
-                (Msg "up")
-                3 > .character-state
-                .can-jump
-                (When :Predicate (Is true)
-                      :Action (->
-                              -20.0 > .character-y-velocity
-                              1.0 >  .character-y-acceleration
-                              false >= .can-jump))))
-
-      (Inputs.KeyUp
-      :Key "left"
-      :Action (->
-                0 > .character-state
-                0.0 > .character-x-velocity))
-
-      (Inputs.KeyUp
-      :Key "right"
-      :Action (->
-                0 > .character-state
-                0.0 > .character-x-velocity)))
-
-    ;; -------------- Initialize Coin ----------
-    (defshards initialize-coin []
-      (LoadTexture "GlodImages/Coin/Coin_1.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_2.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_3.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_4.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_5.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_6.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_7.png") >> .coin-image-array
-      (Count .coin-image-array) = .coin-image-index-max
-      0 >= .coin-image-index
-      0.1 = .coin-animation-speed
-
-      ;; ----- Coin 1 ------
-      0.0 >= .coinx-1
-      0.0 >= .coiny-1
-      (float2 .coinx-1 .coiny-1) >= .coin-position-1
-      0.0 >= .coin-velocity-1
-      0.5 >= .coin-acceleration
-
-      ;; ----- Coin 2 ----
-      0.0 >= .coinx-2
-      0.0 >= .coiny-2
-      (float2 .coinx-2 .coiny-2) >= .coin-position-2
-      0.0 >= .coin-velocity-2)
-
-    ;; -------------- Coin Animation ------------------
-    (defloop coin-animation
-      .coin-image-index (Math.Add 1)
-      > .coin-image-index
-      (When :Predicate (IsMoreEqual .coin-image-index-max)
-            :Action (-> 0 > .coin-image-index))
-
-      (Pause .coin-animation-speed))
-
-    ;; ------------- Coin Gravity ------------------
-    (defshards coin-gravity-logic [coiny coinx coin-velocity coin-position]
-
-      coiny (Math.Add coin-velocity)
-      > coiny
-
-      coin-velocity (Math.Add .coin-acceleration)
-      > coin-velocity
-
-      (float2 coinx coiny) > coin-position)
-
-    ;; ------------- Random Coin ------------------
-    (defshards random-coin [coinx coiny coin-velocity coin-position pause-length]
-      coinx
-      (RandomFloat :Max 1200.0)
-      > coinx
-      (Math.Subtract 600.0)
-      > coinx
-
-      0.0 > coiny
-      0.0 > coin-velocity
-      (float2 coinx coiny) > coin-position
-      (Pause pause-length))
-
-    (defloop random-coin-1
-      (random-coin .coinx-1 .coiny-1 .coin-velocity-1 .coin-position-1 1.5))
-
-    (defloop random-coin-2
-      (random-coin .coinx-2 .coiny-2 .coin-velocity-2 .coin-position-2 2.5))
-
-    ;; ------------ Initialize Spiked CanonBalls ---------------
-    (defshards initialize-spiked-canonballs []
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall1.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall2.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall3.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall4.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall5.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall6.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall7.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall8.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall9.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall10.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall11.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall12.png") >> .spikeball-array
-
-      (Count .spikeball-array) = .spikeball-array-index-max
-      0 >= .spikeball-index
-      0.06 = .spikeball-animation-speed
-
-      ;; ---------- spikball-1 -------------
-      1.0 >= .spikeball-velocity-1
-      0.0 >= .spikeball-y-1
-      0.0 >= .spikeball-x-1
-      (float2 .spikeball-x-1 .spikeball-y-1) >= .spikeball-position-1
-
-      ;; ---------- spikeball-2 -------------
-      1.0 >= .spikeball-velocity-2
-      0.0 >= .spikeball-y-2
-      0.0 >= .spikeball-x-2
-      (float2 .spikeball-x-2 .spikeball-y-2) >= .spikeball-position-2
-
-    ;; ---------- SpikeBall_3 -------------
-      1.0 >= .spikeball-velocity-3
-      0.0 >= .spikeball-y-3
-      0.0 >= .spikeball-x-3
-      (float2 .spikeball-x-3 .spikeball-y-3) >= .spikeball-position-3
-
-      0.5 >= .spikeball-acceleration)
-
-    ;;------------- Spiked CanonBall Animation -------------
-    (defloop spiked-canonball-animation
-      .spikeball-index (Math.Add 1)
-      > .spikeball-index
-      (When :Predicate (IsMoreEqual .spikeball-array-index-max)
-            :Action (-> 0 > .spikeball-index))
-
-      (Pause .spikeball-animation-speed))
-
-    ;; ------------- SpikeBall_Gravity_Logic -------------
-    (defshards spikeball-gravity-logic [spikeball-y spikeball-velocity spikeball-position spikeball-x]
-      spikeball-y (Math.Add spikeball-velocity)
-      > spikeball-y
-      spikeball-velocity (Math.Add .spikeball-acceleration)
-      > spikeball-velocity
-      (float2 spikeball-x spikeball-y) > spikeball-position)
-
-    ;; ------------- Randomise Spikeball ----------------
-    (defshards randomise-spikeball [spikeball-x spikeball-y spikeball-velocity spikeball-position pausefloat]
-      spikeball-x
-      (RandomFloat :Max 1200.0)
-      > spikeball-x
-      (Math.Subtract 600.0)
-      > spikeball-x
-
-      0.0 > spikeball-y
-      0.0 > spikeball-velocity
-      (float2 spikeball-x spikeball-y) > spikeball-position
-      .spikeball-x-1
-      (Pause pausefloat))
-
-    (defloop spikeball-1
-      (randomise-spikeball .spikeball-x-1 .spikeball-y-1 .spikeball-velocity-1 .spikeball-position-1 2))
-    (defloop spikeball-2
-      (randomise-spikeball .spikeball-x-2 .spikeball-y-2 .spikeball-velocity-2 .spikeball-position-2 3))
-    (defloop spikeball-3
-      (randomise-spikeball .spikeball-x-3 .spikeball-y-3 .spikeball-velocity-3 .spikeball-position-3 4))
-
-    ;; --------- Game Elements ------------
-    (defshards initialize-game-elements []
-      ;;------------ Scoring Limits ----------
-      0 >= .score
-      false >= .scored
-
-      .X (Math.Add 50.0)
-      >= .scoringUpper-x-limit
-      .X (Math.Subtract 50.0)
-      >= .scoringLower-x-limit
-
-      .Y (Math.Add 10.0)
-      >= .scoringUpper-y-limit
-      .Y (Math.Subtract 10.0)
-      >= .scoringLower-y-limit
-
-      ;; ---------- Damage Limits ------------
-      .X (Math.Add 50.0)
-      >= .damageUpper-x-limit
-      .X (Math.Subtract 50.0)
-      >= .damageLower-x-limit
-
-      .Y (Math.Add 5.0)
-      >= .damageUpper-y-limit
-      .Y (Math.Subtract 5.0)
-      >= .damageLower-y-limit
-
-      false >= .damaged)
-
-    ;; --------- Scoring ----------
-    (defshards score-collision [coinx coiny]
-      coinx
-      (When :Predicate (->
-                        (IsLess .scoringUpper-x-limit)
-                        (And)
-                        coinx (IsMore .scoringLower-x-limit)
-                        (And)
-                        coiny (IsLess .scoringUpper-y-limit)
-                        (And)
-                        coiny (IsMore .scoringLower-y-limit)
-                        (And)
-                        .scored (Is false))
-            :Action (->
-                    true > .scored
-                    (Log "Score: "))))
-
-    (defshards scoring []
-      .X (Math.Add 50.0)
-      > .scoringUpper-x-limit
-      .X (Math.Subtract 50.0)
-      > .scoringLower-x-limit
-
-      .Y (Math.Add 10.0)
-      > .scoringUpper-y-limit
-      .Y (Math.Subtract 10.0)
-      > .scoringLower-y-limit
-
-      (score-collision .coinx-1 .coiny-1)
-      (score-collision .coinx-2 .coiny-2)
-
-      .scored
-      (When :Predicate (Is true)
-            :Action (->
-                    .score (Math.Add 1)
-                    > .score
-                    true > .score-effect-play
-                    false > .scored)))
-
-    ;; ------------- spikeBall-collision-logic --------------
-    (defshards spikeBall-collision-logic [spikeBall-x spikeBall-y]
-
-      spikeBall-x
-      (If :Predicate (-> (IsLess .damageUpper-x-limit)
-                        (And)
-                        spikeBall-x (IsMore .damageLower-x-limit)
-                        (And)
-                        spikeBall-y (IsLess .damageUpper-y-limit)
-                        (And)
-                        spikeBall-y (IsMore .damageLower-y-limit))
-
-          :Then (-> .damaged
-                    (When :Predicate (Is false)
-                          :Action (->
-                                  true > .damaged
-                                  (Log "damaged: "))))))
-
-    ;; -------------- Damaging --------------
-    (defshards damaging []
-
-      .X (Math.Add 120.0)
-      > .damageUpper-x-limit
-      .X (Math.Subtract 120.0)
-      > .damageLower-x-limit
-
-      .Y (Math.Add 15.0)
-      > .damageUpper-y-limit
-      .Y (Math.Subtract 15.0)
-      > .damageLower-y-limit
-
-      (spikeBall-collision-logic .spikeball-x-1 .spikeball-y-1)
-      (spikeBall-collision-logic .spikeball-x-2 .spikeball-y-2)
-      (spikeBall-collision-logic .spikeball-x-3 .spikeball-y-3)
-
-      .damaged
-      (When :Predicate (Is true)
-            :Action (->
-                    .score (Math.Subtract 1)
-                    > .score
-                    true > .damage-effect-play
-                    false > .damaged)))
-
-    ;; ------------- initialize effects -------------
-    (defshards initialize-effects []
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_1.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_2.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_3.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_4.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_5.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_6.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_7.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_8.png") >> .score-effect-array
-      (Count .score-effect-array) (Math.Subtract 1) >= .score-effect-array-index-max
-      0 >= .score-effect-array-index
-      0.05 >=  .score-effect-animation-speed ;; Reduce number to increase animation speed
-      false >= .score-effect-play
-
-      0.0 >= .score-effect-position-x
-      0.0 >= .score-effect-position-y
-      (float2 .score-effect-position-x .score-effect-position-y) >= .score-effect-position
+  ```shards
+  @wire(damage-fx {
+    Once({
+      0 >= damage-fx-idx ;; this variable can be initialized here as we are only using it in animate-damage-fx and not main-wire
+    })
+
+    Step(animate-damage-fx)
+
+    UI.Area(
+      Position: @f2(pos-x pos-y) ;; we want the effect to spawn at our Glod's position
+      Anchor: Anchor::Center
+      Contents: {
+        damage-fx-sequence | Take(damage-fx-idx) | UI.Image(@f2(8.0 8.0)) ;; change the scale to fit your screen accordingly
+      }
+    )
+  } Looped: true)
+  ```
+
+Then we `Detach` `damage-fx`, whenever our spikeball damage logic happens.
+
+=== "Code Added"
+    
+  ```shards
+  ;; coin-scoring logic
+  When(
+    Predicate: {
+      spikeball-x | IsMoreEqual(collision-x-lower-limit)
+      And
+      spikeball-x | IsLessEqual(collision-x-upper-limit)
+      And
+      spikeball-y | IsMoreEqual(collision-y-lower-limit)
+      And
+      spikeball-y | IsLessEqual(collision-y-upper-limit)
+      And
+      score-subtracted | Is(false)
+    }
+    Action: {
+      score | Math.Subtract(1) > score
+      Detach(damage-fx)
+      true > score-subtracted
+    }
+  )
+  ```
+
+Lastly, because we don't want our `damage-fx` to loop forever, so we `Stop` it after it does the animation once, which is when `damage-fx-idx` reaches `index-max`.
+
+=== "Code Added"
+    ```shards
+    @wire(damage-fx {
+      Once({
+        0 >= damage-fx-idx
+      })
+
+      Step(animate-damage-fx)
+
+      damage-fx-idx
+      When(
+        Predicate: IsMoreEqual((Count(damage-fx-sequence)))
+        Action: {
+          none ;; we need to ensure that in either scenarios, the output of the wire is the same. The none here ensures that
+          Stop
+        }
+      )
+
+      UI.Area(
+        Position: @f2(0 0) ;; Since the damage effect fills the whole screen, we want it to appear in the center
+        Anchor: Anchor::Center
+        Contents: {
+          damage-fx-sequence | Take(damage-fx-idx) | UI.Image(@f2(0.2 0.2))
+        }
+      )
+
+      none ;; we need to ensure that in either scenarios, the output of the wire is the same. The none here ensures that
+    } Looped: true)
+    ```
+
+Now let's put it all together.
+
+=== "Full Code"
+
+    ```shards
+    @define( initialize-images {
+      LoadImage("GlodImages/Character1_Left.png") = character-image
+      LoadImage("GlodImages/Character1_Left.png") = character-left
+      LoadImage("GlodImages/Character1_Right.png") = character-right
+      LoadImage("GlodImages/Character1_Jumping_Left.png") = character-jumping-left
+      LoadImage("GlodImages/Character1_Jumping_Right.png") = character-jumping-right
+      LoadImage("GlodImages/Character1_Jumping.png") = character-jumping
+
+      ;; ---------- Character Idle sequence (Facing Left) ----------------
+
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_4.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> idle-left-image-sequence
+
+      ;; ---------- Character Idle sequence (Facing Right) ----------------
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> idle-right-image-sequence
+
+      ;; -------------- Walking sequence (Facing Left) -----------------
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> walking-left-image-sequence
+
+      ;; ----------- Walking sequence (Facing Right) ---------------
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> walking-right-image-sequence
+
+      ;; ------------- Coin ---------------
+      LoadImage("GlodImages/Coin/Coin_1.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_2.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_3.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_4.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_5.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_6.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_7.png") >> coin-img-sequence
+
+      ;; ------------- Spiked Cannonball -------------
+      LoadImage("GlodImages/SpikeBall/SpikeBall1.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall2.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall3.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall4.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall5.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall6.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall7.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall8.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall9.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall10.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall11.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall12.png") >> spikeball-sequence
+
+      ;; -------------- score fx ----------------
+      LoadImage("GlodImages/FX/Score_Effect_1.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_2.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_3.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_4.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_5.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_6.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_7.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_8.png") >> score-fx-sequence
 
       ;; --------------- Damaged Effect ----------------
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_1.png") >> .damage-effect-array
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_2.png") >> .damage-effect-array
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_3.png") >> .damage-effect-array
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_4.png") >> .damage-effect-array
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_5.png") >> .damage-effect-array
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_6.png") >> .damage-effect-array
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_7.png") >> .damage-effect-array
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_8.png") >> .damage-effect-array
-      (Count .damage-effect-array) (Math.Subtract 1) >= .damage-effect-array-index-max
-      0 >= .damage-effect-array-index
-      0.02 >=  .damage-effect-animation-speed ;; Reduce number to increase animation speed
-      false >= .damage-effect-play)
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_1.png") >> damage-fx-sequence 
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_2.png") >> damage-fx-sequence
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_3.png") >> damage-fx-sequence
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_4.png") >> damage-fx-sequence
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_5.png") >> damage-fx-sequence
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_6.png") >> damage-fx-sequence
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_7.png") >> damage-fx-sequence
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_8.png") >> damage-fx-sequence
+    })
 
-    ;; ------------ DamageEffect Animation ------------
-    (defloop damage-effect-animation-logic
+    @define( ui-style {
+      UI.Style(OverrideTextStyle: "base-ui" TextStyles: {base-ui: {Size: 16.0
+                                                                Family: FontFamily::Proportional}} OverrideTextColor: @color(255 255 255))
+    })
 
-      .damage-effect-play
-      (When :Predicate (Is true)
-            :Action (->
-                    .damage-effect-array-index (Math.Add 1)
-                    > .damage-effect-array-index
-                    (When :Predicate (IsMore .damage-effect-array-index-max)
-                          :Action (->
-                                    0 > .damage-effect-array-index
-                                    false > .damage-effect-play))))
+    @wire(coin {
+      Once({
+        ;; ------------ coin variables ------------- ;; all variables that we want to be unique to each coin, we initialize in the new wire instead
+        0 >= coin-image-index
+        RandomFloat(Max: 1000.0) | Math.Subtract(500.0) >= coin-pos-x 
+        -600.0 >= coin-pos-y
+        0.0 >= coin-velocity
+        0.3 >= coin-acceleration
+        
+        false >= scored
+      })
 
-      (Pause .damage-effect-animation-speed))
+      pos-x | Math.Add(60.0) = collision-x-upper-limit ;; tweak the values added or subtracted accordingly
+      pos-x | Math.Subtract(60.0) = collision-x-lower-limit
 
-    ;; ------------ ScoreEffect_Animation_Position ------------
-    (defshards scoreEffect-animation-position []
-      .Y (Math.Add -15.0)
-      > .score-effect-position-y
+      pos-y | Math.Add(70.0) = collision-y-upper-limit
+      pos-y | Math.Subtract(70.0) = collision-y-lower-limit
 
-      .X
-      > .score-effect-position-x
+      ;; coin-falling-logic
+      coin-pos-y | Math.Add(coin-velocity) > coin-pos-y
+      coin-velocity | Math.Add(coin-acceleration) > coin-velocity
 
-      (float2 .score-effect-position-x .score-effect-position-y)
-      > .score-effect-position)
+      ;; coin-scoring logic
+      When(
+        Predicate: {
+          coin-pos-x | IsMoreEqual(collision-x-lower-limit)
+          And
+          coin-pos-x | IsLessEqual(collision-x-upper-limit)
+          And
+          coin-pos-y | IsMoreEqual(collision-y-lower-limit)
+          And
+          coin-pos-y | IsLessEqual(collision-y-upper-limit)
+          And
+          scored | Is(false)
+        }
+        Action: {
+          score | Math.Add(1) > score
+          Spawn(score-fx)
+          true > scored
+          
+        }
+      )
 
-    ;; ------------ ScoreEffect Animation ------------
-    (defloop scoreEffect-animation-logic
+      When(
+        Predicate: {
+          scored | Is(true)
+          Or ;; or allows the code in Action to happen when either of these conditions return true
+          coin-pos-y | IsMore(0.0)
+        }
+        Action: {
+          -600.0 > coin-pos-y ;; reset our coin's y position
+          RandomFloat(Max: 1000.0) | Math.Subtract(500.0) > coin-pos-x
+          0.0 > coin-velocity
+          false > scored ;; reset scored so that we can score again
+        }
+      )
 
-      .score-effect-play
-      (When :Predicate (Is true)
-            :Action (->
-                    .score-effect-array-index (Math.Add 1)
-                    > .score-effect-array-index
-                    (When :Predicate (IsMore .score-effect-array-index-max)
-                          :Action (->
-                                    0 > .score-effect-array-index
-                                    false > .score-effect-play))))
+      Step(animate-coin)
 
+      UI.Area(
+        Position: @f2(coin-pos-x  coin-pos-y)
+        Anchor: Anchor::Bottom
+        Contents: {
+          coin-img-sequence | Take(coin-image-index) | UI.Image(@f2(0.2 0.2))
+      })
+    } Looped: true)
 
-      (Pause .score-effect-animation-speed))
+    @wire(spike-cannonball {
+      Once({
+        1.0 >= spikeball-velocity
+        -600.0 >= spikeball-y
+        0.0 >= spikeball-x
 
-    ;; ------ UI Style --------
-    (def style
-      {:override_text_style "MyStyle"
-      :text_styles
-      [{:name "MyStyle"
-        :size (float 46)
-        :family "Monospace"}]
-      :visuals
-      {:override_text_color (color 250 250 250)}})
+        0.5 >= spikeball-acceleration
 
-    ;;---------- main-wire ------------
-    (defloop main-wire
-      (Setup
-      (initialize-character)
-      (initialize-coin)
-      (initialize-game-elements)
-      (initialize-spiked-canonballs)
-      (initialize-effects))
+        0 >= spikeball-index
+        
+        false >= score-subtracted
+      })
 
-      (coin-gravity-logic .coiny-1 .coinx-1 .coin-velocity-1 .coin-position-1)
-      (coin-gravity-logic .coiny-2 .coinx-2 .coin-velocity-2 .coin-position-2)
+      pos-x | Math.Add(50.0) = collision-x-upper-limit ;; tweak the values added or subtracted accordingly
+      pos-x | Math.Subtract(50.0) = collision-x-lower-limit
 
-      (run-logic)
-      (gravity-logic)
-      (scoring)
-      (damaging)
+      pos-y | Math.Add(50.0) = collision-y-upper-limit
+      pos-y | Math.Subtract(50.0) = collision-y-lower-limit
 
-      (Step idle-animation)
-      (Step walking-animation)
+      spikeball-y | Math.Add(spikeball-velocity) > spikeball-y
+      spikeball-velocity | Math.Add(spikeball-acceleration) > spikeball-velocity
 
-      (Step coin-animation)
-      (Step random-coin-1)
-      (Step random-coin-2)
+      When(
+        Predicate: {
+          spikeball-x | IsMoreEqual(collision-x-lower-limit)
+          And
+          spikeball-x | IsLessEqual(collision-x-upper-limit)
+          And
+          spikeball-y | IsMoreEqual(collision-y-lower-limit)
+          And
+          spikeball-y | IsLessEqual(collision-y-upper-limit)
+          And
+          score-subtracted | Is(false)
+        }
+        Action: {
+          score | Math.Subtract(1) > score
+          Detach(damage-fx)
+          true > score-subtracted
+        }
+      )
 
-      (Step spiked-canonball-animation)
-      (spikeball-gravity-logic .spikeball-y-1 .spikeball-velocity-1 .spikeball-position-1 .spikeball-x-1)
-      (spikeball-gravity-logic .spikeball-y-2 .spikeball-velocity-2 .spikeball-position-2 .spikeball-x-2)
-      (spikeball-gravity-logic .spikeball-y-3 .spikeball-velocity-3 .spikeball-position-3 .spikeball-x-3)
-      (Step  spikeball-1)
-      (Step  spikeball-2)
-      (Step  spikeball-3)
+      When(
+        Predicate: {
+          score-subtracted | Is(true)
+          Or
+          spikeball-y | IsMore(0.0)
+        }
+        Action: {
+          -600.0 > spikeball-y ;; reset our spikeball's y position
+          RandomFloat(Max: 1000.0) | Math.Subtract(500.0) > spikeball-x ;; randomize our spikeball-x position
+          0.0 > spikeball-velocity
+          false > score-subtracted ;; reset scored so that we can score again
+        }
+      )
 
-      (scoreEffect-animation-position)
-      (Step scoreEffect-animation-logic)
-      (Step damage-effect-animation-logic)
+      Step(animate-spikeball)
 
-      (GFX.MainWindow
-      :Title "MainWindow" :Width 1920 :Height 1080
-      :Contents
-      (-> (Setup
-            (GFX.DrawQueue) >= .ui-draw-queue
-            (GFX.UIPass .ui-draw-queue) >> .render-steps)
-          .ui-draw-queue (GFX.ClearQueue)
+      UI.Area(
+        Position: @f2(spikeball-x spikeball-y)
+        Anchor: Anchor::Bottom ;; this makes the origin of our UI.Area the bottom right of the screen
+        Contents: {
+          spikeball-sequence | Take(spikeball-index) | UI.Image( Scale: @f2(0.10 0.10))
+        }
+      )
+    } Looped: false)
 
-          (UI
-            .ui-draw-queue
-            (->
-            (UI.Area :Position .character-position
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                .character-state
-                                (Match [0 (-> .character-direction
-                                              (Match [0 (-> .idle-left-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))
-                                                      1 (-> .idle-right-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))]
-                                                      :Passthrough false))
-                                        1 (-> .walking-left-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-                                        2 (-> .walking-right-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-                                        3 (->  .character-direction
-                                                (Match [0 (-> .character-jumping-left (UI.Image :Scale (float2 0.2)))
-                                                        1 (-> .character-jumping-right (UI.Image :Scale (float2 0.2)))]
-                                                      :Passthrough false))]
-                                        :Passthrough false)))
+    @wire(score-fx {
+      Once({
+        0 >= score-fx-idx
+      })
 
-            ;; ---------- Coins -----------
+      Step(animate-score-fx)
 
-            (UI.Area :Position .coin-position-1
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                .coin-image-array (Take .coin-image-index) (UI.Image :Scale (float2 0.2))))
+      score-fx-idx
+      When(
+        Predicate: IsMoreEqual((Count(score-fx-sequence)))
+        Action: {
+          none
+          Stop
+        }
+      )
 
-            (UI.Area :Position .coin-position-2
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                .coin-image-array (Take .coin-image-index) (UI.Image :Scale (float2 0.2))))
+      UI.Area(
+        Position: @f2(pos-x pos-y) ;; we want the effect to spawn at our Glod's position
+        Anchor: Anchor::Bottom
+        Contents: {
+          score-fx-sequence | Take(score-fx-idx) | UI.Image(@f2(0.2 0.2))
+        }
+      )
 
-            ;; ------------SpikeBalls ------------
+      none
+    } Looped: true)
 
-            (UI.Area :Position .spikeball-position-1
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
+    @wire(damage-fx {
+      Once({
+        0 >= damage-fx-idx
+      })
 
-            (UI.Area :Position .spikeball-position-2
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
+      Step(animate-damage-fx)
 
-            (UI.Area :Position .spikeball-position-3
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
+      damage-fx-idx
+      When(
+        Predicate: IsMoreEqual((Count(damage-fx-sequence)))
+        Action: {
+          none
+          Stop
+        }
+      )
 
-            ;; ----------------- Visual Effects  -------------------
-            (UI.Area :Position .score-effect-position
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                .score-effect-array (Take .score-effect-array-index) (UI.Image :Scale (float2 0.15))))
-            
-            (UI.Area :Position (float2 0 0)
-                      :Anchor Anchor.TopLeft
-                      :Contents (->
-                                .damage-effect-array (Take .damage-effect-array-index) (UI.Image :Scale (float2 10))))
-            
-            ;; --------------- UI Score --------------
+      UI.Area(
+        Position: @f2(0 0)
+        Anchor: Anchor::Center
+        Contents: {
+          damage-fx-sequence | Take(damage-fx-idx) | UI.Image(@f2(8.0 8.0))
+        }
+      )
 
-            (UI.Area :Position (float2 -40 20)
-                      :Anchor Anchor.TopRight
-                      :Contents (->
-                                style (UI.Style)
-                                .score (ToString) (UI.Label)))))
+      none 
+    } Looped: true)
 
-          (button-inputs)
+    @wire( animate {
+      Once({
+        0.08 = idle-animation-speed
+      })
+      image-index | Math.Add(1) > image-index
+      Count(active-animation) = index-max
+      image-index
+      When(Predicate: IsMoreEqual(index-max) Action: {
+        0 > image-index
+      })
+      Pause(idle-animation-speed)
+    } Looped: true)
 
-          (GFX.Render :Steps .render-steps))))
+    @wire( animate-coin {
+      Once({
+        0.08 = coin-animation-speed
+      })
+      coin-image-index | Math.Add(1) > coin-image-index
+      Count(coin-img-sequence) = index-max
+      coin-image-index
+      When(Predicate: IsMoreEqual(index-max) Action: {
+        0 > coin-image-index
+      })
+      Pause(coin-animation-speed)
+    } Looped: true)
 
+    @wire(animate-spikeball {
+      Once({
+        0.06 >= spikeball-animation-speed
+      })
 
-    (defmesh main)
-    (schedule main main-wire)
-    (run main (/ 1.0 60))
+      spikeball-index | Math.Add(1) > spikeball-index
+      Count(spikeball-sequence) = spikeball-max
+      spikeball-index
+      When(Predicate: IsMoreEqual(spikeball-max) Action: {
+        0 > spikeball-index
+      })
+      Pause(spikeball-animation-speed)
+    } Looped: true)
+
+    @wire(animate-score-fx {
+      Once({
+        0.08 = idle-animation-speed
+      })
+      score-fx-idx | Math.Add(1) > score-fx-idx
+      Pause(idle-animation-speed)
+    } Looped: true)
+
+    @wire(animate-damage-fx {
+      Once({
+        0.06 = idle-animation-speed
+      })
+      damage-fx-idx | Math.Add(1) > damage-fx-idx
+      Pause(idle-animation-speed)
+    } Looped: true)
+
+    @define( button-inputs {
+
+      Inputs.IsKeyDown(
+        Key: "left"
+      )
+      When(Predicate: Is(true) Action: {
+        -1 > x-direction
+      })
+
+      Inputs.KeyUp(
+        Key: "left"
+        Action: {
+          0 > x-direction
+        }
+        Consume: false
+        SkipConsumed: true
+      )
+
+      Inputs.IsKeyDown(
+        Key: "right"
+      )
+      When(Predicate: Is(true) Action: {
+        1 > x-direction
+      })
+
+      Inputs.KeyUp(
+        Key: "right"
+        Action: {
+          0 > x-direction
+        }
+        Consume: false
+        SkipConsumed: true
+      )
+
+      Inputs.KeyDown(
+        Key: "up"
+        Action: {
+          Msg("up")
+          1 > y-direction
+          grounded
+          When(Predicate: Is(true) Action:{
+            30.0 > character-y-velocity
+            false > grounded ;; make grounded false when up key is pressed
+          })
+        }
+      )
+
+      Inputs.KeyUp(
+        Key: "up"
+        Action: {
+          0 > y-direction
+        }
+        Consume: false
+        SkipConsumed: true
+      )
+    })
+
+    @wire(main-wire {
+      Once({
+        @initialize-images
+        @i2(0 0) >= character-direction
+        0 >= x-direction
+        0 >= y-direction
+        0 >= image-index
+        idle-left-image-sequence >= idle-animation
+        character-jumping-left >= jumping-image
+        idle-left-image-sequence >= active-animation
+        0.0 >= pos-x
+        0.0 >= pos-y
+
+        3.0 >= character-x-velocity
+        0.0 >= character-y-velocity
+        2.0 >= character-y-acceleration
+
+        true >= grounded
+        0 >= score
+
+        0 >= spikeball-index
+      })
+
+      pos-x | Math.Add((character-x-velocity | Math.Multiply((x-direction | ToFloat)))) > pos-x
+      Clamp(Min: -600.0 Max: 600.0) > pos-x
+
+      grounded
+      If(Predicate: Is(false) Then: {
+        pos-y | Math.Subtract(character-y-velocity) > pos-y
+        character-y-velocity | Math.Subtract(character-y-acceleration) > character-y-velocity
+      })
+
+      pos-y
+      When(Predicate: IsMoreEqual(0.0) Action: {
+        true > grounded
+        0.0 > pos-y
+        0 > y-direction
+      })
+
+      GFX.MainWindow(
+        Contents: {
+          Once({
+            GFX.DrawQueue >= ui-draw-queue
+            GFX.UIPass(ui-draw-queue) >> render-steps
+          })
+          UI(
+            Contents: {
+            UI.Area(
+              Position: @f2(pos-x pos-y)
+              Anchor: Anchor::Bottom
+              Contents: {
+                character-direction
+                Match([
+                  @i2(0 0) {idle-animation > active-animation | Take(image-index)} ;;Take from the idle animation when in idle
+                  @i2(-1 0) {
+                    idle-left-image-sequence > idle-animation ;; Store the left idle animation into idle-animation when facing left
+                    character-jumping-left > jumping-image
+                    walking-left-image-sequence > active-animation | Take(image-index)
+                  }
+                  @i2(1 0) {
+                    idle-right-image-sequence > idle-animation ;; Store the right idle animation into idle-animation when facing right
+                    character-jumping-right > jumping-image
+                    walking-right-image-sequence > active-animation | Take(image-index)
+                  }
+                  none {jumping-image} ;; we can just use none to handle the jumping state as all other cases at this moment, the character is jumping
+                ] Passthrough: false)
+                UI.Image(@f2(0.2))
+              }
+            )
+
+            UI.Area(
+              Position: @f2(-40 -40)
+              Anchor: Anchor::BottomRight ;; this makes the origin of our UI.Area the bottom right of the screen
+              Contents: {
+                @ui-style
+                "Score: " | ToString | UI.Label
+                score | ToString | UI.Label ;; UI.Label only accepts a string, so we have to convert our score value which is an int, into a string first.
+              }
+            )
+
+            Do(spike-cannonball)
+
+            [1 2 3]
+            DoMany(coin ComposeSync: true)
+
+          }) | UI.Render(ui-draw-queue)
+
+          @button-inputs
+          @i2(x-direction y-direction) > character-direction
+          Step(animate)
+          
+          GFX.Render(Steps: render-steps)
+        }
+      )
+    } Looped: true)
+
+    @mesh(main)
+    @schedule(main main-wire)
+    @run(main FPS: 60)
     ```
-
-Good job!
-
-Now we have even more motivation to avoid getting hit! 🚨🚨🚨🚨🚨
 
 ## Step 7.3
 
@@ -1442,8 +1244,8 @@ First, load our image.
 
 === "Code Added"
     
-    ```{.clojure .annotate linenums="1"}
-    (LoadTexture "GlodImages/BG.png") = .bg-image 
+    ```shards
+    LoadImage("GlodImages/BG.png") = bg-image 
     ```
 
 Next, create a `UI.Area` to house our new image.
@@ -1452,647 +1254,522 @@ Remember to add this `UI.Area` before the `UI.Area` which houses your character 
 
 === "Code Added"
     
-    ```{.clojure .annotate linenums="1"}
-    (UI.Area :Position (float2 0 0)
-                      :Anchor Anchor.TopLeft
-                      :Contents (->
-                                .bg-image (UI.Image :Scale (float2 0.7))))
+    ```shards
+    UI.Area(
+      Position: @f2(0.0 0.0)
+      Anchor: Anchor::Center
+      Contents: {
+        bg-image | UI.Image(@f2(0.8 0.8)) ;; change this scale accordingly
+      }
+    )
     ```
 
 === "Full Code So Far"
     
-    ```{.clojure .annotate linenums="1"}
-    (defshards initialize-character []
-      (LoadImage "GlodImages/Character1_Jumping_Left.png") = .character-jumping-left
-      (LoadImage "GlodImages/Character1_Jumping_Right.png") = .character-jumping-right
-
-      0 >= .character-state
-      0 >= .character-direction
-      true >= .can-jump
-
-      0.0 >= .X
-      620.0 >= .Y
-      (float2 .X .Y) >= .character-position
-      0.0 >= .character-x-velocity
-      0.0 >= .character-y-velocity
-      0.0 >= .character-y-acceleration
-
-      ;; ---------- Character Idle Array (Facing Left) ----------
-      (LoadImage "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> .idle-left-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> .idle-left-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> .idle-left-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_4.png") >> .idle-left-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> .idle-left-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> .idle-left-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> .idle-left-image-array
-
-      ;; ---------- Character Idle Array (Facing Right) ----------------
-      (LoadImage "GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> .idle-right-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> .idle-right-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> .idle-right-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> .idle-right-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> .idle-right-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> .idle-right-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> .idle-right-image-array
-
-      0 >= .idle-image-index
-      (Count .idle-left-image-array) (Math.Subtract 1) >= .idle-image-index-max
-      0.08 >= .idle-animation-speed
-
-      ;; -------------- Walking Array (Facing Left) -----------------
-      (LoadImage "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> .walking-left-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> .walking-left-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> .walking-left-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> .walking-left-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> .walking-left-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> .walking-left-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> .walking-left-image-array
-
-      ;; ----------- Walking Array (Facing Right) ---------------
-      (LoadImage "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> .walking-right-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> .walking-right-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> .walking-right-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> .walking-right-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> .walking-right-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> .walking-right-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> .walking-right-image-array
-
-      (Count .walking-left-image-array) (Math.Subtract 1) >= .walking-image-index-max
-      0 >= .walking-image-index
-      0.08 >= .walking-animation-speed) ;; Reduce number to increase animation speed
-
-    ;; --------- Idle Animation Loop ---------
-    (defloop idle-animation
-      .idle-image-index (Math.Add 1)
-      > .idle-image-index
-      (When :Predicate (IsMore .idle-image-index-max)
-            :Action (-> 0 > .idle-image-index))
-      (Pause .idle-animation-speed))
-
-    ;; -------- Walking Animation Loop --------
-    (defloop walking-animation
-      .walking-image-index (Math.Add 1)
-      > .walking-image-index
-      (When :Predicate (IsMore .walking-image-index-max)
-            :Action (-> 0 > .walking-image-index))
-      (Pause .walking-animation-speed))
-
-    (defshards LoadTexture [name]
-      (LoadImage name)
-      (GFX.Texture))
-
-    ;; ---------- character-boundary ------------
-
-    (defshards clamp [var min max]
-      var (Max min) (Min max) > var)
-
-    ;; ------------ Character Run Logic ----------------
-    (defshards run-logic []
-      .X (Math.Add .character-x-velocity)
-      > .X
-
-      (float2 .X .Y) > .character-position
-
-      (clamp .X -600.0 600.0))
-
-    ;; ------------ Character gravity-logic ---------------
-    (defshards gravity-logic []
-      .Y (Math.Add .character-y-velocity)
-      > .Y
-
-      .character-y-velocity (Math.Add .character-y-acceleration)
-      > .character-y-velocity
-
-      (float2 .X .Y) > .character-position
-
-      (clamp .Y -620.0 620.0)
-      .Y
-      (When :Predicate (IsMoreEqual 620.0)
-            :Action (->
-                    0.0 > .character-y-velocity
-                    0.0 > .character-y-acceleration
-                    true > .can-jump
-                    .character-state
-                    (When :Predicate (Is 3)
-                          :Action (->
-                                    0 > .character-state)))))
-
-    ;; ------- Button Inputs ----------
-    (defshards button-inputs []
-      (Inputs.KeyDown
-      :Key "left"
-      :Action (->
-                (Msg "left")
-
-                .character-state
-                (When :Predicate (Is 0)
-                      :Action (-> 1 > .character-state))
-
-                0 > .character-direction
-                -5.0 > .character-x-velocity))
-
-      (Inputs.KeyDown
-      :Key "right"
-      :Action (->
-                (Msg "right")
-
-                .character-state
-                (When :Predicate (Is 0)
-                      :Action (-> 2 > .character-state))
-                1 > .character-direction
-                5.0 > .character-x-velocity))
-
-      (Inputs.KeyDown
-      :Key "up"
-      :Action (->
-                (Msg "up")
-                3 > .character-state
-                .can-jump
-                (When :Predicate (Is true)
-                      :Action (->
-                              -20.0 > .character-y-velocity
-                              1.0 >  .character-y-acceleration
-                              false >= .can-jump))))
-
-      (Inputs.KeyUp
-      :Key "left"
-      :Action (->
-                0 > .character-state
-                0.0 > .character-x-velocity))
-
-      (Inputs.KeyUp
-      :Key "right"
-      :Action (->
-                0 > .character-state
-                0.0 > .character-x-velocity)))
-
-    ;; -------------- Initialize Coin ----------
-    (defshards initialize-coin []
-      (LoadImage "GlodImages/Coin/Coin_1.png") >> .coin-image-array
-      (LoadImage "GlodImages/Coin/Coin_2.png") >> .coin-image-array
-      (LoadImage "GlodImages/Coin/Coin_3.png") >> .coin-image-array
-      (LoadImage "GlodImages/Coin/Coin_4.png") >> .coin-image-array
-      (LoadImage "GlodImages/Coin/Coin_5.png") >> .coin-image-array
-      (LoadImage "GlodImages/Coin/Coin_6.png") >> .coin-image-array
-      (LoadImage "GlodImages/Coin/Coin_7.png") >> .coin-image-array
-      (Count .coin-image-array) (Math.Subtract 1) >= .coin-image-index-max
-      0 >= .coin-image-index
-      0.1 >= .coin-animation-speed
-
-      ;; ----- Coin 1 ------
-      0.0 >= .coinx-1
-      0.0 >= .coiny-1
-      (float2 .coinx-1 .coiny-1) >= .coin-position-1
-      0.0 >= .coin-velocity-1
-      0.5 >= .coin-acceleration
-
-      ;; ----- Coin 2 ----
-      0.0 >= .coinx-2
-      0.0 >= .coiny-2
-      (float2 .coinx-2 .coiny-2) >= .coin-position-2
-      0.0 >= .coin-velocity-2)
-
-    ;; -------------- Coin Animation ------------------
-    (defloop coin-animation
-      .coin-image-index (Math.Add 1)
-      > .coin-image-index
-      (When :Predicate (IsMore .coin-image-index-max)
-            :Action (-> 0 > .coin-image-index))
-
-      (Pause .coin-animation-speed))
-
-    ;; ------------- Coin Gravity ------------------
-    (defshards coin-gravity-logic [coiny coinx coin-velocity coin-position]
-
-      coiny (Math.Add coin-velocity)
-      > coiny
-
-      coin-velocity (Math.Add .coin-acceleration)
-      > coin-velocity
-
-      (float2 coinx coiny) > coin-position)
-
-    ;; ------------- Random Coin ------------------
-    (defshards random-coin [coinx coiny coin-velocity coin-position pause-length]
-      coinx
-      (RandomFloat :Max 1200.0)
-      > coinx
-      (Math.Subtract 600.0)
-      > coinx
-
-      0.0 > coiny
-      0.0 > coin-velocity
-      (float2 coinx coiny) > coin-position
-      (Pause pause-length))
-
-    (defloop random-coin-1
-      (random-coin .coinx-1 .coiny-1 .coin-velocity-1 .coin-position-1 1.5))
-
-    (defloop random-coin-2
-      (random-coin .coinx-2 .coiny-2 .coin-velocity-2 .coin-position-2 2.5))
-
-    ;; ------------ Initialize Spiked CanonBalls ---------------
-    (defshards initialize-spiked-canonballs []
-      (LoadImage "GlodImages/SpikeBall/SpikeBall1.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall2.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall3.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall4.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall5.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall6.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall7.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall8.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall9.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall10.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall11.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall12.png") >> .spikeball-array
-
-      (Count .spikeball-array) (Math.Subtract 1) >= .spikeball-array-index-max
-      0 >= .spikeball-index
-      0.06 >= .spikeball-animation-speed
-
-      ;; ---------- spikball-1 -------------
-      1.0 >= .spikeball-velocity-1
-      0.0 >= .spikeball-y-1
-      0.0 >= .spikeball-x-1
-      (float2 .spikeball-x-1 .spikeball-y-1) >= .spikeball-position-1
-
-      ;; ---------- spikeball-2 -------------
-      1.0 >= .spikeball-velocity-2
-      0.0 >= .spikeball-y-2
-      0.0 >= .spikeball-x-2
-      (float2 .spikeball-x-2 .spikeball-y-2) >= .spikeball-position-2
-
-      ;; ---------- SpikeBall_3 -------------
-      1.0 >= .spikeball-velocity-3
-      0.0 >= .spikeball-y-3
-      0.0 >= .spikeball-x-3
-      (float2 .spikeball-x-3 .spikeball-y-3) >= .spikeball-position-3
-
-      0.5 >= .spikeball-acceleration)
-
-    ;;------------- Spiked CanonBall Animation -------------
-    (defloop spiked-canonball-animation
-      .spikeball-index (Math.Add 1)
-      > .spikeball-index
-      (When :Predicate (IsMore .spikeball-array-index-max)
-            :Action (-> 0 > .spikeball-index))
-
-      (Pause .spikeball-animation-speed))
-
-    ;; ------------- SpikeBall_Gravity_Logic -------------
-    (defshards spikeball-gravity-logic [spikeball-y spikeball-velocity spikeball-position spikeball-x]
-      spikeball-y (Math.Add spikeball-velocity)
-      > spikeball-y
-      spikeball-velocity (Math.Add .spikeball-acceleration)
-      > spikeball-velocity
-      (float2 spikeball-x spikeball-y) > spikeball-position)
-
-    (defshards randomise-spikeball [spikeball-x spikeball-y spikeball-velocity spikeball-position pausefloat]
-      spikeball-x
-      (RandomFloat :Max 1200.0)
-      > spikeball-x
-      (Math.Subtract 600.0)
-      > spikeball-x
-
-      0.0 > spikeball-y
-      0.0 > spikeball-velocity
-      (float2 spikeball-x spikeball-y) > spikeball-position
-      .spikeball-x-1
-      (Pause pausefloat))
-
-    (defloop spikeball-1
-      (randomise-spikeball .spikeball-x-1 .spikeball-y-1 .spikeball-velocity-1 .spikeball-position-1 2))
-    (defloop spikeball-2
-      (randomise-spikeball .spikeball-x-2 .spikeball-y-2 .spikeball-velocity-2 .spikeball-position-2 3))
-    (defloop spikeball-3
-      (randomise-spikeball .spikeball-x-3 .spikeball-y-3 .spikeball-velocity-3 .spikeball-position-3 4))
-
-
-    ;; --------- Game Elements ------------
-    (defshards initialize-game-elements []
-      0 >= .score
-      false >= .scored
-
-      .X (Math.Add 50.0)
-      >= .scoringUpper-x-limit
-      .X (Math.Subtract 50.0)
-      >= .scoringLower-x-limit
-
-      .Y (Math.Add 10.0)
-      >= .scoringUpper-y-limit
-      .Y (Math.Subtract 10.0)
-      >= .scoringLower-y-limit
-
-      ;; ---------- Damage Limits ------------
-      .X (Math.Add 50.0)
-      >= .damageUpper-x-limit
-      .X (Math.Subtract 50.0)
-      >= .damageLower-x-limit
-
-      .Y (Math.Add 5.0)
-      >= .damageUpper-y-limit
-      .Y (Math.Subtract 5.0)
-      >= .damageLower-y-limit
-
-      false >= .damaged)
-
-    ;; --------- Scoring ----------
-    (defshards score-collision [coinx coiny]
-      coinx
-      (When :Predicate (->
-                        (IsLess .scoringUpper-x-limit)
-                        (And)
-                        coinx (IsMore .scoringLower-x-limit)
-                        (And)
-                        coiny (IsLess .scoringUpper-y-limit)
-                        (And)
-                        coiny (IsMore .scoringLower-y-limit)
-                        (And)
-                        .scored (Is false))
-            :Action (->
-                    true > .scored
-                    (Log "Score: "))))
-
-    (defshards scoring []
-      .X (Math.Add 50.0)
-      > .scoringUpper-x-limit
-      .X (Math.Subtract 50.0)
-      > .scoringLower-x-limit
-
-      .Y (Math.Add 10.0)
-      > .scoringUpper-y-limit
-      .Y (Math.Subtract 10.0)
-      > .scoringLower-y-limit
-
-      (score-collision .coinx-1 .coiny-1)
-      (score-collision .coinx-2 .coiny-2)
-
-      .scored
-      (When :Predicate (Is true)
-            :Action (->
-                    .score (Math.Add 1)
-                    > .score
-                    true > .score-effect-play
-                    false > .scored)))
-
-    ;; ------------- spikeBall-collision-logic --------------
-    (defshards spikeBall-collision-logic [spikeBall-x spikeBall-y]
-
-      spikeBall-x
-      (If :Predicate (-> (IsLess .damageUpper-x-limit)
-                        (And)
-                        spikeBall-x (IsMore .damageLower-x-limit)
-                        (And)
-                        spikeBall-y (IsLess .damageUpper-y-limit)
-                        (And)
-                        spikeBall-y (IsMore .damageLower-y-limit))
-
-          :Then (-> .damaged
-                    (When :Predicate (Is false)
-                          :Action (->
-                                  true > .damaged
-                                  (Log "damaged: "))))))
-
-    ;; -------------- Damaging --------------
-    (defshards damaging []
-
-      .X (Math.Add 120.0)
-      > .damageUpper-x-limit
-      .X (Math.Subtract 120.0)
-      > .damageLower-x-limit
-
-      .Y (Math.Add 15.0)
-      > .damageUpper-y-limit
-      .Y (Math.Subtract 15.0)
-      > .damageLower-y-limit
-
-      (spikeBall-collision-logic .spikeball-x-1 .spikeball-y-1)
-      (spikeBall-collision-logic .spikeball-x-2 .spikeball-y-2)
-      (spikeBall-collision-logic .spikeball-x-3 .spikeball-y-3)
-
-      .damaged
-      (When :Predicate (Is true)
-            :Action (->
-                    .score (Math.Subtract 1)
-                    > .score
-                    true > .damage-effect-play
-                    false > .damaged)))
-
-
-    ;; ------------- innitialize effects -------------
-    (defshards initialize-effects []
-      ;; --------------- Animation Effects -----------------
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_1.png") >> .score-effect-array
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_2.png") >> .score-effect-array
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_3.png") >> .score-effect-array
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_4.png") >> .score-effect-array
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_5.png") >> .score-effect-array
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_6.png") >> .score-effect-array
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_7.png") >> .score-effect-array
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_8.png") >> .score-effect-array
-      (Count .score-effect-array) (Math.Subtract 1) >= .score-effect-array-index-max
-      0 >= .score-effect-array-index
-      0.02 >=  .score-effect-animation-speed ;; Reduce number to increase animation speed
-      false >= .score-effect-play
-
-      0.0 >= .score-effect-position-x
-      0.0 >= .score-effect-position-y
-      (float2 .score-effect-position-x .score-effect-position-y) >= .score-effect-position
+    ```shards
+    @define( initialize-images {
+      LoadImage("GlodImages/Character1_Left.png") = character-image
+      LoadImage("GlodImages/Character1_Left.png") = character-left
+      LoadImage("GlodImages/Character1_Right.png") = character-right
+      LoadImage("GlodImages/Character1_Jumping_Left.png") = character-jumping-left
+      LoadImage("GlodImages/Character1_Jumping_Right.png") = character-jumping-right
+      LoadImage("GlodImages/Character1_Jumping.png") = character-jumping
+
+      ;; ---------- Character Idle sequence (Facing Left) ----------------
+
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_4.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> idle-left-image-sequence
+
+      ;; ---------- Character Idle sequence (Facing Right) ----------------
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> idle-right-image-sequence
+
+      ;; -------------- Walking sequence (Facing Left) -----------------
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> walking-left-image-sequence
+
+      ;; ----------- Walking sequence (Facing Right) ---------------
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> walking-right-image-sequence
+
+      ;; ------------- Coin ---------------
+      LoadImage("GlodImages/Coin/Coin_1.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_2.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_3.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_4.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_5.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_6.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_7.png") >> coin-img-sequence
+
+      ;; ------------- Spiked Cannonball -------------
+      LoadImage("GlodImages/SpikeBall/SpikeBall1.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall2.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall3.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall4.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall5.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall6.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall7.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall8.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall9.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall10.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall11.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall12.png") >> spikeball-sequence
+
+      ;; -------------- score fx ----------------
+      LoadImage("GlodImages/FX/Score_Effect_1.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_2.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_3.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_4.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_5.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_6.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_7.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_8.png") >> score-fx-sequence
 
       ;; --------------- Damaged Effect ----------------
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_1.png") >> .damage-effect-array
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_2.png") >> .damage-effect-array
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_3.png") >> .damage-effect-array
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_4.png") >> .damage-effect-array
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_5.png") >> .damage-effect-array
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_6.png") >> .damage-effect-array
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_7.png") >> .damage-effect-array
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_8.png") >> .damage-effect-array
-      (Count .damage-effect-array) (Math.Subtract 1) >= .damage-effect-array-index-max
-      0 >= .damage-effect-array-index
-      0.02 >=  .damage-effect-animation-speed ;; Reduce number to increase animation speed
-      false >= .damage-effect-play
-      
-      (LoadImage "GlodImages/BG.png") = .bg-image)
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_1.png") >> damage-fx-sequence 
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_2.png") >> damage-fx-sequence
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_3.png") >> damage-fx-sequence
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_4.png") >> damage-fx-sequence
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_5.png") >> damage-fx-sequence
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_6.png") >> damage-fx-sequence
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_7.png") >> damage-fx-sequence
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_8.png") >> damage-fx-sequence
 
-    ;; ------------ ScoreEffect Animation Position ------------
-    (defshards scoreEffect-animation-position []
-      .Y (Math.Add -15.0)
-      > .score-effect-position-y
+      ;; -------------- BG ----------------
+      LoadImage("GlodImages/BG.png") = bg-image 
+    })
 
-      .X
-      > .score-effect-position-x
+    @define( ui-style {
+      UI.Style(OverrideTextStyle: "base-ui" TextStyles: {base-ui: {Size: 16.0
+                                                                Family: FontFamily::Proportional}} OverrideTextColor: @color(255 255 255))
+    })
 
-      (float2 .score-effect-position-x .score-effect-position-y)
-      > .score-effect-position)
+    @wire(coin {
+      Once({
+        ;; ------------ coin variables ------------- ;; all variables that we want to be unique to each coin, we initialize in the new wire instead
+        0 >= coin-image-index
+        RandomFloat(Max: 1000.0) | Math.Subtract(500.0) >= coin-pos-x 
+        -600.0 >= coin-pos-y
+        0.0 >= coin-velocity
+        0.3 >= coin-acceleration
+        
+        false >= scored
+      })
 
-    ;; ------------ ScoreEffect Animation ------------
-    (defloop scoreEffect-animation-logic
+      pos-x | Math.Add(60.0) = collision-x-upper-limit ;; tweak the values added or subtracted accordingly
+      pos-x | Math.Subtract(60.0) = collision-x-lower-limit
 
-      .score-effect-play
-      (When :Predicate (Is true)
-            :Action (->
-                    .score-effect-array-index (Math.Add 1)
-                    > .score-effect-array-index
-                    (When :Predicate (IsMore .score-effect-array-index-max)
-                          :Action (->
-                                    0 > .score-effect-array-index
-                                    false > .score-effect-play))))
+      pos-y | Math.Add(70.0) = collision-y-upper-limit
+      pos-y | Math.Subtract(70.0) = collision-y-lower-limit
 
+      ;; coin-falling-logic
+      coin-pos-y | Math.Add(coin-velocity) > coin-pos-y
+      coin-velocity | Math.Add(coin-acceleration) > coin-velocity
 
-      (Pause .score-effect-animation-speed))
+      ;; coin-scoring logic
+      When(
+        Predicate: {
+          coin-pos-x | IsMoreEqual(collision-x-lower-limit)
+          And
+          coin-pos-x | IsLessEqual(collision-x-upper-limit)
+          And
+          coin-pos-y | IsMoreEqual(collision-y-lower-limit)
+          And
+          coin-pos-y | IsLessEqual(collision-y-upper-limit)
+          And
+          scored | Is(false)
+        }
+        Action: {
+          score | Math.Add(1) > score
+          Spawn(score-fx)
+          true > scored
+          
+        }
+      )
 
-    ;; ------------ DamageEffect Animation ------------
-    (defloop damage-effect-animation-logic
+      When(
+        Predicate: {
+          scored | Is(true)
+          Or ;; or allows the code in Action to happen when either of these conditions return true
+          coin-pos-y | IsMore(0.0)
+        }
+        Action: {
+          -600.0 > coin-pos-y ;; reset our coin's y position
+          RandomFloat(Max: 1000.0) | Math.Subtract(500.0) > coin-pos-x
+          0.0 > coin-velocity
+          false > scored ;; reset scored so that we can score again
+        }
+      )
 
-      .damage-effect-play
-      (When :Predicate (Is true)
-            :Action (->
-                    .damage-effect-array-index (Math.Add 1)
-                    > .damage-effect-array-index
-                    (When :Predicate (IsMore .damage-effect-array-index-max)
-                          :Action (->
-                                    0 > .damage-effect-array-index
-                                    false > .damage-effect-play))))
+      Step(animate-coin)
 
+      UI.Area(
+        Position: @f2(coin-pos-x  coin-pos-y)
+        Anchor: Anchor::Bottom
+        Contents: {
+          coin-img-sequence | Take(coin-image-index) | UI.Image(@f2(0.2 0.2))
+      })
+    } Looped: true)
 
-      (Pause .damage-effect-animation-speed))
+    @wire(spike-cannonball {
+      Once({
+        1.0 >= spikeball-velocity
+        -600.0 >= spikeball-y
+        0.0 >= spikeball-x
 
+        0.5 >= spikeball-acceleration
 
-    ;; ------ UI Style --------
-    (def style
-      {:override_text_style "MyStyle"
-      :text_styles
-      [{:name "MyStyle"
-        :size (float 46)
-        :family "Monospace"}]
-      :visuals
-      {:override_text_color (color 250 250 250)}})
+        0 >= spikeball-index
+        
+        false >= score-subtracted
+      })
 
-    ;;---------- main-wire ------------
-    (defloop main-wire
-      (Setup
-      (initialize-character)
-      (initialize-coin)
-      (initialize-game-elements)
-      (initialize-spiked-canonballs)
-      (initialize-effects))
+      pos-x | Math.Add(50.0) = collision-x-upper-limit ;; tweak the values added or subtracted accordingly
+      pos-x | Math.Subtract(50.0) = collision-x-lower-limit
 
-      (coin-gravity-logic .coiny-1 .coinx-1 .coin-velocity-1 .coin-position-1)
-      (coin-gravity-logic .coiny-2 .coinx-2 .coin-velocity-2 .coin-position-2)
+      pos-y | Math.Add(50.0) = collision-y-upper-limit
+      pos-y | Math.Subtract(50.0) = collision-y-lower-limit
 
-      (run-logic)
-      (gravity-logic)
-      (scoring)
-      (damaging)
+      spikeball-y | Math.Add(spikeball-velocity) > spikeball-y
+      spikeball-velocity | Math.Add(spikeball-acceleration) > spikeball-velocity
 
-      (Step idle-animation)
-      (Step walking-animation)
+      When(
+        Predicate: {
+          spikeball-x | IsMoreEqual(collision-x-lower-limit)
+          And
+          spikeball-x | IsLessEqual(collision-x-upper-limit)
+          And
+          spikeball-y | IsMoreEqual(collision-y-lower-limit)
+          And
+          spikeball-y | IsLessEqual(collision-y-upper-limit)
+          And
+          score-subtracted | Is(false)
+        }
+        Action: {
+          score | Math.Subtract(1) > score
+          Detach(damage-fx)
+          true > score-subtracted
+        }
+      )
 
-      (Step coin-animation)
-      (Step random-coin-1)
-      (Step random-coin-2)
+      When(
+        Predicate: {
+          score-subtracted | Is(true)
+          Or
+          spikeball-y | IsMore(0.0)
+        }
+        Action: {
+          -600.0 > spikeball-y ;; reset our spikeball's y position
+          RandomFloat(Max: 1000.0) | Math.Subtract(500.0) > spikeball-x ;; randomize our spikeball-x position
+          0.0 > spikeball-velocity
+          false > score-subtracted ;; reset scored so that we can score again
+        }
+      )
 
-      (Step spiked-canonball-animation)
-      (spikeball-gravity-logic .spikeball-y-1 .spikeball-velocity-1 .spikeball-position-1 .spikeball-x-1)
-      (spikeball-gravity-logic .spikeball-y-2 .spikeball-velocity-2 .spikeball-position-2 .spikeball-x-2)
-      (spikeball-gravity-logic .spikeball-y-3 .spikeball-velocity-3 .spikeball-position-3 .spikeball-x-3)
-      (Step  spikeball-1)
-      (Step  spikeball-2)
-      (Step  spikeball-3)
+      Step(animate-spikeball)
 
-      (scoreEffect-animation-position)
-      (Step scoreEffect-animation-logic)
-      (Step damage-effect-animation-logic)
+      UI.Area(
+        Position: @f2(spikeball-x spikeball-y)
+        Anchor: Anchor::Bottom ;; this makes the origin of our UI.Area the bottom right of the screen
+        Contents: {
+          spikeball-sequence | Take(spikeball-index) | UI.Image( Scale: @f2(0.10 0.10))
+        }
+      )
+    } Looped: false)
 
-      (GFX.MainWindow
-      :Title "MainWindow" :Width 1920 :Height 1080
-      :Contents
-      (-> (Setup
-            (GFX.DrawQueue) >= .ui-draw-queue
-            (GFX.UIPass .ui-draw-queue) >> .render-steps)
-          .ui-draw-queue (GFX.ClearQueue)
+    @wire(score-fx {
+      Once({
+        0 >= score-fx-idx
+      })
 
-          (UI
-            .ui-draw-queue
-            (->
+      Step(animate-score-fx)
 
-            (UI.Area :Position (float2 0 0)
-                      :Anchor Anchor.TopLeft
-                      :Contents (->
-                                .bg-image (UI.Image :Scale (float2 0.7))))
+      score-fx-idx
+      When(
+        Predicate: IsMoreEqual((Count(score-fx-sequence)))
+        Action: {
+          none
+          Stop
+        }
+      )
 
-            (UI.Area :Position .character-position
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                .character-state
-                                (Match [0 (-> .character-direction
-                                              (Match [0 (-> LoadTexture .idle-left-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))
-                                                      1 (-> LoadTexture .idle-right-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))]
-                                                      :Passthrough false))
-                                        1 (-> LoadTexture .walking-left-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-                                        2 (-> LoadTexture .walking-right-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-                                        3 (->  .character-direction
-                                                (Match [0 (-> LoadTexture .character-jumping-left (UI.Image :Scale (float2 0.2)))
-                                                        1 (-> LoadTexture .character-jumping-right (UI.Image :Scale (float2 0.2)))]
-                                                      :Passthrough false))]
-                                        :Passthrough false)))
+      UI.Area(
+        Position: @f2(pos-x pos-y) ;; we want the effect to spawn at our Glod's position
+        Anchor: Anchor::Bottom
+        Contents: {
+          score-fx-sequence | Take(score-fx-idx) | UI.Image(@f2(0.2 0.2))
+        }
+      )
 
-            ;; -------- coins ui area -----------
+      none
+    } Looped: true)
 
-            (UI.Area :Position .coin-position-1
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                LoadTexture .coin-image-array (Take .coin-image-index) (UI.Image :Scale (float2 0.2))))
+    @wire(damage-fx {
+      Once({
+        0 >= damage-fx-idx
+      })
 
-            (UI.Area :Position .coin-position-2
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                LoadTexture .coin-image-array (Take .coin-image-index) (UI.Image :Scale (float2 0.2))))
-            ;; --------- spikeball ui area ----------
+      Step(animate-damage-fx)
 
-            (UI.Area :Position .spikeball-position-1
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                LoadTexture .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
+      damage-fx-idx
+      When(
+        Predicate: IsMoreEqual((Count(damage-fx-sequence)))
+        Action: {
+          none
+          Stop
+        }
+      )
 
-            (UI.Area :Position .spikeball-position-2
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                LoadTexture .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
+      UI.Area(
+        Position: @f2(0 0)
+        Anchor: Anchor::Center
+        Contents: {
+          damage-fx-sequence | Take(damage-fx-idx) | UI.Image(@f2(8.0 8.0))
+        }
+      )
 
-            (UI.Area :Position .spikeball-position-3
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                LoadTexture .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
+      none 
+    } Looped: true)
 
-            ;; ----------------- Visual Effects  -------------------
-            (UI.Area :Position .score-effect-position
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                LoadTexture .score-effect-array (Take .score-effect-array-index) (UI.Image :Scale (float2 0.15))))
+    @wire( animate {
+      Once({
+        0.08 = idle-animation-speed
+      })
+      image-index | Math.Add(1) > image-index
+      Count(active-animation) = index-max
+      image-index
+      When(Predicate: IsMoreEqual(index-max) Action: {
+        0 > image-index
+      })
+      Pause(idle-animation-speed)
+    } Looped: true)
 
-            (UI.Area :Position (float2 0 0)
-                      :Anchor Anchor.TopLeft
-                      :Contents (->
-                                LoadTexture .damage-effect-array (Take .damage-effect-array-index) (UI.Image :Scale (float2 10))))
+    @wire( animate-coin {
+      Once({
+        0.08 = coin-animation-speed
+      })
+      coin-image-index | Math.Add(1) > coin-image-index
+      Count(coin-img-sequence) = index-max
+      coin-image-index
+      When(Predicate: IsMoreEqual(index-max) Action: {
+        0 > coin-image-index
+      })
+      Pause(coin-animation-speed)
+    } Looped: true)
 
-            ;; ---------------- UI ------------------
+    @wire(animate-spikeball {
+      Once({
+        0.06 >= spikeball-animation-speed
+      })
 
-            (UI.Area :Position (float2 -40 20)
-                      :Anchor Anchor.TopRight
-                      :Contents (->
-                                style (UI.Style)
-                                .score (ToString) (UI.Label)))))
+      spikeball-index | Math.Add(1) > spikeball-index
+      Count(spikeball-sequence) = spikeball-max
+      spikeball-index
+      When(Predicate: IsMoreEqual(spikeball-max) Action: {
+        0 > spikeball-index
+      })
+      Pause(spikeball-animation-speed)
+    } Looped: true)
 
-          (button-inputs)
+    @wire(animate-score-fx {
+      Once({
+        0.08 = idle-animation-speed
+      })
+      score-fx-idx | Math.Add(1) > score-fx-idx
+      Pause(idle-animation-speed)
+    } Looped: true)
 
-          (GFX.Render :Steps .render-steps))))
+    @wire(animate-damage-fx {
+      Once({
+        0.06 = idle-animation-speed
+      })
+      damage-fx-idx | Math.Add(1) > damage-fx-idx
+      Pause(idle-animation-speed)
+    } Looped: true)
 
+    @define( button-inputs {
 
-    (defmesh main)
-    (schedule main main-wire)
-    (run main (/ 1.0 60))
+      Inputs.IsKeyDown(
+        Key: "left"
+      )
+      When(Predicate: Is(true) Action: {
+        -1 > x-direction
+      })
+
+      Inputs.KeyUp(
+        Key: "left"
+        Action: {
+          0 > x-direction
+        }
+        Consume: false
+        SkipConsumed: true
+      )
+
+      Inputs.IsKeyDown(
+        Key: "right"
+      )
+      When(Predicate: Is(true) Action: {
+        1 > x-direction
+      })
+
+      Inputs.KeyUp(
+        Key: "right"
+        Action: {
+          0 > x-direction
+        }
+        Consume: false
+        SkipConsumed: true
+      )
+
+      Inputs.KeyDown(
+        Key: "up"
+        Action: {
+          Msg("up")
+          1 > y-direction
+          grounded
+          When(Predicate: Is(true) Action:{
+            30.0 > character-y-velocity
+            false > grounded ;; make grounded false when up key is pressed
+          })
+        }
+      )
+
+      Inputs.KeyUp(
+        Key: "up"
+        Action: {
+          0 > y-direction
+        }
+        Consume: false
+        SkipConsumed: true
+      )
+    })
+
+    @wire(main-wire {
+      Once({
+        @initialize-images
+        @i2(0 0) >= character-direction
+        0 >= x-direction
+        0 >= y-direction
+        0 >= image-index
+        idle-left-image-sequence >= idle-animation
+        character-jumping-left >= jumping-image
+        idle-left-image-sequence >= active-animation
+        0.0 >= pos-x
+        0.0 >= pos-y
+
+        3.0 >= character-x-velocity
+        0.0 >= character-y-velocity
+        2.0 >= character-y-acceleration
+
+        true >= grounded
+        0 >= score
+
+        0 >= spikeball-index
+      })
+
+      pos-x | Math.Add((character-x-velocity | Math.Multiply((x-direction | ToFloat)))) > pos-x
+      Clamp(Min: -600.0 Max: 600.0) > pos-x
+
+      grounded
+      If(Predicate: Is(false) Then: {
+        pos-y | Math.Subtract(character-y-velocity) > pos-y
+        character-y-velocity | Math.Subtract(character-y-acceleration) > character-y-velocity
+      })
+
+      pos-y
+      When(Predicate: IsMoreEqual(0.0) Action: {
+        true > grounded
+        0.0 > pos-y
+        0 > y-direction
+      })
+
+      GFX.MainWindow(
+        Contents: {
+          Once({
+            GFX.DrawQueue >= ui-draw-queue
+            GFX.UIPass(ui-draw-queue) >> render-steps
+          })
+          UI(
+            Contents: {
+            UI.Area(
+              Position: @f2(0.0 0.0)
+              Anchor: Anchor::Center
+              Contents: {
+                bg-image | UI.Image(@f2(0.8 0.8))
+              }
+            )
+            UI.Area(
+              Position: @f2(pos-x pos-y)
+              Anchor: Anchor::Bottom
+              Contents: {
+                character-direction
+                Match([
+                  @i2(0 0) {idle-animation > active-animation | Take(image-index)} ;;Take from the idle animation when in idle
+                  @i2(-1 0) {
+                    idle-left-image-sequence > idle-animation ;; Store the left idle animation into idle-animation when facing left
+                    character-jumping-left > jumping-image
+                    walking-left-image-sequence > active-animation | Take(image-index)
+                  }
+                  @i2(1 0) {
+                    idle-right-image-sequence > idle-animation ;; Store the right idle animation into idle-animation when facing right
+                    character-jumping-right > jumping-image
+                    walking-right-image-sequence > active-animation | Take(image-index)
+                  }
+                  none {jumping-image} ;; we can just use none to handle the jumping state as all other cases at this moment, the character is jumping
+                ] Passthrough: false)
+                UI.Image(@f2(0.2))
+              }
+            )
+
+            UI.Area(
+              Position: @f2(-40 -40)
+              Anchor: Anchor::BottomRight ;; this makes the origin of our UI.Area the bottom right of the screen
+              Contents: {
+                @ui-style
+                "Score: " | ToString | UI.Label
+                score | ToString | UI.Label ;; UI.Label only accepts a string, so we have to convert our score value which is an int, into a string first.
+              }
+            )
+
+            Do(spike-cannonball)
+
+            [1 2 3]
+            DoMany(coin ComposeSync: true)
+
+          }) | UI.Render(ui-draw-queue)
+
+          @button-inputs
+          @i2(x-direction y-direction) > character-direction
+          Step(animate)
+          
+          GFX.Render(Steps: render-steps)
+        }
+      )
+    } Looped: true)
+
+    @mesh(main)
+    @schedule(main main-wire)
+    @run(main FPS: 60)
     ```
 
 Now we have a background image! 🖼️
@@ -2101,1553 +1778,1244 @@ Now we have a background image! 🖼️
 
 Let's make our game more challenging by adding a timer. ⏱️
 
-Create a `.timer` variable and add it under `initialize-game-elements`.
+Create a `timer` variable to keep track of the time and also a `game-over variable` to handle the game over state..
 
 === "Code Added"
     
-    ```{.clojure .annotate linenums="1"}
-    60 >= .timer
-    0 >= .gameOver
+    ```shards
+    60 >= timer ;; add these to the Once where we initialize all our variables
+    false >= game-over
     ```
 
-Create a `UI.Area` to draw our timer variable. Place it on the top left.
+Create a `UI.Area` to draw our timer variable. Place it on the top right.
 
 === "Code Added"
 
-    ```{.clojure .annotate linenums="1"}
-    (UI.Area :Position (float2 40 20)
-    :Anchor Anchor.TopLeft
-    :Contents (->
-    style (UI.Style)
-    .timer (ToString) (UI.Label)))
+    ```shards
+    UI.Area(
+      Position: @f2(-40 40)
+      Anchor: Anchor::TopRight
+      Contents: {
+        timer | ToString | UI.Label
+      }
+    )
     ```
 Create a countdown logic.
 
-Here, we subtract one from our `.timer` variable and `Step` into the loop every second.
+Here, we subtract one from our `timer` variable every second and `Step` into the loop.
 
-Set a conditional statement to ensure that this only happens while `.gameOver` is false and `.timer` is greater than zero.
+Set a conditional statement to ensure that this only happens while `game-over` is false and `timer` is greater than zero.
 
 === "Code Added"
     
-    ```{.clojure .annotate linenums="1"}
+    ```shards
     ;; -------- Timer -----------
-    (defloop timer-countdown
-      .gameOver
-      (When :Predicate (->
-                        (Is 0)
-                        (And)
-                        .timer (IsMore 0))
-            :Action (->
-                    .timer (Math.Subtract 1)
-                    > .timer))
-
-      (Pause 1.0))
+    @wire(timer-countdown {
+      timer
+      If(Predicate: IsMore(0) Then: {
+        timer | Math.Subtract(1) > timer
+        Pause(1.0)
+      })
+    } Looped: true)
     ```
 
-Create the Game Over logic to dictate that `.gameOver` becomes true when `.timer` reaches zero.
+Create the Game Over logic to dictate that `game-over` becomes true when `timer` reaches zero.
 
 === "Code Added"
     
-    ```{.clojure .annotate linenums="1"}
+    ```shards
     ;; ---------- GameOver Logic ------------
-    (defshards gameOver-logic []
-      .timer
-      (When :Predicate (Is 0)
-            :Action (->
-                    1 > .gameOver)))
+    @wire(timer-countdown {
+      timer
+      If(Predicate: IsMore(0) Action: {
+        timer | Math.Subtract(1) > timer
+        Pause(1.0)
+      } Else: {
+        true > game-over
+      })
+    } Looped: true)
     ```
 
-Remember to call and `Step` them in the `main-wire`.
+Remember to call and `Step` `timer-countdown` in the `main-wire`.
 
 === "Code Added"
     
-    ```{.clojure .annotate linenums="1"}
-    (Step timer-countdown)
-    (gameOver-logic)
+    ```shards
+    Step(timer-countdown)
     ```
 
 === "Full Code So Far"
     
-    ```{.clojure .annotate linenums="1"}
-    (defshards initialize-character []
-      (LoadImage "GlodImages/Character1_Jumping_Left.png") = .character-jumping-left
-      (LoadImage "GlodImages/Character1_Jumping_Right.png") = .character-jumping-right
-
-      0 >= .character-state
-      0 >= .character-direction
-      true >= .can-jump
-
-      0.0 >= .X
-      620.0 >= .Y
-      (float2 .X .Y) >= .character-position
-      0.0 >= .character-x-velocity
-      0.0 >= .character-y-velocity
-      0.0 >= .character-y-acceleration
-
-      ;; ---------- Character Idle Array (Facing Left) ----------
-      (LoadImage "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> .idle-left-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> .idle-left-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> .idle-left-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_4.png") >> .idle-left-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> .idle-left-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> .idle-left-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> .idle-left-image-array
-
-      ;; ---------- Character Idle Array (Facing Right) ----------------
-      (LoadImage "GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> .idle-right-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> .idle-right-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> .idle-right-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> .idle-right-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> .idle-right-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> .idle-right-image-array
-      (LoadImage "GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> .idle-right-image-array
-
-      0 >= .idle-image-index
-      (Count .idle-left-image-array) (Math.Subtract 1) >= .idle-image-index-max
-      0.08 >= .idle-animation-speed
-
-      ;; -------------- Walking Array (Facing Left) -----------------
-      (LoadImage "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> .walking-left-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> .walking-left-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> .walking-left-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> .walking-left-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> .walking-left-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> .walking-left-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> .walking-left-image-array
-
-      ;; ----------- Walking Array (Facing Right) ---------------
-      (LoadImage "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> .walking-right-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> .walking-right-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> .walking-right-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> .walking-right-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> .walking-right-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> .walking-right-image-array
-      (LoadImage "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> .walking-right-image-array
-
-      (Count .walking-left-image-array) (Math.Subtract 1) >= .walking-image-index-max
-      0 >= .walking-image-index
-      0.08 >= .walking-animation-speed) ;; Reduce number to increase animation speed
-
-    ;; --------- Idle Animation Loop ---------
-    (defloop idle-animation
-      .idle-image-index (Math.Add 1)
-      > .idle-image-index
-      (When :Predicate (IsMore .idle-image-index-max)
-            :Action (-> 0 > .idle-image-index))
-      (Pause .idle-animation-speed))
-
-    ;; -------- Walking Animation Loop --------
-    (defloop walking-animation
-      .walking-image-index (Math.Add 1)
-      > .walking-image-index
-      (When :Predicate (IsMore .walking-image-index-max)
-            :Action (-> 0 > .walking-image-index))
-      (Pause .walking-animation-speed))
-
-    (defshards LoadTexture [name]
-      (LoadImage name)
-      (GFX.Texture))
-
-    ;; ---------- character-boundary ------------
-
-    (defshards clamp [var min max]
-      var (Max min) (Min max) > var)
-
-    ;; ------------ Character Run Logic ----------------
-    (defshards run-logic []
-      .X (Math.Add .character-x-velocity)
-      > .X
-
-      (float2 .X .Y) > .character-position
-
-      (clamp .X -600.0 600.0))
-
-    ;; ------------ Character gravity-logic ---------------
-    (defshards gravity-logic []
-      .Y (Math.Add .character-y-velocity)
-      > .Y
-
-      .character-y-velocity (Math.Add .character-y-acceleration)
-      > .character-y-velocity
-
-      (float2 .X .Y) > .character-position
-
-      (clamp .Y -620.0 620.0)
-      .Y
-      (When :Predicate (IsMoreEqual 620.0)
-            :Action (->
-                    0.0 > .character-y-velocity
-                    0.0 > .character-y-acceleration
-                    true > .can-jump
-                    .character-state
-                    (When :Predicate (Is 3)
-                          :Action (->
-                                    0 > .character-state)))))
-
-    ;; ------- Button Inputs ----------
-    (defshards button-inputs []
-      (Inputs.KeyDown
-      :Key "left"
-      :Action (->
-                (Msg "left")
-
-                .character-state
-                (When :Predicate (Is 0)
-                      :Action (-> 1 > .character-state))
-
-                0 > .character-direction
-                -5.0 > .character-x-velocity))
-
-      (Inputs.KeyDown
-      :Key "right"
-      :Action (->
-                (Msg "right")
-
-                .character-state
-                (When :Predicate (Is 0)
-                      :Action (-> 2 > .character-state))
-                1 > .character-direction
-                5.0 > .character-x-velocity))
-
-      (Inputs.KeyDown
-      :Key "up"
-      :Action (->
-                (Msg "up")
-                3 > .character-state
-                .can-jump
-                (When :Predicate (Is true)
-                      :Action (->
-                              -20.0 > .character-y-velocity
-                              1.0 >  .character-y-acceleration
-                              false >= .can-jump))))
-
-      (Inputs.KeyUp
-      :Key "left"
-      :Action (->
-                0 > .character-state
-                0.0 > .character-x-velocity))
-
-      (Inputs.KeyUp
-      :Key "right"
-      :Action (->
-                0 > .character-state
-                0.0 > .character-x-velocity)))
-
-    ;; -------------- Initialize Coin ----------
-    (defshards initialize-coin []
-      (LoadImage "GlodImages/Coin/Coin_1.png") >> .coin-image-array
-      (LoadImage "GlodImages/Coin/Coin_2.png") >> .coin-image-array
-      (LoadImage "GlodImages/Coin/Coin_3.png") >> .coin-image-array
-      (LoadImage "GlodImages/Coin/Coin_4.png") >> .coin-image-array
-      (LoadImage "GlodImages/Coin/Coin_5.png") >> .coin-image-array
-      (LoadImage "GlodImages/Coin/Coin_6.png") >> .coin-image-array
-      (LoadImage "GlodImages/Coin/Coin_7.png") >> .coin-image-array
-      (Count .coin-image-array) (Math.Subtract 1) >= .coin-image-index-max
-      0 >= .coin-image-index
-      0.1 >= .coin-animation-speed
-
-      ;; ----- Coin 1 ------
-      0.0 >= .coinx-1
-      0.0 >= .coiny-1
-      (float2 .coinx-1 .coiny-1) >= .coin-position-1
-      0.0 >= .coin-velocity-1
-      0.5 >= .coin-acceleration
-
-      ;; ----- Coin 2 ----
-      0.0 >= .coinx-2
-      0.0 >= .coiny-2
-      (float2 .coinx-2 .coiny-2) >= .coin-position-2
-      0.0 >= .coin-velocity-2)
-
-    ;; -------------- Coin Animation ------------------
-    (defloop coin-animation
-      .coin-image-index (Math.Add 1)
-      > .coin-image-index
-      (When :Predicate (IsMore .coin-image-index-max)
-            :Action (-> 0 > .coin-image-index))
-
-      (Pause .coin-animation-speed))
-
-    ;; ------------- Coin Gravity ------------------
-    (defshards coin-gravity-logic [coiny coinx coin-velocity coin-position]
-
-      coiny (Math.Add coin-velocity)
-      > coiny
-
-      coin-velocity (Math.Add .coin-acceleration)
-      > coin-velocity
-
-      (float2 coinx coiny) > coin-position)
-
-    ;; ------------- Random Coin ------------------
-    (defshards random-coin [coinx coiny coin-velocity coin-position pause-length]
-      coinx
-      (RandomFloat :Max 1200.0)
-      > coinx
-      (Math.Subtract 600.0)
-      > coinx
-
-      0.0 > coiny
-      0.0 > coin-velocity
-      (float2 coinx coiny) > coin-position
-      (Pause pause-length))
-
-    (defloop random-coin-1
-      (random-coin .coinx-1 .coiny-1 .coin-velocity-1 .coin-position-1 1.5))
-
-    (defloop random-coin-2
-      (random-coin .coinx-2 .coiny-2 .coin-velocity-2 .coin-position-2 2.5))
-
-    ;; ------------ Initialize Spiked CanonBalls ---------------
-    (defshards initialize-spiked-canonballs []
-      (LoadImage "GlodImages/SpikeBall/SpikeBall1.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall2.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall3.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall4.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall5.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall6.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall7.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall8.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall9.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall10.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall11.png") >> .spikeball-array
-      (LoadImage "GlodImages/SpikeBall/SpikeBall12.png") >> .spikeball-array
-
-      (Count .spikeball-array) (Math.Subtract 1) >= .spikeball-array-index-max
-      0 >= .spikeball-index
-      0.06 >= .spikeball-animation-speed
-
-      ;; ---------- spikball-1 -------------
-      1.0 >= .spikeball-velocity-1
-      0.0 >= .spikeball-y-1
-      0.0 >= .spikeball-x-1
-      (float2 .spikeball-x-1 .spikeball-y-1) >= .spikeball-position-1
-
-      ;; ---------- spikeball-2 -------------
-      1.0 >= .spikeball-velocity-2
-      0.0 >= .spikeball-y-2
-      0.0 >= .spikeball-x-2
-      (float2 .spikeball-x-2 .spikeball-y-2) >= .spikeball-position-2
-
-      ;; ---------- SpikeBall_3 -------------
-      1.0 >= .spikeball-velocity-3
-      0.0 >= .spikeball-y-3
-      0.0 >= .spikeball-x-3
-      (float2 .spikeball-x-3 .spikeball-y-3) >= .spikeball-position-3
-
-      0.5 >= .spikeball-acceleration)
-
-    ;;------------- Spiked CanonBall Animation -------------
-    (defloop spiked-canonball-animation
-      .spikeball-index (Math.Add 1)
-      > .spikeball-index
-      (When :Predicate (IsMore .spikeball-array-index-max)
-            :Action (-> 0 > .spikeball-index))
-
-      (Pause .spikeball-animation-speed))
-
-    ;; ------------- SpikeBall_Gravity_Logic -------------
-    (defshards spikeball-gravity-logic [spikeball-y spikeball-velocity spikeball-position spikeball-x]
-      spikeball-y (Math.Add spikeball-velocity)
-      > spikeball-y
-      spikeball-velocity (Math.Add .spikeball-acceleration)
-      > spikeball-velocity
-      (float2 spikeball-x spikeball-y) > spikeball-position)
-
-    (defshards randomise-spikeball [spikeball-x spikeball-y spikeball-velocity spikeball-position pausefloat]
-      spikeball-x
-      (RandomFloat :Max 1200.0)
-      > spikeball-x
-      (Math.Subtract 600.0)
-      > spikeball-x
-
-      0.0 > spikeball-y
-      0.0 > spikeball-velocity
-      (float2 spikeball-x spikeball-y) > spikeball-position
-      .spikeball-x-1
-      (Pause pausefloat))
-
-    (defloop spikeball-1
-      (randomise-spikeball .spikeball-x-1 .spikeball-y-1 .spikeball-velocity-1 .spikeball-position-1 2))
-    (defloop spikeball-2
-      (randomise-spikeball .spikeball-x-2 .spikeball-y-2 .spikeball-velocity-2 .spikeball-position-2 3))
-    (defloop spikeball-3
-      (randomise-spikeball .spikeball-x-3 .spikeball-y-3 .spikeball-velocity-3 .spikeball-position-3 4))
-
-
-    ;; --------- Game Elements ------------
-    (defshards initialize-game-elements []
-      0 >= .score
-      false >= .scored
-
-      .X (Math.Add 50.0)
-      >= .scoringUpper-x-limit
-      .X (Math.Subtract 50.0)
-      >= .scoringLower-x-limit
-
-      .Y (Math.Add 10.0)
-      >= .scoringUpper-y-limit
-      .Y (Math.Subtract 10.0)
-      >= .scoringLower-y-limit
-
-      ;; ---------- Damage Limits ------------
-      .X (Math.Add 50.0)
-      >= .damageUpper-x-limit
-      .X (Math.Subtract 50.0)
-      >= .damageLower-x-limit
-
-      .Y (Math.Add 5.0)
-      >= .damageUpper-y-limit
-      .Y (Math.Subtract 5.0)
-      >= .damageLower-y-limit
-
-      false >= .damaged
-
-      60 >= .timer
-      0 >= .gameOver)
-
-    ;; --------- Scoring ----------
-    (defshards score-collision [coinx coiny]
-      coinx
-      (When :Predicate (->
-                        (IsLess .scoringUpper-x-limit)
-                        (And)
-                        coinx (IsMore .scoringLower-x-limit)
-                        (And)
-                        coiny (IsLess .scoringUpper-y-limit)
-                        (And)
-                        coiny (IsMore .scoringLower-y-limit)
-                        (And)
-                        .scored (Is false))
-            :Action (->
-                    true > .scored
-                    (Log "Score: "))))
-
-    (defshards scoring []
-      .X (Math.Add 50.0)
-      > .scoringUpper-x-limit
-      .X (Math.Subtract 50.0)
-      > .scoringLower-x-limit
-
-      .Y (Math.Add 10.0)
-      > .scoringUpper-y-limit
-      .Y (Math.Subtract 10.0)
-      > .scoringLower-y-limit
-
-      (score-collision .coinx-1 .coiny-1)
-      (score-collision .coinx-2 .coiny-2)
-
-      .scored
-      (When :Predicate (Is true)
-            :Action (->
-                    .score (Math.Add 1)
-                    > .score
-                    true > .score-effect-play
-                    false > .scored)))
-
-    ;; ------------- spikeBall-collision-logic --------------
-    (defshards spikeBall-collision-logic [spikeBall-x spikeBall-y]
-
-      spikeBall-x
-      (If :Predicate (-> (IsLess .damageUpper-x-limit)
-                        (And)
-                        spikeBall-x (IsMore .damageLower-x-limit)
-                        (And)
-                        spikeBall-y (IsLess .damageUpper-y-limit)
-                        (And)
-                        spikeBall-y (IsMore .damageLower-y-limit))
-
-          :Then (-> .damaged
-                    (When :Predicate (Is false)
-                          :Action (->
-                                  true > .damaged
-                                  (Log "damaged: "))))))
-
-    ;; -------------- Damaging --------------
-    (defshards damaging []
-
-      .X (Math.Add 120.0)
-      > .damageUpper-x-limit
-      .X (Math.Subtract 120.0)
-      > .damageLower-x-limit
-
-      .Y (Math.Add 15.0)
-      > .damageUpper-y-limit
-      .Y (Math.Subtract 15.0)
-      > .damageLower-y-limit
-
-      (spikeBall-collision-logic .spikeball-x-1 .spikeball-y-1)
-      (spikeBall-collision-logic .spikeball-x-2 .spikeball-y-2)
-      (spikeBall-collision-logic .spikeball-x-3 .spikeball-y-3)
-
-      .damaged
-      (When :Predicate (Is true)
-            :Action (->
-                    .score (Math.Subtract 1)
-                    > .score
-                    true > .damage-effect-play
-                    false > .damaged)))
-
-
-    ;; ------------- innitialize effects -------------
-    (defshards initialize-effects []
-      ;; --------------- Animation Effects -----------------
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_1.png") >> .score-effect-array
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_2.png") >> .score-effect-array
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_3.png") >> .score-effect-array
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_4.png") >> .score-effect-array
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_5.png") >> .score-effect-array
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_6.png") >> .score-effect-array
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_7.png") >> .score-effect-array
-      (LoadImage "GlodImages/Coin/CoinEffect/Score_Effect_8.png") >> .score-effect-array
-      (Count .score-effect-array) (Math.Subtract 1) >= .score-effect-array-index-max
-      0 >= .score-effect-array-index
-      0.02 >=  .score-effect-animation-speed ;; Reduce number to increase animation speed
-      false >= .score-effect-play
-
-      0.0 >= .score-effect-position-x
-      0.0 >= .score-effect-position-y
-      (float2 .score-effect-position-x .score-effect-position-y) >= .score-effect-position
+    ```shards
+    @define( initialize-images {
+      LoadImage("GlodImages/Character1_Left.png") = character-image
+      LoadImage("GlodImages/Character1_Left.png") = character-left
+      LoadImage("GlodImages/Character1_Right.png") = character-right
+      LoadImage("GlodImages/Character1_Jumping_Left.png") = character-jumping-left
+      LoadImage("GlodImages/Character1_Jumping_Right.png") = character-jumping-right
+      LoadImage("GlodImages/Character1_Jumping.png") = character-jumping
+
+      ;; ---------- Character Idle sequence (Facing Left) ----------------
+
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_4.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> idle-left-image-sequence
+
+      ;; ---------- Character Idle sequence (Facing Right) ----------------
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> idle-right-image-sequence
+
+      ;; -------------- Walking sequence (Facing Left) -----------------
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> walking-left-image-sequence
+
+      ;; ----------- Walking sequence (Facing Right) ---------------
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> walking-right-image-sequence
+
+      ;; ------------- Coin ---------------
+      LoadImage("GlodImages/Coin/Coin_1.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_2.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_3.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_4.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_5.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_6.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_7.png") >> coin-img-sequence
+
+      ;; ------------- Spiked Cannonball -------------
+      LoadImage("GlodImages/SpikeBall/SpikeBall1.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall2.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall3.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall4.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall5.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall6.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall7.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall8.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall9.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall10.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall11.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall12.png") >> spikeball-sequence
+
+      ;; -------------- score fx ----------------
+      LoadImage("GlodImages/FX/Score_Effect_1.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_2.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_3.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_4.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_5.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_6.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_7.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_8.png") >> score-fx-sequence
 
       ;; --------------- Damaged Effect ----------------
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_1.png") >> .damage-effect-array
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_2.png") >> .damage-effect-array
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_3.png") >> .damage-effect-array
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_4.png") >> .damage-effect-array
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_5.png") >> .damage-effect-array
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_6.png") >> .damage-effect-array
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_7.png") >> .damage-effect-array
-      (LoadImage "GlodImages/Damage_Effect/Damaged_Effect_8.png") >> .damage-effect-array
-      (Count .damage-effect-array) (Math.Subtract 1) >= .damage-effect-array-index-max
-      0 >= .damage-effect-array-index
-      0.02 >=  .damage-effect-animation-speed ;; Reduce number to increase animation speed
-      false >= .damage-effect-play
-      
-      (LoadImage "GlodImages/BG.png") = .bg-image)
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_1.png") >> damage-fx-sequence 
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_2.png") >> damage-fx-sequence
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_3.png") >> damage-fx-sequence
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_4.png") >> damage-fx-sequence
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_5.png") >> damage-fx-sequence
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_6.png") >> damage-fx-sequence
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_7.png") >> damage-fx-sequence
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_8.png") >> damage-fx-sequence
 
-    ;; ------------ ScoreEffect Animation Position ------------
-    (defshards scoreEffect-animation-position []
-      .Y (Math.Add -15.0)
-      > .score-effect-position-y
+      ;; -------------- BG ----------------
+      LoadImage("GlodImages/BG.png") = bg-image 
+    })
 
-      .X
-      > .score-effect-position-x
+    @define( ui-style {
+      UI.Style(OverrideTextStyle: "base-ui" TextStyles: {base-ui: {Size: 16.0
+                                                                Family: FontFamily::Proportional}} OverrideTextColor: @color(255 255 255))
+    })
 
-      (float2 .score-effect-position-x .score-effect-position-y)
-      > .score-effect-position)
+    @wire(coin {
+      Once({
+        ;; ------------ coin variables ------------- ;; all variables that we want to be unique to each coin, we initialize in the new wire instead
+        0 >= coin-image-index
+        RandomFloat(Max: 1000.0) | Math.Subtract(500.0) >= coin-pos-x 
+        -600.0 >= coin-pos-y
+        0.0 >= coin-velocity
+        0.3 >= coin-acceleration
+        
+        false >= scored
+      })
 
-    ;; ------------ ScoreEffect Animation ------------
-    (defloop scoreEffect-animation-logic
+      pos-x | Math.Add(60.0) = collision-x-upper-limit ;; tweak the values added or subtracted accordingly
+      pos-x | Math.Subtract(60.0) = collision-x-lower-limit
 
-      .score-effect-play
-      (When :Predicate (Is true)
-            :Action (->
-                    .score-effect-array-index (Math.Add 1)
-                    > .score-effect-array-index
-                    (When :Predicate (IsMore .score-effect-array-index-max)
-                          :Action (->
-                                    0 > .score-effect-array-index
-                                    false > .score-effect-play))))
+      pos-y | Math.Add(70.0) = collision-y-upper-limit
+      pos-y | Math.Subtract(70.0) = collision-y-lower-limit
 
+      ;; coin-falling-logic
+      coin-pos-y | Math.Add(coin-velocity) > coin-pos-y
+      coin-velocity | Math.Add(coin-acceleration) > coin-velocity
 
-      (Pause .score-effect-animation-speed))
+      ;; coin-scoring logic
+      When(
+        Predicate: {
+          coin-pos-x | IsMoreEqual(collision-x-lower-limit)
+          And
+          coin-pos-x | IsLessEqual(collision-x-upper-limit)
+          And
+          coin-pos-y | IsMoreEqual(collision-y-lower-limit)
+          And
+          coin-pos-y | IsLessEqual(collision-y-upper-limit)
+          And
+          scored | Is(false)
+        }
+        Action: {
+          score | Math.Add(1) > score
+          Spawn(score-fx)
+          true > scored
+          
+        }
+      )
 
-    ;; ------------ DamageEffect Animation ------------
-    (defloop damage-effect-animation-logic
+      When(
+        Predicate: {
+          scored | Is(true)
+          Or ;; or allows the code in Action to happen when either of these conditions return true
+          coin-pos-y | IsMore(0.0)
+        }
+        Action: {
+          -600.0 > coin-pos-y ;; reset our coin's y position
+          RandomFloat(Max: 1000.0) | Math.Subtract(500.0) > coin-pos-x
+          0.0 > coin-velocity
+          false > scored ;; reset scored so that we can score again
+        }
+      )
 
-      .damage-effect-play
-      (When :Predicate (Is true)
-            :Action (->
-                    .damage-effect-array-index (Math.Add 1)
-                    > .damage-effect-array-index
-                    (When :Predicate (IsMore .damage-effect-array-index-max)
-                          :Action (->
-                                    0 > .damage-effect-array-index
-                                    false > .damage-effect-play))))
+      Step(animate-coin)
 
+      UI.Area(
+        Position: @f2(coin-pos-x  coin-pos-y)
+        Anchor: Anchor::Bottom
+        Contents: {
+          coin-img-sequence | Take(coin-image-index) | UI.Image(@f2(0.2 0.2))
+      })
+    } Looped: true)
 
-      (Pause .damage-effect-animation-speed))
+    @wire(spike-cannonball {
+      Once({
+        1.0 >= spikeball-velocity
+        -600.0 >= spikeball-y
+        0.0 >= spikeball-x
 
-    ;; -------- Timer -----------
-    (defloop timer-countdown
-      .gameOver
-      (When :Predicate (->
-                        (Is 0)
-                        (And)
-                        .timer (IsMore 0))
-            :Action (->
-                    .timer (Math.Subtract 1)
-                    > .timer))
+        0.5 >= spikeball-acceleration
 
-      (Pause 1.0))
+        0 >= spikeball-index
+        
+        false >= score-subtracted
+      })
 
-    ;; ---------- GameOver Logic ------------
-    (defshards gameOver-logic []
-      .timer
-      (When :Predicate (Is 0)
-            :Action (->
-                    1 > .gameOver)))
+      pos-x | Math.Add(50.0) = collision-x-upper-limit ;; tweak the values added or subtracted accordingly
+      pos-x | Math.Subtract(50.0) = collision-x-lower-limit
 
+      pos-y | Math.Add(50.0) = collision-y-upper-limit
+      pos-y | Math.Subtract(50.0) = collision-y-lower-limit
 
-    ;; ------ UI Style --------
-    (def style
-      {:override_text_style "MyStyle"
-      :text_styles
-      [{:name "MyStyle"
-        :size (float 46)
-        :family "Monospace"}]
-      :visuals
-      {:override_text_color (color 250 250 250)}})
+      spikeball-y | Math.Add(spikeball-velocity) > spikeball-y
+      spikeball-velocity | Math.Add(spikeball-acceleration) > spikeball-velocity
 
-    ;;---------- main-wire ------------
-    (defloop main-wire
-      (Setup
-      (initialize-character)
-      (initialize-coin)
-      (initialize-game-elements)
-      (initialize-spiked-canonballs)
-      (initialize-effects))
+      When(
+        Predicate: {
+          spikeball-x | IsMoreEqual(collision-x-lower-limit)
+          And
+          spikeball-x | IsLessEqual(collision-x-upper-limit)
+          And
+          spikeball-y | IsMoreEqual(collision-y-lower-limit)
+          And
+          spikeball-y | IsLessEqual(collision-y-upper-limit)
+          And
+          score-subtracted | Is(false)
+        }
+        Action: {
+          score | Math.Subtract(1) > score
+          Detach(damage-fx)
+          true > score-subtracted
+        }
+      )
 
-      (coin-gravity-logic .coiny-1 .coinx-1 .coin-velocity-1 .coin-position-1)
-      (coin-gravity-logic .coiny-2 .coinx-2 .coin-velocity-2 .coin-position-2)
+      When(
+        Predicate: {
+          score-subtracted | Is(true)
+          Or
+          spikeball-y | IsMore(0.0)
+        }
+        Action: {
+          -600.0 > spikeball-y ;; reset our spikeball's y position
+          RandomFloat(Max: 1000.0) | Math.Subtract(500.0) > spikeball-x ;; randomize our spikeball-x position
+          0.0 > spikeball-velocity
+          false > score-subtracted ;; reset scored so that we can score again
+        }
+      )
 
-      (run-logic)
-      (gravity-logic)
-      (scoring)
-      (damaging)
+      Step(animate-spikeball)
 
-      (Step idle-animation)
-      (Step walking-animation)
+      UI.Area(
+        Position: @f2(spikeball-x spikeball-y)
+        Anchor: Anchor::Bottom ;; this makes the origin of our UI.Area the bottom right of the screen
+        Contents: {
+          spikeball-sequence | Take(spikeball-index) | UI.Image( Scale: @f2(0.10 0.10))
+        }
+      )
+    } Looped: false)
 
-      (Step coin-animation)
-      (Step random-coin-1)
-      (Step random-coin-2)
+    @wire(score-fx {
+      Once({
+        0 >= score-fx-idx
+      })
 
-      (Step spiked-canonball-animation)
-      (spikeball-gravity-logic .spikeball-y-1 .spikeball-velocity-1 .spikeball-position-1 .spikeball-x-1)
-      (spikeball-gravity-logic .spikeball-y-2 .spikeball-velocity-2 .spikeball-position-2 .spikeball-x-2)
-      (spikeball-gravity-logic .spikeball-y-3 .spikeball-velocity-3 .spikeball-position-3 .spikeball-x-3)
-      (Step  spikeball-1)
-      (Step  spikeball-2)
-      (Step  spikeball-3)
+      Step(animate-score-fx)
 
-      (scoreEffect-animation-position)
-      (Step scoreEffect-animation-logic)
-      (Step damage-effect-animation-logic)
-      
-      (Step timer-countdown)
-      (gameOver-logic)
+      score-fx-idx
+      When(
+        Predicate: IsMoreEqual((Count(score-fx-sequence)))
+        Action: {
+          none
+          Stop
+        }
+      )
 
-      (GFX.MainWindow
-      :Title "MainWindow" :Width 1920 :Height 1080
-      :Contents
-      (-> (Setup
-            (GFX.DrawQueue) >= .ui-draw-queue
-            (GFX.UIPass .ui-draw-queue) >> .render-steps)
-          .ui-draw-queue (GFX.ClearQueue)
+      UI.Area(
+        Position: @f2(pos-x pos-y) ;; we want the effect to spawn at our Glod's position
+        Anchor: Anchor::Bottom
+        Contents: {
+          score-fx-sequence | Take(score-fx-idx) | UI.Image(@f2(0.2 0.2))
+        }
+      )
 
-          (UI
-            .ui-draw-queue
-            (->
+      none
+    } Looped: true)
 
-            (UI.Area :Position (float2 0 0)
-                      :Anchor Anchor.TopLeft
-                      :Contents (->
-                                .bg-image (UI.Image :Scale (float2 0.7))))
+    @wire(damage-fx {
+      Once({
+        0 >= damage-fx-idx
+      })
 
-            (UI.Area :Position .character-position
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                .character-state
-                                (Match [0 (-> .character-direction
-                                              (Match [0 (-> LoadTexture .idle-left-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))
-                                                      1 (-> LoadTexture .idle-right-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))]
-                                                      :Passthrough false))
-                                        1 (-> LoadTexture .walking-left-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-                                        2 (-> LoadTexture .walking-right-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-                                        3 (->  .character-direction
-                                                (Match [0 (-> LoadTexture .character-jumping-left (UI.Image :Scale (float2 0.2)))
-                                                        1 (-> LoadTexture .character-jumping-right (UI.Image :Scale (float2 0.2)))]
-                                                      :Passthrough false))]
-                                        :Passthrough false)))
+      Step(animate-damage-fx)
 
-            ;; -------- coins ui area -----------
+      damage-fx-idx
+      When(
+        Predicate: IsMoreEqual((Count(damage-fx-sequence)))
+        Action: {
+          none
+          Stop
+        }
+      )
 
-            (UI.Area :Position .coin-position-1
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                LoadTexture .coin-image-array (Take .coin-image-index) (UI.Image :Scale (float2 0.2))))
+      UI.Area(
+        Position: @f2(0 0)
+        Anchor: Anchor::Center
+        Contents: {
+          damage-fx-sequence | Take(damage-fx-idx) | UI.Image(@f2(8.0 8.0))
+        }
+      )
 
-            (UI.Area :Position .coin-position-2
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                LoadTexture .coin-image-array (Take .coin-image-index) (UI.Image :Scale (float2 0.2))))
-            ;; --------- spikeball ui area ----------
+      none 
+    } Looped: true)
 
-            (UI.Area :Position .spikeball-position-1
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                LoadTexture .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
+    @wire( animate {
+      Once({
+        0.08 = idle-animation-speed
+      })
+      image-index | Math.Add(1) > image-index
+      Count(active-animation) = index-max
+      image-index
+      When(Predicate: IsMoreEqual(index-max) Action: {
+        0 > image-index
+      })
+      Pause(idle-animation-speed)
+    } Looped: true)
 
-            (UI.Area :Position .spikeball-position-2
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                LoadTexture .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
+    @wire( animate-coin {
+      Once({
+        0.08 = coin-animation-speed
+      })
+      coin-image-index | Math.Add(1) > coin-image-index
+      Count(coin-img-sequence) = index-max
+      coin-image-index
+      When(Predicate: IsMoreEqual(index-max) Action: {
+        0 > coin-image-index
+      })
+      Pause(coin-animation-speed)
+    } Looped: true)
 
-            (UI.Area :Position .spikeball-position-3
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                LoadTexture .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
+    @wire(animate-spikeball {
+      Once({
+        0.06 >= spikeball-animation-speed
+      })
 
-            ;; ----------------- Visual Effects  -------------------
-            (UI.Area :Position .score-effect-position
-                      :Anchor Anchor.Top
-                      :Contents (->
-                                LoadTexture .score-effect-array (Take .score-effect-array-index) (UI.Image :Scale (float2 0.15))))
+      spikeball-index | Math.Add(1) > spikeball-index
+      Count(spikeball-sequence) = spikeball-max
+      spikeball-index
+      When(Predicate: IsMoreEqual(spikeball-max) Action: {
+        0 > spikeball-index
+      })
+      Pause(spikeball-animation-speed)
+    } Looped: true)
 
-            (UI.Area :Position (float2 0 0)
-                      :Anchor Anchor.TopLeft
-                      :Contents (->
-                                LoadTexture .damage-effect-array (Take .damage-effect-array-index) (UI.Image :Scale (float2 10))))
+    @wire(animate-score-fx {
+      Once({
+        0.08 = idle-animation-speed
+      })
+      score-fx-idx | Math.Add(1) > score-fx-idx
+      Pause(idle-animation-speed)
+    } Looped: true)
 
-            ;; ---------------- UI ------------------
+    @wire(animate-damage-fx {
+      Once({
+        0.06 = idle-animation-speed
+      })
+      damage-fx-idx | Math.Add(1) > damage-fx-idx
+      Pause(idle-animation-speed)
+    } Looped: true)
 
-            (UI.Area :Position (float2 -40 20)
-                      :Anchor Anchor.TopRight
-                      :Contents (->
-                                style (UI.Style)
-                                .score (ToString) (UI.Label)))
+    @define( button-inputs {
 
-            (UI.Area :Position (float2 40 20)
-                      :Anchor Anchor.TopLeft
-                      :Contents (->
-                                style (UI.Style)
-                                .timer (ToString) (UI.Label)))))
+      Inputs.IsKeyDown(
+        Key: "left"
+      )
+      When(Predicate: Is(true) Action: {
+        -1 > x-direction
+      })
 
-          (button-inputs)
+      Inputs.KeyUp(
+        Key: "left"
+        Action: {
+          0 > x-direction
+        }
+        Consume: false
+        SkipConsumed: true
+      )
 
-          (GFX.Render :Steps .render-steps))))
+      Inputs.IsKeyDown(
+        Key: "right"
+      )
+      When(Predicate: Is(true) Action: {
+        1 > x-direction
+      })
 
+      Inputs.KeyUp(
+        Key: "right"
+        Action: {
+          0 > x-direction
+        }
+        Consume: false
+        SkipConsumed: true
+      )
 
-    (defmesh main)
-    (schedule main main-wire)
-    (run main (/ 1.0 60))
+      Inputs.KeyDown(
+        Key: "up"
+        Action: {
+          Msg("up")
+          1 > y-direction
+          grounded
+          When(Predicate: Is(true) Action:{
+            30.0 > character-y-velocity
+            false > grounded ;; make grounded false when up key is pressed
+          })
+        }
+      )
+
+      Inputs.KeyUp(
+        Key: "up"
+        Action: {
+          0 > y-direction
+        }
+        Consume: false
+        SkipConsumed: true
+      )
+    })
+
+    @wire(timer-countdown {
+      timer
+      If(Predicate: IsMore(0) Then: {
+        timer | Math.Subtract(1) > timer
+        Pause(1.0)
+      } Else: {
+        true > game-over
+      })
+    } Looped: true)
+
+    @wire(main-wire {
+      Once({
+        @initialize-images
+        @i2(0 0) >= character-direction
+        0 >= x-direction
+        0 >= y-direction
+        0 >= image-index
+        idle-left-image-sequence >= idle-animation
+        character-jumping-left >= jumping-image
+        idle-left-image-sequence >= active-animation
+        0.0 >= pos-x
+        0.0 >= pos-y
+
+        3.0 >= character-x-velocity
+        0.0 >= character-y-velocity
+        2.0 >= character-y-acceleration
+
+        true >= grounded
+        0 >= score
+
+        0 >= spikeball-index
+
+        60 >= timer
+        false >= game-over
+      })
+
+      pos-x | Math.Add((character-x-velocity | Math.Multiply((x-direction | ToFloat)))) > pos-x
+      Clamp(Min: -600.0 Max: 600.0) > pos-x
+
+      grounded
+      If(Predicate: Is(false) Then: {
+        pos-y | Math.Subtract(character-y-velocity) > pos-y
+        character-y-velocity | Math.Subtract(character-y-acceleration) > character-y-velocity
+      })
+
+      pos-y
+      When(Predicate: IsMoreEqual(0.0) Action: {
+        true > grounded
+        0.0 > pos-y
+        0 > y-direction
+      })
+
+      GFX.MainWindow(
+        Contents: {
+          Once({
+            GFX.DrawQueue >= ui-draw-queue
+            GFX.UIPass(ui-draw-queue) >> render-steps
+          })
+          UI(
+            Contents: {
+            UI.Area(
+              Position: @f2(0.0 0.0)
+              Anchor: Anchor::Center
+              Contents: {
+                bg-image | UI.Image(@f2(0.8 0.8))
+              }
+            )
+            UI.Area(
+              Position: @f2(pos-x pos-y)
+              Anchor: Anchor::Bottom
+              Contents: {
+                character-direction
+                Match([
+                  @i2(0 0) {idle-animation > active-animation | Take(image-index)} ;;Take from the idle animation when in idle
+                  @i2(-1 0) {
+                    idle-left-image-sequence > idle-animation ;; Store the left idle animation into idle-animation when facing left
+                    character-jumping-left > jumping-image
+                    walking-left-image-sequence > active-animation | Take(image-index)
+                  }
+                  @i2(1 0) {
+                    idle-right-image-sequence > idle-animation ;; Store the right idle animation into idle-animation when facing right
+                    character-jumping-right > jumping-image
+                    walking-right-image-sequence > active-animation | Take(image-index)
+                  }
+                  none {jumping-image} ;; we can just use none to handle the jumping state as all other cases at this moment, the character is jumping
+                ] Passthrough: false)
+                UI.Image(@f2(0.2))
+              }
+            )
+
+            UI.Area(
+              Position: @f2(-40 -40)
+              Anchor: Anchor::BottomRight ;; this makes the origin of our UI.Area the bottom right of the screen
+              Contents: {
+                @ui-style
+                "Score: " | ToString | UI.Label
+                score | ToString | UI.Label ;; UI.Label only accepts a string, so we have to convert our score value which is an int, into a string first.
+              }
+            )
+
+            Do(spike-cannonball)
+
+            [1 2 3]
+            DoMany(coin ComposeSync: true)
+
+            UI.Area(
+              Position: @f2(-40 40)
+              Anchor: Anchor::TopRight
+              Contents: {
+                @ui-style
+                "Time: " | UI.Label
+                timer | ToString | UI.Label
+              }
+            )
+
+          }) | UI.Render(ui-draw-queue)
+
+          @button-inputs
+          @i2(x-direction y-direction) > character-direction
+          Step(animate)
+          Step(timer-countdown)
+          
+          GFX.Render(Steps: render-steps)
+        }
+      )
+    } Looped: true)
+
+    @mesh(main)
+    @schedule(main main-wire)
+    @run(main FPS: 60)
     ```
 
 ## Step  7.5
 
 Finally its time to code the final bit for our game. We need to add some finality to our game by having it end when our Timer reaches 0. Then we also need to create a way to reset the game so that we can play it again. While this might seem daunting, don't worry! It's much easier than you might think.
 
+First, let's create a window that appears when our `game-over` is true. Instead of using `UI.Area`, lets use `UI.Window` instead and let's display our current score.
+
 === "Code Added"
     
-    ```{.clojure .annotate linenums="1"}
+    ```shards
     ;; -------- Game_Over_UI -------------
-    (defloop gameOver-ui
-      (UI.Area :Position (float2 -40 20)
-              :Anchor Anchor.Center
-              :Contents (->
-                          style (UI.Style)
-                          "Score" (UI.Label)
-                          .score (ToString) (UI.Label)
-                          (UI.Button :Label "Restart"
-                                    :Action (->
-                                              0 > .gameOver
-                                              60 > .timer
-                                              0 > .score
-                                              (float2 0 0) > .character-position)))))
+    UI.Window(
+      Position: @f2(0 0)
+      Anchor: Anchor::Center
+      Flags: [WindowFlags::NoResize WindowFlags::NoTitleBar WindowFlags::NoCollapse]
+      Contents: {
+
+        @ui-style
+        "Game Over!" | UI.Label
+
+        score | ToString | UI.Label
+      }
+    )
     ```
 
-    1. First we create a defloop with a `UI.Area` that houses everything we want to show when the game is over. In this case, we want to show our player's score and then a reset button. In the reset Button's `:Action` tag, we change variables that have changed to revert the game back to it's initial state.
+Then let's add a button to reset our `game-over` state back to false and reset our `timer` back to 60 and other variables.
 
-    ```{.clojure .annotate linenums="1"}
-    ;; ------------ Character Run Logic ----------------
-    (defshards run-logic []
-      .X (Math.Add .character-x-velocity)
-      > .X
+=== "Code Added"
 
-      (float2 .X .Y) > .character-position) ;; (1)
+    ```shards
+    UI.Window(
+      Position: @f2(0 0)
+      Anchor: Anchor::Center
+      Flags: [WindowFlags::NoResize WindowFlags::NoTitleBar WindowFlags::NoCollapse]
+      Contents: {
+
+        @ui-style
+        "Game Over!" | UI.Label
+
+        score | ToString | UI.Label
+
+        UI.Button( Label:"Restart ?" Action: {
+          false > game-over
+          60 > timer
+          0 > score
+          0.0 > pos-x
+          0.0 > pos-y
+          0.0 > character-y-velocity
+          true > grounded
+        })
+      }
+    )
     ```
 
-    1. Next we create the `run-logic`. When `.character-x-velocity` is changed, it will be added to `.X` and the `.character-position` will be updated accordingly Added on lines 77-82
+Lastly, let's add a conditional statement in our `main-wire` to show the game over window when `game-over` is true and spawn the coins and spiked cannonballs when false.
 
-    ```{.clojure .annotate linenums="1"}
-    (defloop mainGame-ui
-      (UI.Area :Position (float2 0 0)
-              :Anchor Anchor.TopLeft
-              :Contents (->
-                          .bg-image (UI.Image :Scale (float2 0.7))))
+=== "Code Added"
+    ``` shards
+    game-over
+    If(Predicate: Is(true) Then: {
+      UI.Window(
+        Position: @f2(0 0)
+        Anchor: Anchor::Center
+        Flags: [WindowFlags::NoResize WindowFlags::NoTitleBar WindowFlags::NoCollapse]
+        Contents: {
 
-      (UI.Area :Position .character-position
-              :Anchor Anchor.Top
-              :Contents (->
-                          .character-state
-                          (Match [0 (-> .character-direction
-                                        (Match [0 (-> .idle-left-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))
-                                                1 (-> .idle-right-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))]
-                                              :Passthrough false))
-                                  1 (-> .walking-left-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-                                  2 (-> .walking-right-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-                                  3 (->  .character-direction
-                                        (Match [0 (-> .character-jumping-left (UI.Image :Scale (float2 0.2)))
-                                                1 (-> .character-jumping-right (UI.Image :Scale (float2 0.2)))]
-                                                :Passthrough false))]
-                                :Passthrough false)))
+          @ui-style
+          "Game Over!" | UI.Label
 
-            ;; ---------- Coins -----------
+          score | ToString | UI.Label
 
-      (UI.Area :Position .coin-position-1
-              :Anchor Anchor.Top
-              :Contents (->
-                          .coin-image-array (Take .coin-image-index) (UI.Image :Scale (float2 0.2))))
+          UI.Button( Label:"Restart ?" Action: {
+            false > game-over
+          })
+        }
+      )
+    } Else: {
+      Do(spike-cannonball)
 
-      (UI.Area :Position .coin-position-2
-              :Anchor Anchor.Top
-              :Contents (->
-                          .coin-image-array (Take .coin-image-index) (UI.Image :Scale (float2 0.2))))
-
-            ;; ------------SpikeBalls ------------
-
-      (UI.Area :Position .spikeball-position-1
-              :Anchor Anchor.Top
-              :Contents (->
-                          .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
-
-      (UI.Area :Position .spikeball-position-2
-              :Anchor Anchor.Top
-              :Contents (->
-                          .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
-
-      (UI.Area :Position .spikeball-position-3
-              :Anchor Anchor.Top
-              :Contents (->
-                          .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
-
-            ;; ----------------- Visual Effects  -------------------
-      (UI.Area :Position .score-effect-position
-              :Anchor Anchor.Top
-              :Contents (->
-                          .score-effect-array (Take .score-effect-array-index) (UI.Image :Scale (float2 0.15))))
-
-      (UI.Area :Position (float2 0 0)
-              :Anchor Anchor.TopLeft
-              :Contents (->
-                          .damage-effect-array (Take .damage-effect-array-index) (UI.Image :Scale (float2 10))))
-
-            ;; --------------- UI Score --------------
-
-      (UI.Area :Position (float2 -40 20)
-              :Anchor Anchor.TopRight
-              :Contents (->
-                          style (UI.Style)
-                          .score (ToString) (UI.Label)))
-
-            ;; --------------- UI Timer --------------
-      (UI.Area :Position (float2 40 20)
-              :Anchor Anchor.TopLeft
-              :Contents (->
-                          style (UI.Style)
-                          .timer (ToString) (UI.Label))))
+      [1 2 3]
+      DoMany(coin ComposeSync: true)
+    })
     ```
-
-    > Next we shift all the UI.Area that we have created so far in main-wire to a new defloop called mainGame-ui. Now if yout ry to run your game now you will get an error as there in nothing in your main-wire to be drawn. Don't panic! All will be clear soon.
-
-    ```{.clojure .annotate linenums="1"}
-    (UI
-            .ui-draw-queue
-            (->
-            .gameOver
-            (Match [0 (-> (Step mainGame-ui))
-                    1 (-> (Step gameOver-ui))]
-                    :Passthrough false)))
-    ```
-
-    > Now inside our `main-wire` UI, we create a `Match` shard. If `.gameOver` is 0 (false), then draw the `mainGame-ui`. If `.gameOver` is 1(true) then draw the `gameOver-ui.`
 
 === "Full Code So Far"
     
-    ```{.clojure .annotate linenums="1"}
-    (defshards LoadTexture [name]
-      (LoadImage name)
-      (GFX.Texture))
-
-    (defshards initialize-character []
-      (LoadTexture "GlodImages/Character1_Jumping_Left.png") = .character-jumping-left
-      (LoadTexture "GlodImages/Character1_Jumping_Right.png") = .character-jumping-right
-
-      0 >= .character-state
-      0 >= .character-direction
-      true >= .can-jump
-
-      0.0 >= .X
-      620.0 >= .Y
-      (float2 .X .Y) >= .character-position
-      0.0 >= .character-x-velocity
-      0.0 >= .character-y-velocity
-      0.0 >= .character-y-acceleration
-
-      ;; ---------- Character Idle Array (Facing Left) ----------
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_4.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> .idle-left-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> .idle-left-image-array
-
-      ;; ---------- Character Idle Array (Facing Right) ----------------
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> .idle-right-image-array
-      (LoadTexture "GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> .idle-right-image-array
-
-      0 >= .idle-image-index
-      (Count .idle-left-image-array) = .idle-image-index-max
-      0.08 = .idle-animation-speed
-
-      ;; -------------- Walking Array (Facing Left) -----------------
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> .walking-left-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> .walking-left-image-array
-
-      ;; ----------- Walking Array (Facing Right) ---------------
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> .walking-right-image-array
-      (LoadTexture "GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> .walking-right-image-array
-
-      (Count .walking-left-image-array) = .walking-image-index-max
-      0 >= .walking-image-index
-      0.08 = .walking-animation-speed) ;; Reduce number to increase animation speed
-
-    ;; --------- Idle Animation Loop ---------
-    (defloop idle-animation
-      .idle-image-index (Math.Add 1)
-      > .idle-image-index
-      (When :Predicate (IsMoreEqual .idle-image-index-max)
-            :Action (-> 0 > .idle-image-index))
-      (Pause .idle-animation-speed))
-
-    ;; -------- Walking Animation Loop --------
-    (defloop walking-animation
-      .walking-image-index (Math.Add 1)
-      > .walking-image-index
-      (When :Predicate (IsMoreEqual .walking-image-index-max)
-            :Action (-> 0 > .walking-image-index))
-      (Pause .walking-animation-speed))
-
-    ;; ---------- character-boundary ------------
-
-    (defshards clamp [var min max]
-      var (Max min) (Min max) > var)
-
-    ;; ------------ Character Run Logic ----------------
-    (defshards run-logic []
-      .X (Math.Add .character-x-velocity)
-      > .X
-
-      (float2 .X .Y) > .character-position
-
-      (clamp .X -600.0 600.0))
-
-    ;; ------------ Character gravity-logic ---------------
-    (defshards gravity-logic []
-      .Y (Math.Add .character-y-velocity)
-      > .Y
-
-      .character-y-velocity (Math.Add .character-y-acceleration)
-      > .character-y-velocity
-
-      (float2 .X .Y) > .character-position
-
-      (clamp .Y -620.0 620.0)
-      .Y
-      (When :Predicate (IsMoreEqual 620.0)
-            :Action (->
-                    0.0 > .character-y-velocity
-                    0.0 > .character-y-acceleration
-                    true > .can-jump
-                    .character-state
-                    (When :Predicate (Is 3)
-                          :Action (->
-                                    0 > .character-state)))))
-
-    ;; ------- Button Inputs ----------
-    (defshards button-inputs []
-      (Inputs.KeyDown
-      :Key "left"
-      :Action (->
-                (Msg "left")
-
-                .character-state
-                (When :Predicate (Is 0)
-                      :Action (-> 1 > .character-state))
-
-                0 > .character-direction
-                -5.0 > .character-x-velocity))
-
-      (Inputs.KeyDown
-      :Key "right"
-      :Action (->
-                (Msg "right")
-
-                .character-state
-                (When :Predicate (Is 0)
-                      :Action (-> 2 > .character-state))
-                1 > .character-direction
-                5.0 > .character-x-velocity))
-
-      (Inputs.KeyDown
-      :Key "up"
-      :Action (->
-                (Msg "up")
-                3 > .character-state
-                .can-jump
-                (When :Predicate (Is true)
-                      :Action (->
-                              -20.0 > .character-y-velocity
-                              1.0 >  .character-y-acceleration
-                              false >= .can-jump))))
-
-      (Inputs.KeyUp
-      :Key "left"
-      :Action (->
-                0 > .character-state
-                0.0 > .character-x-velocity))
-
-      (Inputs.KeyUp
-      :Key "right"
-      :Action (->
-                0 > .character-state
-                0.0 > .character-x-velocity)))
-
-    ;; -------------- Initialize Coin ----------
-    (defshards initialize-coin []
-      (LoadTexture "GlodImages/Coin/Coin_1.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_2.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_3.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_4.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_5.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_6.png") >> .coin-image-array
-      (LoadTexture "GlodImages/Coin/Coin_7.png") >> .coin-image-array
-      (Count .coin-image-array) = .coin-image-index-max
-      0 >= .coin-image-index
-      0.1 = .coin-animation-speed
-
-      ;; ----- Coin 1 ------
-      0.0 >= .coinx-1
-      0.0 >= .coiny-1
-      (float2 .coinx-1 .coiny-1) >= .coin-position-1
-      0.0 >= .coin-velocity-1
-      0.5 >= .coin-acceleration
-
-      ;; ----- Coin 2 ----
-      0.0 >= .coinx-2
-      0.0 >= .coiny-2
-      (float2 .coinx-2 .coiny-2) >= .coin-position-2
-      0.0 >= .coin-velocity-2)
-
-    ;; -------------- Coin Animation ------------------
-    (defloop coin-animation
-      .coin-image-index (Math.Add 1)
-      > .coin-image-index
-      (When :Predicate (IsMoreEqual .coin-image-index-max)
-            :Action (-> 0 > .coin-image-index))
-
-      (Pause .coin-animation-speed))
-
-    ;; ------------- Coin Gravity ------------------
-    (defshards coin-gravity-logic [coiny coinx coin-velocity coin-position]
-
-      coiny (Math.Add coin-velocity)
-      > coiny
-
-      coin-velocity (Math.Add .coin-acceleration)
-      > coin-velocity
-
-      (float2 coinx coiny) > coin-position)
-
-    ;; ------------- Random Coin ------------------
-    (defshards random-coin [coinx coiny coin-velocity coin-position pause-length]
-      coinx
-      (RandomFloat :Max 1200.0)
-      > coinx
-      (Math.Subtract 600.0)
-      > coinx
-
-      0.0 > coiny
-      0.0 > coin-velocity
-      (float2 coinx coiny) > coin-position
-      (Pause pause-length))
-
-    (defloop random-coin-1
-      (random-coin .coinx-1 .coiny-1 .coin-velocity-1 .coin-position-1 1.5))
-
-    (defloop random-coin-2
-      (random-coin .coinx-2 .coiny-2 .coin-velocity-2 .coin-position-2 2.5))
-
-    ;; ------------ Initialize Spiked CanonBalls ---------------
-    (defshards initialize-spiked-canonballs []
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall1.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall2.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall3.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall4.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall5.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall6.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall7.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall8.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall9.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall10.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall11.png") >> .spikeball-array
-      (LoadTexture "GlodImages/SpikeBall/SpikeBall12.png") >> .spikeball-array
-
-      (Count .spikeball-array) = .spikeball-array-index-max
-      0 >= .spikeball-index
-      0.06 = .spikeball-animation-speed
-
-      ;; ---------- spikball-1 -------------
-      1.0 >= .spikeball-velocity-1
-      0.0 >= .spikeball-y-1
-      0.0 >= .spikeball-x-1
-      (float2 .spikeball-x-1 .spikeball-y-1) >= .spikeball-position-1
-
-      ;; ---------- spikeball-2 -------------
-      1.0 >= .spikeball-velocity-2
-      0.0 >= .spikeball-y-2
-      0.0 >= .spikeball-x-2
-      (float2 .spikeball-x-2 .spikeball-y-2) >= .spikeball-position-2
-
-    ;; ---------- SpikeBall_3 -------------
-      1.0 >= .spikeball-velocity-3
-      0.0 >= .spikeball-y-3
-      0.0 >= .spikeball-x-3
-      (float2 .spikeball-x-3 .spikeball-y-3) >= .spikeball-position-3
-
-      0.5 >= .spikeball-acceleration)
-
-    ;;------------- Spiked CanonBall Animation -------------
-    (defloop spiked-canonball-animation
-      .spikeball-index (Math.Add 1)
-      > .spikeball-index
-      (When :Predicate (IsMoreEqual .spikeball-array-index-max)
-            :Action (-> 0 > .spikeball-index))
-
-      (Pause .spikeball-animation-speed))
-
-    ;; ------------- SpikeBall_Gravity_Logic -------------
-    (defshards spikeball-gravity-logic [spikeball-y spikeball-velocity spikeball-position spikeball-x]
-      spikeball-y (Math.Add spikeball-velocity)
-      > spikeball-y
-      spikeball-velocity (Math.Add .spikeball-acceleration)
-      > spikeball-velocity
-      (float2 spikeball-x spikeball-y) > spikeball-position)
-
-    ;; ------------- Randomise Spikeball ----------------
-    (defshards randomise-spikeball [spikeball-x spikeball-y spikeball-velocity spikeball-position pausefloat]
-      spikeball-x
-      (RandomFloat :Max 1200.0)
-      > spikeball-x
-      (Math.Subtract 600.0)
-      > spikeball-x
-
-      0.0 > spikeball-y
-      0.0 > spikeball-velocity
-      (float2 spikeball-x spikeball-y) > spikeball-position
-      .spikeball-x-1
-      (Pause pausefloat))
-
-    (defloop spikeball-1
-      (randomise-spikeball .spikeball-x-1 .spikeball-y-1 .spikeball-velocity-1 .spikeball-position-1 2))
-    (defloop spikeball-2
-      (randomise-spikeball .spikeball-x-2 .spikeball-y-2 .spikeball-velocity-2 .spikeball-position-2 3))
-    (defloop spikeball-3
-      (randomise-spikeball .spikeball-x-3 .spikeball-y-3 .spikeball-velocity-3 .spikeball-position-3 4))
-
-    ;; --------- Game Elements ------------
-    (defshards initialize-game-elements []
-      ;;------------ Scoring Limits ----------
-      0 >= .score
-      false >= .scored
-
-      .X (Math.Add 50.0)
-      >= .scoringUpper-x-limit
-      .X (Math.Subtract 50.0)
-      >= .scoringLower-x-limit
-
-      .Y (Math.Add 10.0)
-      >= .scoringUpper-y-limit
-      .Y (Math.Subtract 10.0)
-      >= .scoringLower-y-limit
-
-      ;; ---------- Damage Limits ------------
-      .X (Math.Add 50.0)
-      >= .damageUpper-x-limit
-      .X (Math.Subtract 50.0)
-      >= .damageLower-x-limit
-
-      .Y (Math.Add 5.0)
-      >= .damageUpper-y-limit
-      .Y (Math.Subtract 5.0)
-      >= .damageLower-y-limit
-
-      false >= .damaged
-
-      60 >= .timer
-      0 >= .gameOver)
-
-    ;; --------- Scoring ----------
-    (defshards score-collision [coinx coiny]
-      coinx
-      (When :Predicate (->
-                        (IsLess .scoringUpper-x-limit)
-                        (And)
-                        coinx (IsMore .scoringLower-x-limit)
-                        (And)
-                        coiny (IsLess .scoringUpper-y-limit)
-                        (And)
-                        coiny (IsMore .scoringLower-y-limit)
-                        (And)
-                        .scored (Is false))
-            :Action (->
-                    true > .scored
-                    (Log "Score: "))))
-
-    (defshards scoring []
-      .X (Math.Add 50.0)
-      > .scoringUpper-x-limit
-      .X (Math.Subtract 50.0)
-      > .scoringLower-x-limit
-
-      .Y (Math.Add 10.0)
-      > .scoringUpper-y-limit
-      .Y (Math.Subtract 10.0)
-      > .scoringLower-y-limit
-
-      (score-collision .coinx-1 .coiny-1)
-      (score-collision .coinx-2 .coiny-2)
-
-      .scored
-      (When :Predicate (Is true)
-            :Action (->
-                    .score (Math.Add 1)
-                    > .score
-                    true > .score-effect-play
-                    false > .scored)))
-
-    ;; ------------- spikeBall-collision-logic --------------
-    (defshards spikeBall-collision-logic [spikeBall-x spikeBall-y]
-
-      spikeBall-x
-      (If :Predicate (-> (IsLess .damageUpper-x-limit)
-                        (And)
-                        spikeBall-x (IsMore .damageLower-x-limit)
-                        (And)
-                        spikeBall-y (IsLess .damageUpper-y-limit)
-                        (And)
-                        spikeBall-y (IsMore .damageLower-y-limit))
-
-          :Then (-> .damaged
-                    (When :Predicate (Is false)
-                          :Action (->
-                                  true > .damaged
-                                  (Log "damaged: "))))))
-
-    ;; -------------- Damaging --------------
-    (defshards damaging []
-
-      .X (Math.Add 120.0)
-      > .damageUpper-x-limit
-      .X (Math.Subtract 120.0)
-      > .damageLower-x-limit
-
-      .Y (Math.Add 15.0)
-      > .damageUpper-y-limit
-      .Y (Math.Subtract 15.0)
-      > .damageLower-y-limit
-
-      (spikeBall-collision-logic .spikeball-x-1 .spikeball-y-1)
-      (spikeBall-collision-logic .spikeball-x-2 .spikeball-y-2)
-      (spikeBall-collision-logic .spikeball-x-3 .spikeball-y-3)
-
-      .damaged
-      (When :Predicate (Is true)
-            :Action (->
-                    .score (Math.Subtract 1)
-                    > .score
-                    true > .damage-effect-play
-                    false > .damaged)))
-
-    ;; ------------- initialize effects -------------
-    (defshards initialize-effects []
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_1.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_2.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_3.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_4.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_5.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_6.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_7.png") >> .score-effect-array
-      (LoadTexture "GlodImages/Coin/CoinEffect/Score_Effect_8.png") >> .score-effect-array
-      (Count .score-effect-array) (Math.Subtract 1) >= .score-effect-array-index-max
-      0 >= .score-effect-array-index
-      0.05 >=  .score-effect-animation-speed ;; Reduce number to increase animation speed
-      false >= .score-effect-play
-
-      0.0 >= .score-effect-position-x
-      0.0 >= .score-effect-position-y
-      (float2 .score-effect-position-x .score-effect-position-y) >= .score-effect-position
+    ```shards
+    @define( initialize-images {
+      LoadImage("GlodImages/Character1_Left.png") = character-image
+      LoadImage("GlodImages/Character1_Left.png") = character-left
+      LoadImage("GlodImages/Character1_Right.png") = character-right
+      LoadImage("GlodImages/Character1_Jumping_Left.png") = character-jumping-left
+      LoadImage("GlodImages/Character1_Jumping_Right.png") = character-jumping-right
+      LoadImage("GlodImages/Character1_Jumping.png") = character-jumping
+
+      ;; ---------- Character Idle sequence (Facing Left) ----------------
+
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_1.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_2.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_3.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_4.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_5.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_6.png") >> idle-left-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Left/Character1_Idle_Left_7.png") >> idle-left-image-sequence
+
+      ;; ---------- Character Idle sequence (Facing Right) ----------------
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_1.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_2.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_3.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_4.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_5.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_6.png") >> idle-right-image-sequence
+      LoadImage("GlodImages/Character_Idle/Idle_Right/Character1_Idle_7.png") >> idle-right-image-sequence
+
+      ;; -------------- Walking sequence (Facing Left) -----------------
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_1.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_2.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_3.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_4.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_5.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_6.png") >> walking-left-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Left/Character1_Walking_Left_7.png") >> walking-left-image-sequence
+
+      ;; ----------- Walking sequence (Facing Right) ---------------
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_1.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_2.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_3.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_4.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_5.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_6.png") >> walking-right-image-sequence
+      LoadImage("GlodImages/Character_Walking/Walking_Right/Character1_Walking_Right_7.png") >> walking-right-image-sequence
+
+      ;; ------------- Coin ---------------
+      LoadImage("GlodImages/Coin/Coin_1.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_2.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_3.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_4.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_5.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_6.png") >> coin-img-sequence
+      LoadImage("GlodImages/Coin/Coin_7.png") >> coin-img-sequence
+
+      ;; ------------- Spiked Cannonball -------------
+      LoadImage("GlodImages/SpikeBall/SpikeBall1.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall2.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall3.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall4.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall5.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall6.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall7.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall8.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall9.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall10.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall11.png") >> spikeball-sequence
+      LoadImage("GlodImages/SpikeBall/SpikeBall12.png") >> spikeball-sequence
+
+      ;; -------------- score fx ----------------
+      LoadImage("GlodImages/FX/Score_Effect_1.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_2.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_3.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_4.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_5.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_6.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_7.png") >> score-fx-sequence
+      LoadImage("GlodImages/FX/Score_Effect_8.png") >> score-fx-sequence
 
       ;; --------------- Damaged Effect ----------------
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_1.png") >> .damage-effect-array
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_2.png") >> .damage-effect-array
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_3.png") >> .damage-effect-array
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_4.png") >> .damage-effect-array
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_5.png") >> .damage-effect-array
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_6.png") >> .damage-effect-array
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_7.png") >> .damage-effect-array
-      (LoadTexture "GlodImages/Damage_Effect/Damaged_Effect_8.png") >> .damage-effect-array
-      (Count .damage-effect-array) (Math.Subtract 1) >= .damage-effect-array-index-max
-      0 >= .damage-effect-array-index
-      0.02 >=  .damage-effect-animation-speed ;; Reduce number to increase animation speed
-      false >= .damage-effect-play
-      
-      (LoadTexture "GlodImages/BG.png") = .bg-image)
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_1.png") >> damage-fx-sequence 
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_2.png") >> damage-fx-sequence
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_3.png") >> damage-fx-sequence
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_4.png") >> damage-fx-sequence
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_5.png") >> damage-fx-sequence
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_6.png") >> damage-fx-sequence
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_7.png") >> damage-fx-sequence
+      LoadImage("GlodImages/Damage_Effect/Damaged_Effect_8.png") >> damage-fx-sequence
 
-    ;; ------------ DamageEffect Animation ------------
-    (defloop damage-effect-animation-logic
+      ;; -------------- BG ----------------
+      LoadImage("GlodImages/BG.png") = bg-image 
+    })
 
-      .damage-effect-play
-      (When :Predicate (Is true)
-            :Action (->
-                    .damage-effect-array-index (Math.Add 1)
-                    > .damage-effect-array-index
-                    (When :Predicate (IsMore .damage-effect-array-index-max)
-                          :Action (->
-                                    0 > .damage-effect-array-index
-                                    false > .damage-effect-play))))
+    @define( ui-style {
+      UI.Style(OverrideTextStyle: "base-ui" TextStyles: {base-ui: {Size: 16.0
+                                                                Family: FontFamily::Proportional}} OverrideTextColor: @color(255 255 255))
+    })
 
-      (Pause .damage-effect-animation-speed))
+    @wire(coin {
+      Once({
+        ;; ------------ coin variables ------------- ;; all variables that we want to be unique to each coin, we initialize in the new wire instead
+        0 >= coin-image-index
+        RandomFloat(Max: 1000.0) | Math.Subtract(500.0) >= coin-pos-x 
+        -600.0 >= coin-pos-y
+        0.0 >= coin-velocity
+        0.3 >= coin-acceleration
+        
+        false >= scored
+      })
 
-    ;; ------------ ScoreEffect_Animation_Position ------------
-    (defshards scoreEffect-animation-position []
-      .Y (Math.Add -15.0)
-      > .score-effect-position-y
+      pos-x | Math.Add(60.0) = collision-x-upper-limit ;; tweak the values added or subtracted accordingly
+      pos-x | Math.Subtract(60.0) = collision-x-lower-limit
 
-      .X
-      > .score-effect-position-x
+      pos-y | Math.Add(70.0) = collision-y-upper-limit
+      pos-y | Math.Subtract(70.0) = collision-y-lower-limit
 
-      (float2 .score-effect-position-x .score-effect-position-y)
-      > .score-effect-position)
+      ;; coin-falling-logic
+      coin-pos-y | Math.Add(coin-velocity) > coin-pos-y
+      coin-velocity | Math.Add(coin-acceleration) > coin-velocity
 
-    ;; ------------ ScoreEffect Animation ------------
-    (defloop scoreEffect-animation-logic
+      ;; coin-scoring logic
+      When(
+        Predicate: {
+          coin-pos-x | IsMoreEqual(collision-x-lower-limit)
+          And
+          coin-pos-x | IsLessEqual(collision-x-upper-limit)
+          And
+          coin-pos-y | IsMoreEqual(collision-y-lower-limit)
+          And
+          coin-pos-y | IsLessEqual(collision-y-upper-limit)
+          And
+          scored | Is(false)
+        }
+        Action: {
+          score | Math.Add(1) > score
+          Spawn(score-fx)
+          true > scored
+          
+        }
+      )
 
-      .score-effect-play
-      (When :Predicate (Is true)
-            :Action (->
-                    .score-effect-array-index (Math.Add 1)
-                    > .score-effect-array-index
-                    (When :Predicate (IsMore .score-effect-array-index-max)
-                          :Action (->
-                                    0 > .score-effect-array-index
-                                    false > .score-effect-play))))
+      When(
+        Predicate: {
+          scored | Is(true)
+          Or ;; or allows the code in Action to happen when either of these conditions return true
+          coin-pos-y | IsMore(0.0)
+        }
+        Action: {
+          -600.0 > coin-pos-y ;; reset our coin's y position
+          RandomFloat(Max: 1000.0) | Math.Subtract(500.0) > coin-pos-x
+          0.0 > coin-velocity
+          false > scored ;; reset scored so that we can score again
+        }
+      )
 
+      Step(animate-coin)
 
-      (Pause .score-effect-animation-speed))
+      UI.Area(
+        Position: @f2(coin-pos-x  coin-pos-y)
+        Anchor: Anchor::Bottom
+        Contents: {
+          coin-img-sequence | Take(coin-image-index) | UI.Image(@f2(0.2 0.2))
+      })
+    } Looped: true)
 
-    ;; -------- Timer -----------
-    (defloop timer-countdown
-      .gameOver
-      (When :Predicate (->
-                        (Is 0)
-                        (And)
-                        .timer (IsMore 0))
-            :Action (->
-                    .timer (Math.Subtract 1)
-                    > .timer))
+    @wire(spike-cannonball {
+      Once({
+        1.0 >= spikeball-velocity
+        -600.0 >= spikeball-y
+        0.0 >= spikeball-x
 
-      (Pause 1.0))
+        0.5 >= spikeball-acceleration
 
-    ;; ---------- GameOver Logic ------------
-    (defshards gameOver-logic []
-      .timer
-      (When :Predicate (Is 0)
-            :Action (->
-                    1 > .gameOver)))
+        0 >= spikeball-index
+        
+        false >= score-subtracted
+      })
 
-    ;; ------ UI Style --------
-    (def style
-      {:override_text_style "MyStyle"
-      :text_styles
-      [{:name "MyStyle"
-        :size (float 46)
-        :family "Monospace"}]
-      :visuals
-      {:override_text_color (color 250 250 250)}})
+      pos-x | Math.Add(50.0) = collision-x-upper-limit ;; tweak the values added or subtracted accordingly
+      pos-x | Math.Subtract(50.0) = collision-x-lower-limit
 
-    ;; -------- Game_Over_UI -------------
-    (defloop gameOver-ui
-      (UI.Area :Position (float2 -40 20)
-              :Anchor Anchor.Center
-              :Contents (->
-                          style (UI.Style)
-                          "Score" (UI.Label)
-                          .score (ToString) (UI.Label)
-                          (UI.Button :Label "Restart"
-                                    :Action (->
-                                              0 > .gameOver
-                                              60 > .timer
-                                              0 > .score
-                                              (float2 0 0) > .character-position)))))
+      pos-y | Math.Add(50.0) = collision-y-upper-limit
+      pos-y | Math.Subtract(50.0) = collision-y-lower-limit
 
-    (defloop mainGame-ui
-      (UI.Area :Position (float2 0 0)
-              :Anchor Anchor.TopLeft
-              :Contents (->
-                          .bg-image (UI.Image :Scale (float2 0.7))))
+      spikeball-y | Math.Add(spikeball-velocity) > spikeball-y
+      spikeball-velocity | Math.Add(spikeball-acceleration) > spikeball-velocity
 
-      (UI.Area :Position .character-position
-              :Anchor Anchor.Top
-              :Contents (->
-                          .character-state
-                          (Match [0 (-> .character-direction
-                                        (Match [0 (-> .idle-left-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))
-                                                1 (-> .idle-right-image-array (Take .idle-image-index) (UI.Image :Scale (float2 0.2)))]
-                                              :Passthrough false))
-                                  1 (-> .walking-left-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-                                  2 (-> .walking-right-image-array (Take .walking-image-index) (UI.Image :Scale (float2 0.2)))
-                                  3 (->  .character-direction
-                                        (Match [0 (-> .character-jumping-left (UI.Image :Scale (float2 0.2)))
-                                                1 (-> .character-jumping-right (UI.Image :Scale (float2 0.2)))]
-                                                :Passthrough false))]
-                                :Passthrough false)))
+      When(
+        Predicate: {
+          spikeball-x | IsMoreEqual(collision-x-lower-limit)
+          And
+          spikeball-x | IsLessEqual(collision-x-upper-limit)
+          And
+          spikeball-y | IsMoreEqual(collision-y-lower-limit)
+          And
+          spikeball-y | IsLessEqual(collision-y-upper-limit)
+          And
+          score-subtracted | Is(false)
+        }
+        Action: {
+          score | Math.Subtract(1) > score
+          Detach(damage-fx)
+          true > score-subtracted
+        }
+      )
 
-            ;; ---------- Coins -----------
+      When(
+        Predicate: {
+          score-subtracted | Is(true)
+          Or
+          spikeball-y | IsMore(0.0)
+        }
+        Action: {
+          -600.0 > spikeball-y ;; reset our spikeball's y position
+          RandomFloat(Max: 1000.0) | Math.Subtract(500.0) > spikeball-x ;; randomize our spikeball-x position
+          0.0 > spikeball-velocity
+          false > score-subtracted ;; reset scored so that we can score again
+        }
+      )
 
-      (UI.Area :Position .coin-position-1
-              :Anchor Anchor.Top
-              :Contents (->
-                          .coin-image-array (Take .coin-image-index) (UI.Image :Scale (float2 0.2))))
+      Step(animate-spikeball)
 
-      (UI.Area :Position .coin-position-2
-              :Anchor Anchor.Top
-              :Contents (->
-                          .coin-image-array (Take .coin-image-index) (UI.Image :Scale (float2 0.2))))
+      UI.Area(
+        Position: @f2(spikeball-x spikeball-y)
+        Anchor: Anchor::Bottom ;; this makes the origin of our UI.Area the bottom right of the screen
+        Contents: {
+          spikeball-sequence | Take(spikeball-index) | UI.Image( Scale: @f2(0.10 0.10))
+        }
+      )
+    } Looped: false)
 
-            ;; ------------SpikeBalls ------------
+    @wire(score-fx {
+      Once({
+        0 >= score-fx-idx
+      })
 
-      (UI.Area :Position .spikeball-position-1
-              :Anchor Anchor.Top
-              :Contents (->
-                          .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
+      Step(animate-score-fx)
 
-      (UI.Area :Position .spikeball-position-2
-              :Anchor Anchor.Top
-              :Contents (->
-                          .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
+      score-fx-idx
+      When(
+        Predicate: IsMoreEqual((Count(score-fx-sequence)))
+        Action: {
+          none
+          Stop
+        }
+      )
 
-      (UI.Area :Position .spikeball-position-3
-              :Anchor Anchor.Top
-              :Contents (->
-                          .spikeball-array (Take .spikeball-index) (UI.Image :Scale (float2 0.15))))
+      UI.Area(
+        Position: @f2(pos-x pos-y) ;; we want the effect to spawn at our Glod's position
+        Anchor: Anchor::Bottom
+        Contents: {
+          score-fx-sequence | Take(score-fx-idx) | UI.Image(@f2(0.2 0.2))
+        }
+      )
 
-            ;; ----------------- Visual Effects  -------------------
-      (UI.Area :Position .score-effect-position
-              :Anchor Anchor.Top
-              :Contents (->
-                          .score-effect-array (Take .score-effect-array-index) (UI.Image :Scale (float2 0.15))))
+      none
+    } Looped: true)
 
-      (UI.Area :Position (float2 0 0)
-              :Anchor Anchor.TopLeft
-              :Contents (->
-                          .damage-effect-array (Take .damage-effect-array-index) (UI.Image :Scale (float2 10))))
+    @wire(damage-fx {
+      Once({
+        0 >= damage-fx-idx
+      })
 
-            ;; --------------- UI Score --------------
+      Step(animate-damage-fx)
 
-      (UI.Area :Position (float2 -40 20)
-              :Anchor Anchor.TopRight
-              :Contents (->
-                          style (UI.Style)
-                          .score (ToString) (UI.Label)))
+      damage-fx-idx
+      When(
+        Predicate: IsMoreEqual((Count(damage-fx-sequence)))
+        Action: {
+          none
+          Stop
+        }
+      )
 
-            ;; --------------- UI Timer --------------
-      (UI.Area :Position (float2 40 20)
-              :Anchor Anchor.TopLeft
-              :Contents (->
-                          style (UI.Style)
-                          .timer (ToString) (UI.Label))))
+      UI.Area(
+        Position: @f2(0 0)
+        Anchor: Anchor::Center
+        Contents: {
+          damage-fx-sequence | Take(damage-fx-idx) | UI.Image(@f2(8.0 8.0))
+        }
+      )
 
-    ;;---------- main-wire ------------
-    (defloop main-wire
-      (Setup
-      (initialize-character)
-      (initialize-coin)
-      (initialize-game-elements)
-      (initialize-spiked-canonballs)
-      (initialize-effects))
+      none 
+    } Looped: true)
 
-      (coin-gravity-logic .coiny-1 .coinx-1 .coin-velocity-1 .coin-position-1)
-      (coin-gravity-logic .coiny-2 .coinx-2 .coin-velocity-2 .coin-position-2)
+    @wire( animate {
+      Once({
+        0.08 = idle-animation-speed
+      })
+      image-index | Math.Add(1) > image-index
+      Count(active-animation) = index-max
+      image-index
+      When(Predicate: IsMoreEqual(index-max) Action: {
+        0 > image-index
+      })
+      Pause(idle-animation-speed)
+    } Looped: true)
 
-      (run-logic)
-      (gravity-logic)
-      (scoring)
-      (damaging)
+    @wire( animate-coin {
+      Once({
+        0.08 = coin-animation-speed
+      })
+      coin-image-index | Math.Add(1) > coin-image-index
+      Count(coin-img-sequence) = index-max
+      coin-image-index
+      When(Predicate: IsMoreEqual(index-max) Action: {
+        0 > coin-image-index
+      })
+      Pause(coin-animation-speed)
+    } Looped: true)
 
-      (Step idle-animation)
-      (Step walking-animation)
+    @wire(animate-spikeball {
+      Once({
+        0.06 >= spikeball-animation-speed
+      })
 
-      (Step coin-animation)
-      (Step random-coin-1)
-      (Step random-coin-2)
+      spikeball-index | Math.Add(1) > spikeball-index
+      Count(spikeball-sequence) = spikeball-max
+      spikeball-index
+      When(Predicate: IsMoreEqual(spikeball-max) Action: {
+        0 > spikeball-index
+      })
+      Pause(spikeball-animation-speed)
+    } Looped: true)
 
-      (Step spiked-canonball-animation)
-      (spikeball-gravity-logic .spikeball-y-1 .spikeball-velocity-1 .spikeball-position-1 .spikeball-x-1)
-      (spikeball-gravity-logic .spikeball-y-2 .spikeball-velocity-2 .spikeball-position-2 .spikeball-x-2)
-      (spikeball-gravity-logic .spikeball-y-3 .spikeball-velocity-3 .spikeball-position-3 .spikeball-x-3)
-      (Step  spikeball-1)
-      (Step  spikeball-2)
-      (Step  spikeball-3)
+    @wire(animate-score-fx {
+      Once({
+        0.08 = idle-animation-speed
+      })
+      score-fx-idx | Math.Add(1) > score-fx-idx
+      Pause(idle-animation-speed)
+    } Looped: true)
 
-      (scoreEffect-animation-position)
-      (Step scoreEffect-animation-logic)
-      (Step damage-effect-animation-logic)
+    @wire(animate-damage-fx {
+      Once({
+        0.06 = idle-animation-speed
+      })
+      damage-fx-idx | Math.Add(1) > damage-fx-idx
+      Pause(idle-animation-speed)
+    } Looped: true)
 
-      (Step timer-countdown)
-      (gameOver-logic)
+    @define( button-inputs {
 
-      (GFX.MainWindow
-      :Title "MainWindow" :Width 1920 :Height 1080
-      :Contents
-      (-> (Setup
-            (GFX.DrawQueue) >= .ui-draw-queue
-            (GFX.UIPass .ui-draw-queue) >> .render-steps)
-          .ui-draw-queue (GFX.ClearQueue)
+      Inputs.IsKeyDown(
+        Key: "left"
+      )
+      When(Predicate: Is(true) Action: {
+        -1 > x-direction
+      })
 
-          (UI
-            .ui-draw-queue
-            (->
-            .gameOver
-            (Match [0 (-> (Step mainGame-ui))
-                    1 (-> (Step gameOver-ui))]
-                    :Passthrough false)))
+      Inputs.KeyUp(
+        Key: "left"
+        Action: {
+          0 > x-direction
+        }
+        Consume: false
+        SkipConsumed: true
+      )
 
-          (button-inputs)
+      Inputs.IsKeyDown(
+        Key: "right"
+      )
+      When(Predicate: Is(true) Action: {
+        1 > x-direction
+      })
 
-          (GFX.Render :Steps .render-steps))))
+      Inputs.KeyUp(
+        Key: "right"
+        Action: {
+          0 > x-direction
+        }
+        Consume: false
+        SkipConsumed: true
+      )
 
+      Inputs.KeyDown(
+        Key: "up"
+        Action: {
+          Msg("up")
+          1 > y-direction
+          grounded
+          When(Predicate: Is(true) Action:{
+            30.0 > character-y-velocity
+            false > grounded ;; make grounded false when up key is pressed
+          })
+        }
+      )
 
-    (defmesh main)
-    (schedule main main-wire)
-    (run main (/ 1.0 60))
+      Inputs.KeyUp(
+        Key: "up"
+        Action: {
+          0 > y-direction
+        }
+        Consume: false
+        SkipConsumed: true
+      )
+    })
+
+    @wire(timer-countdown {
+      timer
+      If(Predicate: IsMore(0) Then: {
+        timer | Math.Subtract(1) > timer
+        Pause(1.0)
+      } Else: {
+        true > game-over
+      })
+    } Looped: true)
+
+    @wire(main-wire {
+      Once({
+        @initialize-images
+        @i2(0 0) >= character-direction
+        0 >= x-direction
+        0 >= y-direction
+        0 >= image-index
+        idle-left-image-sequence >= idle-animation
+        character-jumping-left >= jumping-image
+        idle-left-image-sequence >= active-animation
+        0.0 >= pos-x
+        0.0 >= pos-y
+
+        3.0 >= character-x-velocity
+        0.0 >= character-y-velocity
+        2.0 >= character-y-acceleration
+
+        true >= grounded
+        0 >= score
+
+        0 >= spikeball-index
+
+        60 >= timer
+        false >= game-over
+      })
+
+      pos-x | Math.Add((character-x-velocity | Math.Multiply((x-direction | ToFloat)))) > pos-x
+      Clamp(Min: -600.0 Max: 600.0) > pos-x
+
+      grounded
+      If(Predicate: Is(false) Then: {
+        pos-y | Math.Subtract(character-y-velocity) > pos-y
+        character-y-velocity | Math.Subtract(character-y-acceleration) > character-y-velocity
+      })
+
+      pos-y
+      When(Predicate: IsMoreEqual(0.0) Action: {
+        true > grounded
+        0.0 > pos-y
+        0 > y-direction
+      })
+
+      GFX.MainWindow(
+        Contents: {
+          Once({
+            GFX.DrawQueue >= ui-draw-queue
+            GFX.UIPass(ui-draw-queue) >> render-steps
+          })
+          UI(
+            Contents: {
+            UI.Area(
+              Position: @f2(0.0 0.0)
+              Anchor: Anchor::Center
+              Contents: {
+                bg-image | UI.Image(@f2(0.8 0.8))
+              }
+            )
+            UI.Area(
+              Position: @f2(pos-x pos-y)
+              Anchor: Anchor::Bottom
+              Contents: {
+                character-direction
+                Match([
+                  @i2(0 0) {idle-animation > active-animation | Take(image-index)} ;;Take from the idle animation when in idle
+                  @i2(-1 0) {
+                    idle-left-image-sequence > idle-animation ;; Store the left idle animation into idle-animation when facing left
+                    character-jumping-left > jumping-image
+                    walking-left-image-sequence > active-animation | Take(image-index)
+                  }
+                  @i2(1 0) {
+                    idle-right-image-sequence > idle-animation ;; Store the right idle animation into idle-animation when facing right
+                    character-jumping-right > jumping-image
+                    walking-right-image-sequence > active-animation | Take(image-index)
+                  }
+                  none {jumping-image} ;; we can just use none to handle the jumping state as all other cases at this moment, the character is jumping
+                ] Passthrough: false)
+                UI.Image(@f2(0.2))
+              }
+            )
+
+            UI.Area(
+              Position: @f2(-40 -40)
+              Anchor: Anchor::BottomRight ;; this makes the origin of our UI.Area the bottom right of the screen
+              Contents: {
+                @ui-style
+                "Score: " | ToString | UI.Label
+                score | ToString | UI.Label ;; UI.Label only accepts a string, so we have to convert our score value which is an int, into a string first.
+              }
+            )
+
+            game-over
+            If(Predicate: Is(true) Then: {
+              UI.Window(
+                Position: @f2(0 0)
+                Anchor: Anchor::Center
+                Flags: [WindowFlags::NoResize WindowFlags::NoTitleBar WindowFlags::NoCollapse]
+                Contents: {
+
+                  @ui-style
+                  "Game Over!" | UI.Label
+
+                  score | ToString | UI.Label
+
+                  UI.Button( Label:"Restart ?" Action: {
+                    false > game-over
+                    60 > timer
+
+                    0 > score
+                    0.0 > pos-x
+                    0.0 > pos-y
+                    0.0 > character-y-velocity
+                    true > grounded
+                  })
+                }
+              )
+            } Else: {
+              Do(spike-cannonball)
+
+              [1 2 3]
+              DoMany(coin ComposeSync: true)
+            })
+
+            UI.Area(
+              Position: @f2(-40 40)
+              Anchor: Anchor::TopRight
+              Contents: {
+                @ui-style
+                "Time: " | UI.Label
+                timer | ToString | UI.Label
+              }
+            )
+
+          }) | UI.Render(ui-draw-queue)
+
+          @button-inputs
+          @i2(x-direction y-direction) > character-direction
+          Step(animate)
+          Step(timer-countdown)
+          
+          GFX.Render(Steps: render-steps)
+        }
+      )
+    } Looped: true)
+
+    @mesh(main)
+    @schedule(main main-wire)
+    @run(main FPS: 60)
     ```
 
 CONGRATULATIONS! 🎉🎉🎉🎉🎉🎉
