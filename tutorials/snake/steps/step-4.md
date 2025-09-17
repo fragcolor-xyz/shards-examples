@@ -1,145 +1,706 @@
 # Step 4
 
-## Moving the fruit
+In this step we will wrap up our snake game. We will,
 
-When the snake eats a fruit we will need another unoccupied location for the new fruit.
+1. Add positive feedback when we collect a fruit and negative feedback when we lose the game
 
-Let's first compute the list of locations that are unoccupied.
+2. Create a way to reset the game
 
-=== "EDN"
+# 4.1 Using external scripts
 
-    ```{.clojure .annotate linenums="1"}
-    (defshards get-free-locations [snake fruit]
-      [] >= .locations ;; (1)
-      (ForRange ;; (2)
-       :From 0 :To (- grid-cols 1) :Action ;; (3)
-       (-> >= .a
-           (ForRange
-            :From 0 :To (- grid-rows 1) :Action
-            (-> >= .b
-                [.a .b] (ToInt2) >= .location
-                (When (-> snake (IndexOf .location) (Is -1) (And) fruit (IsNot .location)) ;; (4) (5) (6)
-                      (-> .location (Push .locations))))))) ;; (7)
-      .locations)
+When you eat a fruit, we’ll give positive feedback by briefly flashing the background.
+This is a perfect chance to learn how to use external scripts—a huge part of real-world coding is reusing good, existing pieces.
+
+We’ve prepared two small files you’ll plug in:
+
+1. post.wgsl — a tiny post-process shader that tints/brightens the screen based on the color provided.
+
+2. post.shs — a Shards setup that hooks this shader into your render pipeline and exposes a terminal-bg-color parameter you can set from your game logic.
+
+First, add these two [scripts](https://drive.google.com/drive/folders/10xKPHM0XazVQE-F0JoeEMtDKAHdEMbaM?usp=drive_link) into your folder, on the same level as your snake game script.
+
+Next, to include `post.shs` into our game script, we use `@include`
+
+=== "Code Added"
+
+    ```shards
+    @include("post.shs")
     ```
 
-    1. `[]` is an empty sequence.
-    2. [`(ForRange)`](https://docs.fragnova.com/reference/shards/shards/General/ForRange/) iterates a range of values (including both `:From` and `:To` ends).
-    3. `(- a b)` is a built-in function that can act on constant values (as opposed to [`(Math.Subtract)`](https://docs.fragnova.com/reference/shards/shards/Math/Subtract/) that can act on constants and variables).
-    4. [`(When)`](https://docs.fragnova.com/reference/shards/shards/General/When/) is similar to [`(If)`](https://docs.fragnova.com/reference/shards/shards/General/If/), except it is "passthrough" by default (don't worry about that concept for now).
-    5. [`(Is)`](https://docs.fragnova.com/reference/shards/shards/General/Is/) and [`(IsNot)`](https://docs.fragnova.com/reference/shards/shards/General/IsNot/) compare two values.
-    6. [`(And)`](https://docs.fragnova.com/reference/shards/shards/General/And/) is a logic operator.
-    7. [`(Push)`](https://docs.fragnova.com/reference/shards/shards/General/Push/) adds a value to a sequence.
+Now to flash the screen, we just have to change `terminal-bg-color`. First, let's initialize it in our main wire
 
-The function takes the positions of the snake body (incl. head and tail) and the current fruit position. It then iterates through all possible coordinates skipping the ones that are either occupied by the snake or the current fruit. The sequence of potential locations is then returned as the function's output.
+=== "Code Added"
 
-Now all we need to do is select a random position from this sequence and that will be our next fruit position.
-
-=== "EDN"
-
-    ```{.clojure .annotate linenums="1"}
-    (defshards move-fruit [fruit snake]
-      (get-free-locations fruit snake) >= .free-loc
-      (Count .free-loc) >= .max ;; (1)
-      (RandomInt .max) >= .next-fruit-loc ;; (2)
-      .free-loc (Take .next-fruit-loc) (ToInt2)) ;; (3) (4)
+    ```shards
+    @f4(0.0 0.0 0.0 1.0) | Set(Name: terminal-bg-color Global: true)
     ```
 
-    1. [`(Count)`](https://docs.fragnova.com/reference/shards/shards/General/Count/) returns the number of elements in a sequence.
-    2. [`(RandomInt)`](https://docs.fragnova.com/reference/shards/shards/General/RandomInt/) returns a random value between 0 and the given maximum (exclusive).
-    3. We have already seen `(Take)` in [step 2](./step-2.md).
-    4. [`(ToInt2)`](https://docs.fragnova.com/reference/shards/shards/General/ToInt2/) ensures that we return an `int2` value.
+Next, let's create a `@wire` which we can easily call, that will very quickly call using `Detach` to change it to a specified colour then very quickly change it back to its original colour. We can do this by using `Lerp` which will linearly interpolate between two values. Then when used in combination with `Animation.Timer`, we can interpolate from one value to another within a specified time.
 
-## Moving the snake
+=== "Code Added"
 
-In the snake game, the snake moves by one cell either horizontally or vertically. We could "move" every cell of its body one by one, but there is a clever trick we can use: we can just remove the first element (tail) from the snake's sequence and add one for the new head position.
+    ```shards
+		@f4(0.0 0.0 0.0 1.0) >= original-color
+		original-color | Set(Name:terminal-bg-color Global: true)
 
-When the snake is growing (after eating a fruit) we only add the new head (in place of the fruit element) but keep the tail such that snake seems to grow in the direction of the fruit it just ate.
-
-=== "EDN"
-
-    ```{.clojure .annotate linenums="1"}
-    (defshards move-snake [snake offset grow]
-      snake (RTake 0) (Math.Add offset) (Push snake) ;; (1)
-      (WhenNot (-> grow) (DropFront snake))) ;; (2) (3)
+    @wire(pulse-bg { ;; flashes the sreen
+			{Take("duration") = pulse-dur}
+			{Take("color") = pulse-color}
+			Animation.Timer(Duration: pulse-dur Action: {
+			original-color > terminal-bg-color
+			Stop
+			}) | Div(pulse-dur)
+			Lerp(First: pulse-color Second: original-color) > terminal-bg-color
+    } Looped: true)
     ```
 
-    1. We have already seen `(RTake)` in [step 3](./step-3.md).
-    2. [`(WhenNot)`](https://docs.fragnova.com/reference/shards/shards/General/WhenNot/) is similar to [`(When)`](https://docs.fragnova.com/reference/shards/shards/General/When/) but with the opposite logic.
-    3. [`(DropFront)`](https://docs.fragnova.com/reference/shards/shards/General/DropFront/) removes the first element of a sequence.
+Then, lastly, we call our `pulse-bg` wire using `Detach` and provide the necessary information, duration and color, as a table.
 
+=== "Code Added"
 
-Now we need the snake to move at regular intervals in the direction chosen by the player.
-
-Let's first listen to the player's input. We will use the keyboard's arrow keys (up, down, left, right) for this.
-
-=== "EDN"
-
-    ```{.clojure .annotate linenums="1"}
-    (Inputs.KeyDown "up" (-> "up" > .direction)) ;; (1)
-    (Inputs.KeyDown "right" (-> "right" > .direction))
-    (Inputs.KeyDown "down" (-> "down" > .direction))
-    (Inputs.KeyDown "left" (-> "left" > .direction))
+    ```shards
+		{duration: 0.35 color: @f4(1.0 1.0 1.0 1.0)}
+		Detach(pulse-bg)
     ```
 
-    1. [`(Inputs.KeyDown)`](https://docs.fragnova.com/reference/shards/shards/Inputs/KeyDown/) executes an action when a key is down. It has a sibling event: [`(Inputs.KeyUp)`](https://docs.fragnova.com/reference/shards/shards/Inputs/KeyUp/). `(>)` is an alias for [`Push`](https://docs.fragnova.com/reference/shards/shards/General/Push/).
+=== "Full Code so far"
 
-We also want to prevent the player from accidentally selecting the opposite direction (e.g. down while the snake is going up) since that would immediately end the game (as the snake would immediately turn backward to eat its own body starting with its neck). One easy way to do this is to compare the newly chosen direction with the previous one.
+    ```shards
+		@include("post.shs")
 
-=== "EDN"
+		@wire(pulse-bg { ;; flashes the sreen
+			{Take("duration") = pulse-dur}
+			{Take("color") = pulse-color}
+			Animation.Timer(Duration: pulse-dur Action: {
+			original-color > terminal-bg-color
+			Stop
+			}) | Div(pulse-dur)
+			Lerp(First: pulse-color Second: original-color) > terminal-bg-color
+		} Looped: true)
 
-    ```clojure linenums="1"
-    (Inputs.KeyDown
-     "up"
-     (When (-> .prev-direction (IsNot "down"))
-           (-> "up" > .direction)))
-    (Inputs.KeyDown
-     "right"
-     (When (-> .prev-direction (IsNot "left"))
-           (-> "right" > .direction)))
-    (Inputs.KeyDown
-     "down"
-     (When (-> .prev-direction (IsNot "up"))
-           (-> "down" > .direction)))
-    (Inputs.KeyDown
-     "left"
-     (When (-> .prev-direction (IsNot "right"))
-           (-> "left" > .direction)))
+		@wire(snake-game-logic {
+			;; move snake
+
+			Inputs.KeyDown("right" {
+				0 | Update(input-state "direction")
+			})
+			Inputs.KeyDown("down" {
+				1 | Update(input-state "direction")
+			})
+			Inputs.KeyDown("left" {
+				2 | Update(input-state "direction")
+			})
+			Inputs.KeyDown("up" {
+				3 | Update(input-state "direction")
+			})
+
+			snake-direction >= prev-dir
+			input-state | Take("direction")
+			Match([ ;; takes what was given from input
+				0 {; right
+					prev-dir:0 | When(Is(0) { ;; prev-dir:0 is taking the x
+						@i2(1 0) > snake-direction ;; if player pressed right and snake was previously not moving left or right, then change direction to move right
+					})
+				}
+				1 {; down
+					prev-dir:1 | When(Is(0) { ;; 
+						@i2(0 1) > snake-direction ;; if player pressed down and snake was previously not moving up or down, then change direction to move down
+					})
+				}
+				2 {; left
+					prev-dir:0 | When(Is(0) {
+						@i2(-1 0) > snake-direction ;; if player pressed left and snake was previously not moving left or right, then change direction to move left
+					})
+				}
+				3 {; up
+					prev-dir:1 | When(Is(0) {
+						@i2(0 -1) > snake-direction ;; if player pressed down and snake was previously not moving up or down, then change direction to move down
+					})
+				}
+			])
+
+			Animation.Timer(
+				Duration: move-duration
+				Looped: true
+				Action: {
+					
+					
+					snake-segments | RTake(0) ;; take the last element in the sequence which is the snake head
+					Math.Add(snake-direction) = new-snake-head
+
+					new-snake-head >> snake-segments
+
+					;; food collision logic
+					food-pos
+					If(Predicate: {
+						IsNotNone
+						And
+						new-snake-head | Is((food-pos | ToInt2))
+					} Then: {
+						none > food-pos
+						score | Math.Add(1) > score
+						move-duration | Mul(0.95) > move-duration
+
+						{duration: 0.35 color: @f4(1.0 1.0 1.0 1.0)}
+						Detach(pulse-bg)
+					} Else: {
+						DropFront(snake-segments)
+					})
+
+					;; wall collision logic
+					(new-snake-head | Take(0))
+					When(Predicate: {
+						IsMoreEqual(grid-width)
+						Or
+						(new-snake-head | Take(1)) | IsMoreEqual(grid-length)
+						Or
+						(new-snake-head | Take(0)) | IsLess(0)
+						Or
+						(new-snake-head | Take(1)) | IsLess(0)
+						Or
+						snake-segments | Slice(From: 0 To: (Count(snake-segments) | Math.Subtract(2))) | IsAny(new-snake-head)
+					} Action: {
+						true > game-over
+					})
+
+				}
+			)
+
+			food-pos
+			When(Predicate: Is(none) Action: {
+				; Spawn new food if needed
+				RandomInt(grid-width) = food-x
+				RandomInt(grid-length) = food-y
+				@i2(food-x food-y) > food-pos
+			})
+		} Looped: true)
+
+		@wire(main-wire {
+			GFX.MainWindow(
+				Contents: {
+					Once({
+						; Create render steps
+						GFX.BuiltinFeature(BuiltinFeatureId::Transform) >> features
+						GFX.BuiltinFeature(BuiltinFeatureId::BaseColor) >> features
+						GFX.BuiltinFeature(BuiltinFeatureId::AlphaBlend) >> features
+						GFX.DrawQueue = queue
+
+						40 >= font-size
+						@read("./snake/Px437_IBM_EGA_8x8.ttf" Bytes: true) | GFX.FontMap = font ;; change the file path to where your font ttf file is stored
+
+						[@i2(10 10) @i2(11 10) @i2(12 10)] >= snake-segments
+
+						{direction: 0} >= input-state
+        		@i2(1 0) >= snake-direction
+
+						0.15 >= move-duration
+
+						none | ToAny >= food-pos
+
+						0 >= score
+						false >= game-over
+
+						@f4(0.0 0.0 0.0 1.0) >= original-color
+						original-color | Set(Name:terminal-bg-color Global: true)
+
+					})
+					
+					
+					GFX.DrawablePass(Features: features Queue: queue) >> render-steps
+					Do(post-fx)
+
+					GFX.Viewport = vp ;; gets the screen's left, top, right, btm coordinates
+					[vp font-size] | Memoize({
+						vp:2 | Sub((vp:0)) | ToFloat = width ;; screen width
+						vp:3 | Sub((vp:1)) | ToFloat = height ;; screen height
+						@f2(width height) | Math.Multiply(@f2(-0.5 -0.5)) >= view-offset ;; makes the grid start from the top left of the screen
+
+						font | GFX.FontSpaceSize(font-size) | ToFloat2 = font-cell-size
+						font-cell-size | Take(0) = font-size-width
+						font-cell-size | Take(1) = font-size-height
+						width | Math.Mod((font-size-width)) | Math.Multiply(0.5) = offset-x
+						height | Math.Mod((font-size-height)) | Math.Multiply(0.5) = offset-y 
+
+						width | Div((font-size-width | ToFloat)) | ToInt | Max(1) = grid-width ;; dividing the screen into a grid based on font.
+						height | Div((font-size-height | ToFloat)) | ToInt | Max(1) = grid-length ;; Max ensures at least 1 cell in the grid
+
+						@f2(offset-x offset-y) | Add(view-offset) > view-offset
+							
+						view-offset | ToFloat3 | Math.Translation = view-transform ;; final view transform
+					})
+					GFX.View(View: view-transform OrthographicSize: @f2(1.0 -1.0) OrthographicSizeType: OrthographicSizeType::PixelScale) = view
+
+					;; game logic
+					game-over
+					When(Predicate: Is(false) Action: {
+						Step(snake-game-logic)
+					})
+
+					;; draw game
+					GFX.DynMesh = dmesh
+
+					0 >= repeat-idx
+					snake-segments ;; snake body segments
+					Repeat(
+						Action: {
+							snake-segments | Take(repeat-idx)
+							= coord
+								"█" | GFX.DynDrawText(
+								Font: font
+								FontSize: font-size
+								Output: dmesh
+								Offset: (coord | ToFloat3 | Math.Multiply((font-cell-size | ToFloat3)))
+								Scale: 1.0
+								Color: @f4(0.5 0.8 0.5 1.0)
+								VAlign: 1.0
+							)
+
+							repeat-idx | Math.Add(1) > repeat-idx
+						}
+
+						Until: {
+							repeat-idx | Is((Count(snake-segments) | Math.Subtract(1))) ;; repeat only until the second last segment
+						}
+					)
+
+					snake-segments | RTake(0) ;; snake head
+					= head-coord
+					"█" | GFX.DynDrawText(
+						Font: font
+						FontSize: font-size
+						Output: dmesh
+						Offset: (head-coord | ToFloat3 | Math.Multiply((font-cell-size | ToFloat3)))
+						Scale: 1.0
+						Color: @f4(0.1 1.0 0.1 1.0)
+						VAlign: 1.0
+					)
+
+					;; draw food
+					food-pos | When(Predicate: IsNotNone Action: {
+						"○" | GFX.DynDrawText(
+							Font: font
+							FontSize: font-size
+							Output: dmesh
+							Offset: (food-pos | ToFloat3 | Math.Multiply((font-cell-size | ToFloat3)))
+							Scale: 1.0
+							Color: @f4(1.0 0.2 0.2 1.0) ;; red color
+							VAlign: 1.0
+						)
+					})
+
+					;; display score
+					["Score: " score] | String.Format | GFX.DynDrawText(
+						Font: font
+						FontSize: font-size
+						Output: dmesh
+						Offset: (@f3(1.0 1.0 0.0) | Math.Multiply((font-cell-size | ToFloat3)))
+						Scale: 1.0
+						Color: @f4(1.0 1.0 1.0 1.0) ;; white
+						VAlign: 1.0
+					)
+
+					"Game Over" = game-over-string
+					(grid-width | Math.Divide(2)) | ToFloat = grid-width-center
+					(grid-length| Math.Divide(2)) | ToFloat = grid-length-center
+					Count(game-over-string) | Math.Divide(2) | ToFloat = str-center
+
+					;; display game over
+					game-over
+					When(Predicate: Is(true) Action: {
+						game-over-string | GFX.DynDrawText(
+							Font: font
+							FontSize: font-size
+							Output: dmesh
+							Offset: (@f3((grid-width-center | Math.Subtract(str-center)) grid-length-center 0.0) | Math.Multiply((font-cell-size | ToFloat3)))
+							Scale: 1.0
+							Color: @f4(1.0 1.0 1.0 1.0) ;; white
+							VAlign: 1.0
+						)
+					})
+
+					dmesh | GFX.DynToMesh | DoMany({
+						{Take("mesh") = mesh}
+						{Take("texture") = texture}
+						Math.MatIdentity | GFX.Drawable(mesh Params: {baseColorTexture: texture}) | GFX.Draw(queue)
+					} ComposeSync: true)
+
+					GFX.Render(render-steps view)
+			})
+		} Looped: true)
+
+		@mesh(main)
+		@schedule(main main-wire)
+		@run(main FPS: 60)
     ```
 
-Finally, the snake will move at regular intervals. We can do that by comparing the current time and the time since the last update.
+!!! note "Global"
 
-=== "EDN"
+		`Detach` normally only uses a snapshot copy of it's parent's variables. But if it is a global variable, it will use the original variable and thus the changes will be reflected in the parent wire. Because we want the changes to `terminal-bg-color` to be reflected in the parent wire, we set it as `Global: true`
 
-    ```{.clojure .annotate linenums="1"}
-     (When (-> (Time.Now) (Math.Subtract .last-tick) (IsMoreEqual 0.50)) ;; (1)
-           (-> (Time.Now) > .last-tick
-               ; move the snake
-               .direction (Match ["up" (move-snake .snake (int2 0 -1) .grow)
-                                  "right" (move-snake .snake (int2 1 0) .grow)
-                                  "down" (move-snake .snake (int2 0 1) .grow)
-                                  "left" (move-snake .snake (int2 -1 0) .grow)])))
+If you try running the code and collect fruits, you will notice the the screen flashing white. You might also notice the game looking slightly different! Don't worry, its a filter that we added in `post.shs` too, to elevate the overall aesthetic of the game!
+
+Now to flash the screen red whenever we collide with the walls or snake body, we simply have to call the wire again and modify the wire's input.
+
+=== "Code Added"
+
+		```shards
+		{duration: 0.20 color: @f4(1.0 0.0 0.0 1.0)}
+    Detach(pulse-bg)
+		```
+
+![4_1](assets/step_4_1.gif){ width=500 }
+
+## 4.2 Resetting the game
+
+Lastly, we want to be able to reset our game whenever we lose. First let's add to our game over text, to prompt the user to his "r", when they lose the game.
+
+=== "Code Added"
+
+    ```shards
+		"press r to reset" = reset-string
+    Count(reset-string) | Math.Divide(2) | ToFloat = reset-str-center
+
+		reset-string | GFX.DynDrawText(
+			Font: font
+			FontSize: font-size
+			Output: dmesh
+			Offset: (@f3((grid-width-center | Math.Subtract(reset-str-center)) (grid-length-center | Math.Add(1.0)) 0.0) | Math.Multiply((font-cell-size | ToFloat3)))
+			Scale: 1.0
+			Color: @f4(1.0 1.0 1.0 1.0) ;; white
+			VAlign: 1.0
+		)
     ```
 
-    1. [`(Time.Now)`](https://docs.fragnova.com/reference/shards/shards/Time/Now/) returns the time elapsed since the start of the game.
+Then when the player presses "r", we will reset all the important variables, like `score`, `snake-segments` , `move-duration` to their original values. We can then change our `When` conditional to an `If` to run the snake logic when `game-over` is `false` and run the `Inputs.Keydown` to reset the code when `game-over` is `true`.
 
-Now the snake will move every half a second. We could change this value to vary the difficulty of the game.
+=== "Code Added"
 
-## Let's try it out!
+    ```shards
+		game-over
+		If(Predicate: Is(false) Then: {
+			Step(snake-game-logic)
+		} Else: {
+			Inputs.KeyDown("r" {
+				false > game-over
 
-Putting together all that we have seen so far, and adding a bit of initialization (that we conveniently put in its function to allow us to reinitialize the game if the player hits the space bar), we have the following code.
+				0 > score
 
-=== "EDN"
+				[@i2(10 10) @i2(11 10) @i2(12 10)] > snake-segments
 
-    ```clojure linenums="1"
-    --8<-- "tutorials/snake/steps/step-4.edn"
+				0.15 > move-duration
+
+				none > food-pos
+
+				@i2(1 0) > snake-direction
+
+				{direction: 0} > input-state
+			})
+		})
     ```
 
-=== "Result"
+=== "Full Code so far"
 
-    ![](step-4.gif)
+    ```shards
+		@include("post.shs")
 
-??? note
-    [`(Once)`](https://docs.fragnova.com/reference/shards/shards/General/Once/) is executed only once and thus is not repeated every frame.
+    @wire(pulse-bg { ;; flashes the sreen
+      {Take("duration") = pulse-dur}
+      {Take("color") = pulse-color}
+      Animation.Timer(Duration: pulse-dur Action: {
+      original-color > terminal-bg-color
+      Stop
+      }) | Div(pulse-dur)
+      Lerp(First: pulse-color Second: original-color) > terminal-bg-color
+    } Looped: true)
+
+    @wire(snake-game-logic {
+      ;; move snake
+
+      Inputs.KeyDown("right" {
+        0 | Update(input-state "direction")
+      })
+      Inputs.KeyDown("down" {
+        1 | Update(input-state "direction")
+      })
+      Inputs.KeyDown("left" {
+        2 | Update(input-state "direction")
+      })
+      Inputs.KeyDown("up" {
+        3 | Update(input-state "direction")
+      })
+
+      snake-direction >= prev-dir
+      input-state | Take("direction")
+      Match([ ;; takes what was given from input
+        0 {; right
+          prev-dir:0 | When(Is(0) { ;; prev-dir:0 is taking the x
+            @i2(1 0) > snake-direction ;; if player pressed right and snake was previously not moving left or right, then change direction to move right
+          })
+        }
+        1 {; down
+          prev-dir:1 | When(Is(0) { ;; 
+            @i2(0 1) > snake-direction ;; if player pressed down and snake was previously not moving up or down, then change direction to move down
+          })
+        }
+        2 {; left
+          prev-dir:0 | When(Is(0) {
+            @i2(-1 0) > snake-direction ;; if player pressed left and snake was previously not moving left or right, then change direction to move left
+          })
+        }
+        3 {; up
+          prev-dir:1 | When(Is(0) {
+            @i2(0 -1) > snake-direction ;; if player pressed down and snake was previously not moving up or down, then change direction to move down
+          })
+        }
+      ])
+
+      Animation.Timer(
+        Duration: move-duration
+        Looped: true
+        Action: {
+          
+          
+          snake-segments | RTake(0) ;; take the last element in the sequence which is the snake head
+          Math.Add(snake-direction) = new-snake-head
+
+          new-snake-head >> snake-segments
+
+          ;; food collision logic
+          food-pos
+          If(Predicate: {
+            IsNotNone
+            And
+            new-snake-head | Is((food-pos | ToInt2))
+          } Then: {
+            none > food-pos
+            score | Math.Add(1) > score
+            move-duration | Mul(0.95) > move-duration
+
+            {duration: 0.35 color: @f4(1.0 1.0 1.0 1.0)}
+            Detach(pulse-bg)
+          } Else: {
+            DropFront(snake-segments)
+          })
+
+          ;; wall collision logic
+          (new-snake-head | Take(0))
+          When(Predicate: {
+            IsMoreEqual(grid-width)
+            Or
+            (new-snake-head | Take(1)) | IsMoreEqual(grid-length)
+            Or
+            (new-snake-head | Take(0)) | IsLess(0)
+            Or
+            (new-snake-head | Take(1)) | IsLess(0)
+            Or
+            snake-segments | Slice(From: 0 To: (Count(snake-segments) | Math.Subtract(2))) | IsAny(new-snake-head)
+          } Action: {
+            true > game-over
+
+            {duration: 0.20 color: @f4(1.0 0.0 0.0 1.0)}
+            Detach(pulse-bg)
+          })
+
+        }
+      )
+
+      food-pos
+      When(Predicate: Is(none) Action: {
+        ; Spawn new food if needed
+        RandomInt(grid-width) = food-x
+        RandomInt(grid-length) = food-y
+        @i2(food-x food-y) > food-pos
+      })
+    } Looped: true)
+
+    @wire(main-wire {
+      GFX.MainWindow(
+        Contents: {
+          Once({
+            ; Create render steps
+            GFX.BuiltinFeature(BuiltinFeatureId::Transform) >> features
+            GFX.BuiltinFeature(BuiltinFeatureId::BaseColor) >> features
+            GFX.BuiltinFeature(BuiltinFeatureId::AlphaBlend) >> features
+            GFX.DrawQueue = queue
+
+            40 >= font-size
+            @read("./snake/Px437_IBM_EGA_8x8.ttf" Bytes: true) | GFX.FontMap = font ;; change the file path to where your font ttf file is stored
+
+            [@i2(10 10) @i2(11 10) @i2(12 10)] >= snake-segments
+
+            @i2(1 0) >= snake-direction
+            {direction: 0} >= input-state
+
+            0.15 >= move-duration
+
+            none | ToAny >= food-pos
+
+            0 >= score
+            false >= game-over
+
+            @f4(0.0 0.0 0.0 1.0) >= original-color
+            original-color | Set(Name:terminal-bg-color Global: true)
+          })
+          
+          
+          GFX.DrawablePass(Features: features Queue: queue) >> render-steps
+          Do(post-fx)
+
+          GFX.Viewport = vp ;; gets the screen's left, top, right, btm coordinates
+          [vp font-size] | Memoize({
+            vp:2 | Sub((vp:0)) | ToFloat = width ;; screen width
+            vp:3 | Sub((vp:1)) | ToFloat = height ;; screen height
+            @f2(width height) | Math.Multiply(@f2(-0.5 -0.5)) >= view-offset ;; makes the grid start from the top left of the screen
+
+            font | GFX.FontSpaceSize(font-size) | ToFloat2 = font-cell-size
+            font-cell-size | Take(0) = font-size-width
+            font-cell-size | Take(1) = font-size-height
+            width | Math.Mod((font-size-width)) | Math.Multiply(0.5) = offset-x
+            height | Math.Mod((font-size-height)) | Math.Multiply(0.5) = offset-y 
+
+            width | Div((font-size-width | ToFloat)) | ToInt | Max(1) = grid-width ;; dividing the screen into a grid based on font.
+            height | Div((font-size-height | ToFloat)) | ToInt | Max(1) = grid-length ;; Max ensures at least 1 cell in the grid
+
+            @f2(offset-x offset-y) | Add(view-offset) > view-offset
+              
+            view-offset | ToFloat3 | Math.Translation = view-transform ;; final view transform
+          })
+          GFX.View(View: view-transform OrthographicSize: @f2(1.0 -1.0) OrthographicSizeType: OrthographicSizeType::PixelScale) = view
+
+          ;; game logic
+          game-over
+          If(Predicate: Is(false) Then: {
+            Step(snake-game-logic)
+          } Else: {
+            Inputs.KeyDown(Key: "r" Action: {
+              false > game-over
+
+              0 > score
+
+              [@i2(10 10) @i2(11 10) @i2(12 10)] > snake-segments
+
+              0.15 > move-duration
+
+              none > food-pos
+
+              @i2(1 0) > snake-direction
+
+              {direction: 0} > input-state
+            })
+          })
+
+          ;; draw game
+          GFX.DynMesh = dmesh
+
+          0 >= repeat-idx
+          snake-segments ;; snake body segments
+          Repeat(
+            Action: {
+              snake-segments | Take(repeat-idx)
+              = coord
+                "█" | GFX.DynDrawText(
+                Font: font
+                FontSize: font-size
+                Output: dmesh
+                Offset: (coord | ToFloat3 | Math.Multiply((font-cell-size | ToFloat3)))
+                Scale: 1.0
+                Color: @f4(0.5 0.8 0.5 1.0)
+                VAlign: 1.0
+              )
+
+              repeat-idx | Math.Add(1) > repeat-idx
+            }
+
+            Until: {
+              repeat-idx | Is((Count(snake-segments) | Math.Subtract(1))) ;; repeat only until the second last segment
+            }
+          )
+
+          snake-segments | RTake(0) ;; snake head
+          = head-coord
+          "█" | GFX.DynDrawText(
+            Font: font
+            FontSize: font-size
+            Output: dmesh
+            Offset: (head-coord | ToFloat3 | Math.Multiply((font-cell-size | ToFloat3)))
+            Scale: 1.0
+            Color: @f4(0.1 1.0 0.1 1.0)
+            VAlign: 1.0
+          )
+
+          ;; draw food
+          food-pos | When(Predicate: IsNotNone Action: {
+            "○" | GFX.DynDrawText(
+              Font: font
+              FontSize: font-size
+              Output: dmesh
+              Offset: (food-pos | ToFloat3 | Math.Multiply((font-cell-size | ToFloat3)))
+              Scale: 1.0
+              Color: @f4(1.0 0.2 0.2 1.0) ;; red color
+              VAlign: 1.0
+            )
+          })
+
+          ;; display score
+          ["Score: " score] | String.Format | GFX.DynDrawText(
+            Font: font
+            FontSize: font-size
+            Output: dmesh
+            Offset: (@f3(1.0 1.0 0.0) | Math.Multiply((font-cell-size | ToFloat3)))
+            Scale: 1.0
+            Color: @f4(1.0 1.0 1.0 1.0) ;; white
+            VAlign: 1.0
+          )
+
+          "Game Over" = game-over-string
+          (grid-width | Math.Divide(2)) | ToFloat = grid-width-center
+          (grid-length| Math.Divide(2)) | ToFloat = grid-length-center
+          Count(game-over-string) | Math.Divide(2) | ToFloat = str-center
+
+          "press r to reset" = reset-string
+          Count(reset-string) | Math.Divide(2) | ToFloat = reset-str-center
+
+          ;; display game over
+          game-over
+          When(Predicate: Is(true) Action: {
+            game-over-string | GFX.DynDrawText(
+              Font: font
+              FontSize: font-size
+              Output: dmesh
+              Offset: (@f3((grid-width-center | Math.Subtract(str-center)) grid-length-center 0.0) | Math.Multiply((font-cell-size | ToFloat3)))
+              Scale: 1.0
+              Color: @f4(1.0 1.0 1.0 1.0) ;; white
+              VAlign: 1.0
+            )
+
+            reset-string | GFX.DynDrawText(
+              Font: font
+              FontSize: font-size
+              Output: dmesh
+              Offset: (@f3((grid-width-center | Math.Subtract(reset-str-center)) (grid-length-center | Math.Add(1.0)) 0.0) | Math.Multiply((font-cell-size | ToFloat3)))
+              Scale: 1.0
+              Color: @f4(1.0 1.0 1.0 1.0) ;; white
+              VAlign: 1.0
+            )
+          })
+
+          dmesh | GFX.DynToMesh | DoMany({
+            {Take("mesh") = mesh}
+            {Take("texture") = texture}
+            Math.MatIdentity | GFX.Drawable(mesh Params: {baseColorTexture: texture}) | GFX.Draw(queue)
+          } ComposeSync: true)
+
+          GFX.Render(render-steps view)
+      })
+    } Looped: true)
+
+    @mesh(main)
+    @schedule(main main-wire)
+    @run(main FPS: 60)
+    ```
+
+Congratulations! You have successfully coded your first snake game!
+
+![4_1](assets/step_4_1.gif){ width=500 }
 
 --8<-- "includes/license.md"
