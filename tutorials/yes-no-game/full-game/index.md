@@ -1,8 +1,8 @@
 # Full game
 
 === "EDN"
-    ```clojure linenums="1" title="yesnogame.edn"
-    --8<-- "tutorials/yes-no-game/full-game/yesnogame.edn"
+    ```shards
+    --8<-- "tutorials/yes-no-game/full-game/yesnogame.shs"
     ```
 
 --8<-- "includes/license.md"

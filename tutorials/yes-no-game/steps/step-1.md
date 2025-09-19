@@ -10,46 +10,43 @@ A basic Shards program consists of:
 
 - Scheduling Wires onto a Mesh
 
-To learn more about Wires, Meshes, and the overall flow of Shards, check out the primer [here](https://docs.fragnova.com/learn/shards/).
+To learn more about Wires, Meshes, and the overall flow of Shards, check out the Shards Primer [here](https://docs.fragcolor.com/learn/shards/).
 
 A basic Shards program looks like this:
 
 === "Code"
     
-    ```{.clojure .annotate linenums="1"}
-    (defwire game-wire          ;; Define a Wire named "game-wire" (1)
-        (Msg "Hello World!"))   ;; Insert stuff to run here (2)
+    ```shards
+    @wire( game-wire {       ;; Define a Wire named "game-wire" (1)
+        Msg("Hello World!")
+    } Looped: false)   ;; Insert stuff to run here (2)
 
-    (defmesh main)              ;; Define a Mesh named "main" (3)
-    (schedule main game-wire)   ;; Schedule the Wire on the Mesh (4)
-    (run main)                  ;; Run the Mesh (5)
+    @mesh(main)              ;; Define a Mesh named "main" (3)
+    @schedule(main game-wire)   ;; Schedule the Wire on the Mesh (4)
+    @run(main)                  ;; Run the Mesh (5)
     ```
 
-    1. [`defwire`](https://docs.fragnova.com/reference/shards/lisp/macros/#defwire) is a macro used to define a Wire.
-    2. [`Msg`](https://docs.fragnova.com/reference/shards/shards/General/Msg/) prints out the string passed into it.
-    3. [`defmesh`](https://docs.fragnova.com/reference/shards/lisp/macros/#defmesh) is a macro used to define a Mesh.
-    4. [`schedule`](https://docs.fragnova.com/reference/shards/lisp/misc/#schedule) queues a Wire on the Mesh.
-    5. [`run`](https://docs.fragnova.com/reference/shards/lisp/misc/#run) executes Wires on the Mesh.
+    1. [`@wire`](https://docs.fragcolor.com/reference/shards/built-ins/execution/#@wire) is a macro used to define a Wire.
+    2. [`Msg`](https://docs.fragcolor.com/reference/shards/shards/General/Msg/) prints out the string passed into it.
+    3. [`@mesh`](https://docs.fragcolor.com/reference/shards/built-ins/execution/#@mesh) is a macro used to define a Mesh.
+    4. [`@schedule`](https://docs.fragcolor.com/reference/shards/built-ins/execution/#@schedule) queues a Wire on the Mesh.
+    5. [`@run`](https://docs.fragcolor.com/reference/shards/built-ins/execution/#@run) executes Wires on the Mesh.
 
-For the program to run continuously, we will be using a looped Wire instead. This can be done by replacing `defwire` with `defloop`. You can then adjust the time interval between each loop by adding a second argument to `(run)`.
+For the program to run continuously, we will be using a looped Wire instead. This can be done by setting the `Looped` parameter as true. You can then adjust the time interval between each loop by adding a second argument to `@run`.
 
-Since most games run at 60 FPS (Frames per Second), we will be using `(/ 1.0 60.0)`  to get the time interval between each frame.
-
-!!! note
-    `(/ 1.0 60.0)` reads as "1 divided by 60".
+Since most games run at 60 FPS (Frames per Second), we will set the `FPS` parameter to 60.
 
 === "Code"
     
-    ```{.clojure .annotate linenums="1"}
-    (defloop game-loop          ;; Define a Looped Wire named "game-loop" (1)
-        (Msg "Hello World!"))   ;; Insert stuff to run here 
+    ```shards
+    @wire(game-loop {         ;; Define a Looped Wire named "game-loop"
+        Msg("Hello World!")
+    } Looped: true)           ;; Insert stuff to run here 
 
-    (defmesh main)              ;; Define a Mesh named "main"
-    (schedule main game-loop)   ;; Schedule the Loop on the Mesh
-    (run main (/ 1.0 60.0))     ;; Run the Mesh
+    @mesh(main)               ;; Define a Mesh named "main"
+    @schedule(main game-loop) ;; Schedule the Loop on the Mesh
+    @run(main FPS: 60)        ;; Run the Mesh
     ```
-
-    1. [`defloop`](https://docs.fragnova.com/reference/shards/lisp/macros/#defloop) is a macro used to define a Loop.
 
 ## Game Loops 
 
@@ -59,59 +56,64 @@ To make a game, you will need:
 
 - Code to run the game's logic (such as calculating the score, determining when to end a round)
 
-It might be quite disorderly if we did everything within a single `defloop`. 
+It might be quite disorderly if we did everything within a single wire. 
 
-To keep our code easily readable and organized, we split the UI and logic code into separate Loops running together on the Mesh. 
+To keep our code easily readable and organized, we split the UI and logic code into separate Loops running together on the `Mesh`. 
 
 We can achieve this by employing the `Branch` shard and creating two separate loops for the game's logic and UI.
 
 ??? "Branch"
-    [`Branch`](https://docs.fragnova.com/reference/shards/shards/General/Branch/) creates a mini-Mesh of sorts and schedules Wires to run on it.
+    [`Branch`](https://docs.fragcolor.com/reference/shards/shards/General/Branch/) creates offshoot from the current mesh and schedules Wires to run on it.
 
 === "Code"
     
-    ```{.clojure .annotate linenums="1"}
-    (defloop ui-loop)                   ;; Insert UI code here
-    (defloop logic-loop)                ;; Insert logic code here
+    ```shards
+    @wire(ui-loop {Pass} Looped: true)                   ;; Insert UI code here
+    @wire(logic-loop {Pass} Looped: true)                ;; Insert logic code here
 
-    (defloop game-loop
-        (Branch [ui-loop, logic-loop]))
+    @wire(game-loop{
+        Branch(Wires:[ui-loop, logic-loop])
+    } Looped: true)
 
-    (defmesh main)
-    (schedule main game-loop)
-    (run main (/ 1.0 60.0))
+    @mesh(main)
+    @schedule(main game-loop)
+    @run(main FPS: 60) 
     ```
 
-## The Setup Zone
+## The Initialization Zone
 
 Most games will require code to ready the program, such as by loading resources and setting up variables to use. 
 
-We can ready empty shards `load-resources` and `initialize-variables` to carry out these tasks. Place them in a `Setup` shard within the `game-loop` to ensure that they only run once.
+We can ready `@define`s, `load-resources` and `initialize-variables` to carry out these tasks. Place them in a `Once` shard within the `game-loop` to ensure that they only run once.
 
 ??? "Variables"
     Variables are containers that store values. You define a variable with a name, and assign a value to it. The value can then be retrieved by calling the variable with its assigned name.
 
-??? "Setup"
-    The [`Setup`](https://docs.fragnova.com/reference/shards/shards/General/Once/) shard will only be executed once, even within a Looped Wire. This makes it ideal to hold code that is only used once to ready the game. 
+??? "Once"
+    The [`Once`](https://docs.fragcolor.com/reference/shards/shards/General/Once/) shard will only be executed once, even within a Looped Wire. This makes it ideal to hold code that is only used once to ready the game. 
 
 === "Full Code"
     
-    ```{.clojure .annotate linenums="1"}
-    (defshards load-resources [] nil)          ;; Load resources here (1)
-    (defshards initialize-variables [] nil)    ;; Ready variables here
-    (defloop ui-loop)                   ;; Insert UI code here
-    (defloop logic-loop)                ;; Insert logic code here
+    ```shards
+    @define(load-resources {Pass})              ;; Load resources here (1)
+    @define(initialize-variables {Pass})        ;; Ready variables here
+    @wire(ui-loop {Pass} Looped: true)          ;; Insert UI code here
+    @wire(logic-loop {Pass} Looped: true)       ;; Insert logic code here
 
-    (defloop game-loop
-        (Setup (load-resources)(initialize-variables)) ;; (2)
-        (Branch [ui-loop, logic-loop]))
+    @wire(game-loop {
+        Once({
+            @load-resources
+            @initialize-variables
+        })                                      ;; (2)
+        Branch(Wires:[ui-loop, logic-loop])
+    } Looped: true)
 
-    (defmesh main)
-    (schedule main game-loop)
-    (run main (/ 1.0 60.0))
+    @mesh(main)
+    @schedule(main game-loop)
+    @run(main FPS: 60) 
     ```
 
-    1. [`defshards`](https://docs.fragnova.com/reference/shards/lisp/macros/#defshards) allows multiple shards to be grouped together into a single shard. We will be placing shards that load resources into `load-resources` for example.
+    1. [`@define`](https://docs.fragcolor.com/reference/shards/built-ins/macros-templating/#@define) allows multiple shards to be grouped together into a single shard. We will be placing shards that load resources into `load-resources` for example.
     2. The shards to load resources and initialize variables are only run once in the game loop
 
 The basic game loop is now ready!

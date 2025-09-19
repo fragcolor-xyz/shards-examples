@@ -6,55 +6,35 @@ In this chapter, we will be looking at how user input is handled in Shards.
 
 ## User Input
 
-User input is managed within the `GFX.Window` of your game. For this game, the only user input required would be the ↑ and ↓ directional key.
+User input is managed within the `GFX.MainWindow` of your game. For this game, the only user input required would be the ↑ and ↓ directional key.
 
 We can use `Inputs.KeyDown` to execute code whenever the user presses down on a specified key.
 
 === "Code"
   
-    ```{.clojure .annotate linenums="1"}
-    (defloop ui-loop
-     (GFX.MainWindow
-      :Title "Yes-No Game"
-      ...
-       (GFX.Render :Steps .render-steps)
+    ```shards
+    @wire( ui-loop {
+      GFX.MainWindow(
+        Title: "Yes-No Game"
+        Width: 1280 Height: 768
+        Contents: {
+        ...
+        Inputs.KeyDown(  ;; (3)
+          Key: "up"
+          Action: {Pass}  ;; (1)
+        )
 
-       (Inputs.KeyDown ;; (3)
-        :Key "up"
-        :Action ()) ;; (1) 
-
-       (Inputs.KeyDown
-        :Key "down"
-        :Action ())))) ;; (2) 
+        Inputs.KeyDown(
+          Inputs.KeyDown(
+            Key: "down"
+            Action: {Pass} ;; (2)
+          )
+        )
     ```
 
     1. This code is executed when the user presses the ↑ directional key.
     2. This code is executed when the user presses the ↓ directional key.
-    3. [`Inputs.KeyDown`](https://docs.fragnova.com/reference/shards/shards/Inputs/KeyDown/) will run the code in its `Action` parameter when the `Key` specified is pressed down by the user.
-
-
-In order to prevent code within the `Inputs.Keydown` shards from executing whenever the user presses the specified key, we define a variable `.input-received` to track if we have already received the user's input.
-
-Define the variable in `initialize-variables` and add code to reset it in `reset-round-variables`.
-
-=== "Code"
-  
-    ```{.clojure .annotate linenums="1"}
-    (defshards initialize-variables []
-      ;; Variables to reset each round 
-      true >= .new-round
-      max-timer >= .time-remaining
-      false >= .input-received ;; (1) 
-      ...)
-
-    (defshards reset-round-variables []
-      false > .new-round
-      max-timer > .time-remaining
-      false > .input-received) ;; (2) 
-    ```
-
-    1. Variable that tracks if an input from the user has been received.
-    2. Resets the variable tracking whether user input has been received for each round.
+    3. [`Inputs.KeyDown`](https://docs.fragcolor.com/reference/shards/shards/Inputs/KeyDown/) will run the code in its `Action` parameter when the `Key` specified is pressed down by the user.
 
 Now that we are able to obtain the user's input, we can proceed to check if the user pressed the correct button. 
 
@@ -62,20 +42,20 @@ Now that we are able to obtain the user's input, we can proceed to check if the 
 
 Based on the images chosen, we can determine whether the user needs to select the ↑ or ↓ directional key. 
 
-In `initialize-variables`, create a variable named `.same-image`. This will be used to check if the user pressed the correct key later.
+In `initialize-variables`, create a variable named `same-image`. This will be used to check if the user pressed the correct key later.
 
 === "Code"
   
-    ```{.clojure .annotate linenums="1"}
-    (defshards initialize-variables []
+    ```shards
+    @define(initialize-variables {
       ...
 
       ;; Other Shared Variables
-      0 >= .left-image-index
-      0 >= .right-image-index
-      (Count .images) >= .total-images
-      true >= .same-image ;; (1) 
-    )
+      0 >= left-image-index
+      0 >= right-image-index
+      Count(images) >= total-images
+      true >= same-image ;; (1) 
+    })
     ```
 
     1. Tracks whether the same image is used.
@@ -83,270 +63,265 @@ In `initialize-variables`, create a variable named `.same-image`. This will be u
 
 Navigate to where we chose the images in `initialize-round`. 
 
-Check if the chosen images are the same, and assign `true` or `false` to `.same-image` accordingly.
+Check if the chosen images are the same, and assign `true` or `false` to `same-image` accordingly.
 
 === "Code"
 
-    ```{.clojure .annotate linenums="1"}
-    (defshards initialize-round [] 
-      (RandomInt :Max .total-images) > .left-image-index
-      (RandomInt :Max .total-images) > .right-image-index
-  
-      (If ;; (1)
-       :Predicate (-> .left-image-index (Is .right-image-index)) ;; (2)
-       :Then (-> true > .same-image)
-       :Else (-> false > .same-image))
-       
-      (reset-round-variables))
+    ```shards
+    @define( initialize-round {
+      RandomInt(Max: total-images) > left-image-index
+      RandomInt(Max: total-images) > right-image-index
+
+      left-image-index
+      If(Predicate: {  ;; (1)
+        Is(right-image-index) ;; (2)
+      } Then: {
+        true > same-image
+      } Else: {
+        false > same-image
+      })
+
+      @reset-round-variables
+    })
   
     ```
 
-    1. [`If`](https://docs.fragnova.com/reference/shards/shards/General/If/) checks the `Predicate` given and runs the code within `Then` if it is true. If false, the code within `Else` is run instead.
+    1. [`If`](https://docs.fragcolor.com/reference/shards/shards/General/If/) checks the `Predicate` given and runs the code within `Then` if it is true. If false, the code within `Else` is run instead.
     2. Check if the images on the left and right are the same or different.
 
-Create a shard named `check-answer` which will take in the user's input and check it against `.same-image`.
+Next, in Input.KeyDown, check if they:
 
-The user is correct if they:
+- Pressed ↑ when `same-image` is true
 
-- Pressed ↑ when `.same-image` is true
+- Pressed ↓ when `same-image` is false
 
-- Pressed ↓ when `.same-image` is false
-
-We award them a point by increasing the value of `.total-score`.
-
-Set `.input-received` to true to prevent further user input, and end the round if `.game-over` is false.
+We award them a point by increasing the value of `total-score`, as long as `game-over` is still false. We also want to call `end-round` with `Step` whenever the user provides the correct input to go to the next round and refresh the images.
 
 === "Code"
   
-    ```{.clojure .annotate linenums="1"}
-    (defshards check-answer [yes-input] ;; (1) 
-      (When
-       :Predicate (-> .input-received (Is false)) ;; (2)
-       :Action
-       (->
-        (When
-         :Predicate (-> .same-image (Is yes-input)) ;; (3)
-         :Action (-> (Math.Inc .total-score))) ;; (4)
+    ```shards
+    Inputs.KeyDown( 
+      Key: "up"
+      Action: {
+        same-image
+        When(Predicate: {
+          Is(true)
+          And
+          game-over | Is(false)
+        } Action: {
+          total-score | Math.Add(1) > total-score
+          Step(end-round)
+        })
+      }
+    )
 
-        true > .input-received ;; (5) 
-        (When
-         :Predicate (-> .game-over (IsNot true)) ;; (6)
-         :Action (-> nil (Step end-round)))))) ;; (7)(8)(9)
+    Inputs.KeyDown(
+      Key: "down"
+      Action: {
+        same-image
+        When(Predicate: {
+          Is(false)
+          And
+          game-over | Is(false)
+          } Action: {
+          total-score | Math.Add(1) > total-score
+          Step(end-round)
+        })
+      }
+    )
     ```
-
-    1. Take in the user's input.
-    2. Check if a user input has already been received.
-    3. If the user pressed the ↑ directional key when the same images are being shown...
-    4. ... increase the user's total score.
-    5. Prevents this segment of code from running again until it is reset.
-    6. If it is not Game Over yet...
-    7. ... end the round.
-    8. [`Step`](https://docs.fragnova.com/reference/shards/shards/General/Step/) runs a wire inline.
-    9. `nil` ensures that any previous input (e.g. Bool from `true > .input-received`) is not propagated into the wire. The first use of a wire defines its input type, and subsequent calls to the wire with different input types will be a violation.
-
-??? "Step vs Do"
-    Step behaves similarly to [`Do`](https://docs.fragnova.com/reference/shards/shards/General/Do/), except that it allows you to use a *Looped Wire* like a function. `Step` will run one iteration of the Loop before returning control back to the Wire that called it. If you try to use `Do` on a Loop, the Loop will run indefinitely.
-
-    Use a stepped Loop when you want a variable within the Loop to persist. When a Wire finishes, any changes made to the variables within it will be lost. A Looped Wire lives on, thereby retaining any changes within it. 
-    
-    Check out the primer [here](https://docs.fragnova.com/learn/shards/primer/the-flow/#step) for more information.
-
-We can now employ the `check-answer` shard in our `Inputs.KeyDown` logic.
-
-=== "Code"
-  
-    ```{.clojure .annotate linenums="1"}
-    (defloop ui-loop
-     (GFX.MainWindow
-      :Title "Yes-No Game"
-      ...
-       (GFX.Render :Steps .render-steps)
-
-       (Inputs.KeyDown
-        :Key "up"
-        :Action (-> (check-answer true))) ;; (1)
-
-       (Inputs.KeyDown
-        :Key "down"
-        :Action (-> (check-answer false)))))) ;; (2)
-    ```
-
-    1. Check-answer is called, with true being passed in to indicate that the user chose "Yes".
-    2. Check-answer is called, with false being passed in to indicate that the user chose "No".
 
 Cheers! Your game can now receive user input, tabulate the score, and allows players to play up to 10 rounds each time.
 
 
 === "Full Code"
   
-    ```{.clojure .annotate linenums="1"}
-    (def total-rounds 10)
-    (def max-timer 5)
+    ```shards
+    @define(reset-game-variables {
+      @reset-round-variables
+      0 > total-score
+      1 > current-round
+      false > game-over
+      true > new-round
+    })
 
-    (defshards load-resources []
-      (LoadImage "data/cats/cat01.png") (Push :Name .images)
-      (LoadImage "data/cats/cat02.png") (Push :Name .images)
-      (LoadImage "data/cats/cat03.png") (Push :Name .images))
+    @wire(end-round {
+      Once({
+        0 >= new-round-number ;; (1)
+      })
 
+      current-round | Math.Add(1) > new-round-number ;; (2)
 
-    (defshards initialize-variables []
-      ;; Variables to reset each round 
-      true >= .new-round
-      max-timer >= .time-remaining
-      false >= .input-received
+      new-round-number
+      If(Predicate: IsMore(@total-rounds) Then: { ;; (3)
+        true > game-over ;; (4)
+      } Else: {
+        new-round-number > current-round ;; (5)
+        true > new-round ;; (6)
+      })
+    } Looped: true)
+
+    @define(reset-round-variables {
+      false > new-round
+      @max-timer > time-remaining
+    }) 
+
+    @define( initialize-round {
+      RandomInt(Max: total-images) > left-image-index
+      RandomInt(Max: total-images) > right-image-index
+
+      left-image-index
+      If(Predicate: {  ;; (1)
+        Is(right-image-index) ;; (2)
+      } Then: {
+        true > same-image
+      } Else: {
+        false > same-image
+      })
+
+      @reset-round-variables
+    })
+
+    @define(total-rounds 10)
+    @define(max-timer 5)
+
+    @define(load-resources {
+      LoadImage("data/cats/cat01.png") | Push(Name: images) ;; (1)(2)
+      LoadImage("data/cats/cat02.png") | Push(Name: images)
+      LoadImage("data/cats/cat03.png") | Push(Name: images)
+    })
+
+    @define( initialize-variables {
+      ;; Variables to reset each round
+      true >= new-round
+      @max-timer >= time-remaining
 
       ;; Variables to reset each game 
-      0 >= .total-score
-      1 >= .current-round
-      false >= .game-over
+      0 >= total-score
+      1 >= current-round
+      false >= game-over
 
+      
       ;; Other Shared Variables
-      0 >= .left-image-index
-      0 >= .right-image-index
-      (Count .images) >= .total-images
-      true >= .same-image)
+      0 >= left-image-index
+      0 >= right-image-index
+      Count(images) >= total-images
+      true >= same-image
+    })
 
-    (defshards reset-round-variables []
-      false > .new-round
-      max-timer > .time-remaining
-      false > .input-received)
+    @define( main-game-ui {
+      UI.BottomPanel(
+        Contents: { "Are they the same image? Press the UP arrow if YES, and the DOWN arrow if NO." | UI.Label
+      })
 
-    (defshards reset-game-variables []
-      (reset-round-variables)
-      0 > .total-score
-      1 > .current-round
-      false > .game-over)
+      UI.TopPanel(
+        Contents: {
+        UI.Horizontal(
+        Contents: {
+          "Score: " | UI.Label
+          total-score | ToString | UI.Label
+          UI.Separator
+          "Round: " | UI.Label
+          current-round | ToString | UI.Label
+          UI.Separator
+          "Time Left: " | UI.Label
+          time-remaining | ToString | UI.Label
+          })
+      })
 
-    (defshards initialize-round []
-      .total-images
-      (RandomInt :Max .total-images) > .left-image-index
-      (RandomInt :Max .total-images) > .right-image-index
-  
-      (If
-       :Predicate (-> .left-image-index (Is .right-image-index))
-       :Then (-> true > .same-image)
-       :Else (-> false > .same-image))
-  
-      (reset-round-variables))
+      UI.CentralPanel(
+        Contents: {
+        UI.Horizontal(
+          Contents: {
+            UI.Area(
+              Position: @f2(-250.0 0.0)
+              Anchor: Anchor::Center
+              Contents: {
+              images | Take(left-image-index) | UI.Image
+              })
 
-    (defloop end-round
-      (Setup 0 >= .new-round-number)
+              UI.Area(
+              Position: @f2(250.0 0.0)
+              Anchor: Anchor::Center
+              Contents: {
+              images | Take(right-image-index) | UI.Image
+            })
+        })
+      })
+    })
 
-      .current-round (Math.Add 1)
-      > .new-round-number
+    @wire( ui-loop {
+      GFX.MainWindow(
+        Title: "Yes-No Game"
+        Width: 1280 Height: 768
+        Contents: {
+          Once({
+            GFX.DrawQueue >= ui-draw-queue
+            GFX.UIPass(ui-draw-queue) >> render-steps
+          })
 
-      (If
-       :Predicate
-       (-> .new-round-number (IsMore total-rounds))
-       :Then
-       (-> true > .game-over)
-       :Else
-       (->
-        .new-round-number > .current-round
-        true > .new-round)))
+          ui-draw-queue | GFX.ClearQueue
 
-    (defshards check-answer [yes-input]
-      (When
-       :Predicate (-> .input-received (Is false))
-       :Action
-       (->
-        (When
-         :Predicate (-> .same-image (Is yes-input))
-         :Action (-> (Math.Inc .total-score)))
-    
-        true > .input-received
-        (When
-         :Predicate (-> .game-over (IsNot true))
-         :Action (-> nil (Step end-round))))))
+          Inputs.KeyDown( 
+            Key: "up"
+            Action: {
+              same-image
+              When(Predicate: {
+                Is(true)
+                And
+                game-over | Is(false)
+              } Action: {
+                total-score | Math.Add(1) > total-score
+                Step(end-round)
+              })
+            }
+          )
 
+          Inputs.KeyDown(
+            Key: "down"
+            Action: {
+              same-image
+              When(Predicate: {
+                Is(false)
+                And
+                game-over | Is(false)
+                } Action: {
+                total-score | Math.Add(1) > total-score
+                Step(end-round)
+              })
+            }
+          )
+            
+          UI(Contents: {
+            @main-game-ui
+          }) | UI.Render(ui-draw-queue)
+          GFX.Render(Steps: render-steps)
+        })
+    } Looped: true)
 
-    (defshards main-game-ui []
-      (UI.BottomPanel
-       :Contents (-> "Are they the same image? Press the UP arrow if YES, and the DOWN arrow if NO." (UI.Label)))
+    @wire(logic-loop {
+      game-over
+      When(Predicate: {
+        Is(false) ;; (4)
+        And
+        new-round | Is(true) ;; (1)
+      } Action: {
+          @initialize-round ;; (3)
+      })
+    } Looped: true)
 
-      (UI.TopPanel
-       :Contents
-       (->
-        (UI.Horizontal
-         :Contents
-         (->
-          "Score: " (UI.Label)
-          .total-score (ToString) (UI.Label)
-          (UI.Separator)
-          "Round: " (UI.Label)
-          .current-round (ToString) (UI.Label)
-          (UI.Separator)
-          "Time Left: " (UI.Label)
-          .time-remaining (ToString) (UI.Label)))))
+    @wire( game-loop {
+      Once({ 
+        @load-resources 
+        @initialize-variables
+      })
+      new-round
+      Branch([ui-loop logic-loop])
+    } Looped: true)
 
-      (UI.CentralPanel
-       :Contents
-       (->
-        (UI.Horizontal
-         :Contents
-         (->
-          (UI.Area
-           :Position (float2 -250.0, 0.0)
-           :Anchor Anchor.Center
-           :Contents
-           (-> .images (Take .left-image-index) (UI.Image)))
-          (UI.Area
-           :Position (float2 250.0, 0.0)
-           :Anchor Anchor.Center
-           :Contents
-           (-> .images (Take .right-image-index) (UI.Image))))))))
-
-    (defloop ui-loop
-      (GFX.MainWindow
-       :Title "Yes-No Game"
-       :Width 1280 :Height 768
-       :Contents
-       (->
-        (Setup
-         (GFX.DrawQueue) >= .ui-draw-queue
-         (GFX.UIPass .ui-draw-queue) >> .render-steps)
-        (| .ui-draw-queue (GFX.ClearQueue))
-        (UI .ui-draw-queue (main-game-ui))
-        (GFX.Render :Steps .render-steps)
-    
-        (Inputs.KeyDown
-         :Key "up"
-         :Action (-> (check-answer true)))
-    
-        (Inputs.KeyDown
-         :Key "down"
-         :Action (-> (check-answer false))))))
-
-    (defloop logic-loop
-      (WhenNot
-       :Predicate (-> .game-over)
-       :Action
-       (->
-        (When ;; 
-         :Predicate (-> .new-round)
-         :Action (-> (initialize-round))))))
-
-
-    (defshards initialize-round []
-      .total-images
-      (RandomInt :Max .total-images) > .left-image-index (Log "left")
-      (RandomInt :Max .total-images) > .right-image-index (Log "right")
-
-      ; Determine if the images on the left and right are the same or different
-      (If
-       :Predicate (-> .left-image-index (Is .right-image-index))
-       :Then (-> true > .same-image)
-       :Else (-> false > .same-image))
-
-      (reset-round-variables))
-
-    (defloop game-loop
-      (Setup (load-resources) (initialize-variables))
-      (Branch [ui-loop, logic-loop]))
-
-    (defmesh main)
-    (schedule main game-loop)
-    (run main (/ 1.0 60.0))
+    @mesh(main)
+    @schedule(main game-loop)
+    @run(main FPS: 60) 
     ```
 
 === "Result"    
